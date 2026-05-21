@@ -11,6 +11,7 @@ return new class extends Migration
         Schema::create('articles', function (Blueprint $table) {
             $table->id();
             $table->foreignId('author_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('approved_by')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('primary_category_id')->nullable()->constrained('categories')->nullOnDelete();
             $table->string('title');
             $table->string('subtitle')->nullable();
@@ -22,8 +23,14 @@ return new class extends Migration
             $table->enum('locale', ['ar', 'en'])->default('ar');
             $table->integer('read_time')->default(0);
             $table->boolean('is_breaking')->default(false);
-            $table->enum('status', ['draft', 'submitted', 'under_review', 'ready', 'published', 'rejected'])->default('draft');
+            $table->boolean('is_premium')->default(false);
+            $table->enum('status', ['draft', 'submitted', 'under_review', 'ready', 'scheduled', 'published', 'rejected', 'archived'])->default('draft');
             $table->unsignedInteger('views_count')->default(0);
+            $table->string('seo_title')->nullable();
+            $table->text('seo_description')->nullable();
+            $table->timestamp('submitted_at')->nullable();
+            $table->timestamp('approved_at')->nullable();
+            $table->timestamp('scheduled_at')->nullable();
             $table->timestamp('published_at')->nullable();
             $table->timestamps();
         });

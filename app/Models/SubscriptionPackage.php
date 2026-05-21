@@ -13,16 +13,19 @@ class SubscriptionPackage extends Model
         'slug',
         'description',
         'price',
+        'currency',
         'duration_days',
         'features',
+        'ad_light',
         'is_active',
     ];
 
     protected function casts(): array
     {
         return [
-            'price' => 'decimal:2',
+            'price'    => 'decimal:2',
             'features' => 'array',
+            'ad_light' => 'boolean',
             'is_active' => 'boolean',
         ];
     }

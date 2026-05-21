@@ -22,11 +22,11 @@ class WriterResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'Users';
 
-    protected static ?string $navigationLabel = 'Writer ';
+    protected static ?string $navigationLabel = 'Writers';
 
-    protected static ?string $modelLabel = 'Writer ';
+    protected static ?string $modelLabel = 'Writer';
 
-    protected static ?string $pluralModelLabel = 'Writer ';
+    protected static ?string $pluralModelLabel = 'Writers';
 
     protected static ?string $recordTitleAttribute = 'display_name';
 

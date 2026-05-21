@@ -12,9 +12,20 @@ class Comment extends Model
     protected $fillable = [
         'user_id',
         'article_id',
+        'parent_id',
         'body',
         'status',
     ];
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Comment::class, 'parent_id');
+    }
+
+    public function replies(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Comment::class, 'parent_id');
+    }
 
     public function user(): BelongsTo
     {

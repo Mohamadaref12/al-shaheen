@@ -8,15 +8,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('writer_categories', function (Blueprint $table) {
-            $table->foreignId('writer_id')->constrained('writer')->cascadeOnDelete();
+        Schema::create('contributor_categories', function (Blueprint $table) {
+            $table->foreignId('contributor_id')->constrained('writer')->cascadeOnDelete();
             $table->foreignId('category_id')->constrained()->cascadeOnDelete();
-            $table->primary(['writer_id', 'category_id']);
+            $table->primary(['contributor_id', 'category_id']);
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('writer_categories');
+        Schema::dropIfExists('contributor_categories');
     }
 };

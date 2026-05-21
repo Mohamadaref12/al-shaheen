@@ -78,7 +78,7 @@ class MonetizationSeeder extends Seeder
 
         // --- Subscriptions ---
         $premiumPackage = SubscriptionPackage::where('slug', 'premium-monthly')->first();
-        $readers = User::where('role', 'reader')->inRandomOrder()->take(8)->get();
+        $readers = User::whereHas('reader')->inRandomOrder()->take(8)->get();
 
         foreach ($readers as $user) {
             $start = now()->subDays(rand(0, 20));

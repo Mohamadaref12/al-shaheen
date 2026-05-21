@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('writer', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->unique()->constrained()->cascadeOnDelete();
             $table->string('display_name')->nullable();
             $table->text('bio')->nullable();
             $table->string('profile_photo')->nullable();
@@ -20,10 +20,12 @@ return new class extends Migration
             $table->json('editorial_specialties')->nullable();
             $table->string('location')->nullable();
             $table->json('social_links')->nullable();
-            $table->string('id_verification')->nullable();
+            $table->boolean('is_verified_writer')->default(false);
+            $table->string('id_verification_file')->nullable();
             $table->string('media_affiliation')->nullable();
             $table->json('sample_publications')->nullable();
             $table->enum('application_status', ['draft', 'submitted', 'under_review', 'approved', 'rejected', 'suspended'])->default('draft');
+            $table->text('reviewer_notes')->nullable();
             $table->timestamps();
         });
     }

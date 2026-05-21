@@ -23,9 +23,6 @@ class WritersTable
                 TextColumn::make('display_name')
                     ->searchable(),
 
-                TextColumn::make('experience_level')
-                    ->badge(),
-
                 TextColumn::make('application_status')
                     ->badge()
                     ->color(fn ($state) => match ($state) {
@@ -53,13 +50,6 @@ class WritersTable
                         'suspended'    => 'Suspended',
                     ]),
 
-                SelectFilter::make('experience_level')
-                    ->options([
-                        'beginner'     => 'Beginner',
-                        'intermediate' => 'Intermediate',
-                        'senior'       => 'Senior',
-                        'expert'       => 'Expert',
-                    ]),
             ])
             ->recordActions([
                 EditAction::make(),

@@ -14,11 +14,11 @@ class ArticleSeeder extends Seeder
 {
     public function run(): void
     {
-        $writers    = User::whereIn('role', ['writer', 'editor', 'admin'])->pluck('id')->toArray();
+        $writers    = User::whereHas('writer')->orWhereHas('editor')->orWhereHas('admin')->pluck('id')->toArray();
         $primaries  = Category::whereNull('parent_id')->pluck('id')->toArray();
         $secondaries= Category::whereNotNull('parent_id')->pluck('id')->toArray();
         $tagIds     = Tag::pluck('id')->toArray();
-        $readers    = User::where('role', 'reader')->pluck('id')->toArray();
+        $readers    = User::whereHas('reader')->pluck('id')->toArray();
 
         $statuses = ['published', 'published', 'published', 'draft', 'under_review', 'rejected'];
 

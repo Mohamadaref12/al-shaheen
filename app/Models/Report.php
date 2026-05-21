@@ -19,6 +19,7 @@ class Report extends Model
         'featured_image',
         'file_url',
         'is_premium',
+        'views_count',
         'locale',
         'status',
         'published_at',
@@ -27,7 +28,8 @@ class Report extends Model
     protected function casts(): array
     {
         return [
-            'is_premium' => 'boolean',
+            'is_premium'   => 'boolean',
+            'views_count'  => 'integer',
             'published_at' => 'datetime',
         ];
     }

@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Readers\Schemas;
 
-use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -35,32 +34,21 @@ class ReaderForm
                             ->dehydrated(fn ($state) => filled($state))
                             ->required(fn (string $operation) => $operation === 'create'),
 
-                        TextInput::make('phone')
-                            ->tel()
-                            ->maxLength(50),
-                    ]),
-
-                Section::make('Settings')
-                    ->columns(2)
-                    ->schema([
-                        Select::make('locale')
-                            ->options(['ar' => 'Arabic', 'en' => 'English'])
-                            ->required()
-                            ->default('ar'),
-
                         TextInput::make('country')
                             ->maxLength(100),
 
                         TextInput::make('language')
                             ->maxLength(50),
 
+                        Select::make('locale')
+                            ->options(['ar' => 'Arabic', 'en' => 'English'])
+                            ->default('ar'),
+
                         Toggle::make('is_active')
                             ->label('Active')
-                            ->default(true),
-
-                        DateTimePicker::make('email_verified_at')
-                            ->label('Email Verified At'),
+                            ->default(true)
+                            ->columnSpanFull(),
                     ]),
-            ]);
+            ])->columns(1);
     }
 }

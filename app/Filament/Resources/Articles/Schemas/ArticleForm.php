@@ -76,10 +76,26 @@ class ArticleForm
                         DateTimePicker::make('published_at')
                             ->label('Published At'),
                     ]),
+                Section::make('Taxonomy')
+                    ->schema([
+                        Select::make('secondaryCategories')
+                            ->label('Secondary Categories')
+                            ->relationship('secondaryCategories', 'name')
+                            ->multiple()
+                            ->searchable()
+                            ->preload(),
 
+                        Select::make('tags')
+                            ->label('Tags')
+                            ->relationship('tags', 'name')
+                            ->multiple()
+                            ->searchable()
+                            ->preload(),
+                    ]),
                 Section::make('Content')
                     ->schema([
                         RichEditor::make('content')
+                            ->label('Article Body')
                             ->columnSpanFull(),
 
                         Textarea::make('excerpt')
@@ -98,22 +114,7 @@ class ArticleForm
                             ->columnSpanFull(),
                     ]),
 
-                Section::make('Taxonomy')
-                    ->schema([
-                        Select::make('secondaryCategories')
-                            ->label('Secondary Categories')
-                            ->relationship('secondaryCategories', 'name')
-                            ->multiple()
-                            ->searchable()
-                            ->preload(),
 
-                        Select::make('tags')
-                            ->label('Tags')
-                            ->relationship('tags', 'name')
-                            ->multiple()
-                            ->searchable()
-                            ->preload(),
-                    ]),
-            ]);
+            ])->columns(1);
     }
 }

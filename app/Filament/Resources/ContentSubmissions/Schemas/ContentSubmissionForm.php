@@ -64,6 +64,6 @@ class ContentSubmissionForm
                             ->rows(3)
                             ->columnSpanFull(),
                     ]),
-            ]);
+            ])->columns(1);
     }
 }

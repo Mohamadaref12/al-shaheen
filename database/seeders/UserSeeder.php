@@ -2,7 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Models\Admin;
+use App\Models\Contributor;
+use App\Models\Editor;
+use App\Models\Reader;
 use App\Models\User;
+use App\Models\Writer;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -11,52 +16,62 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // Admin
-        User::create([
-            'name'               => 'Admin',
-            'email'              => 'admin@al-shaheen.test',
-            'password'           => Hash::make('password'),
-            'role'               => 'admin',
-            'locale'             => 'ar',
-            'language'           => 'ar',
-            'country'            => 'Kuwait',
-            'is_verified'        => true,
-            'is_active'          => true,
-            'email_verified_at'  => now(),
+        $admin = User::create([
+            'name'              => 'Admin',
+            'email'             => 'admin@al-shaheen.test',
+            'password'          => Hash::make('password'),
+            'locale'            => 'ar',
+            'language'          => 'ar',
+            'country'           => 'Kuwait',
+            'is_verified'       => true,
+            'is_active'         => true,
+            'email_verified_at' => now(),
         ]);
+        Admin::create(['user_id' => $admin->id]);
 
         // Editor
-        User::create([
-            'name'               => 'Editor',
-            'email'              => 'editor@al-shaheen.test',
-            'password'           => Hash::make('password'),
-            'role'               => 'editor',
-            'locale'             => 'ar',
-            'language'           => 'ar',
-            'country'            => 'Kuwait',
-            'is_verified'        => true,
-            'is_active'          => true,
-            'email_verified_at'  => now(),
+        $editor = User::create([
+            'name'              => 'Editor',
+            'email'             => 'editor@al-shaheen.test',
+            'password'          => Hash::make('password'),
+            'locale'            => 'ar',
+            'language'          => 'ar',
+            'country'           => 'Kuwait',
+            'is_verified'       => true,
+            'is_active'         => true,
+            'email_verified_at' => now(),
         ]);
+        Editor::create(['user_id' => $editor->id]);
 
         // Writers (verified)
-        User::factory(5)->create([
-            'role'        => 'writer',
+        $writers = User::factory(5)->create([
             'is_verified' => true,
             'is_active'   => true,
         ]);
+        foreach ($writers as $writer) {
+            Writer::create([
+                'user_id'            => $writer->id,
+                'display_name'       => $writer->name,
+                'application_status' => 'approved',
+            ]);
+        }
 
         // Contributors
-        User::factory(8)->create([
-            'role'        => 'contributor',
+        $contributors = User::factory(8)->create([
             'is_verified' => false,
             'is_active'   => true,
         ]);
+        foreach ($contributors as $contributor) {
+            Contributor::create(['user_id' => $contributor->id]);
+        }
 
         // Readers
-        User::factory(20)->create([
-            'role'        => 'reader',
+        $readers = User::factory(20)->create([
             'is_verified' => false,
             'is_active'   => true,
         ]);
+        foreach ($readers as $reader) {
+            Reader::create(['user_id' => $reader->id]);
+        }
     }
 }

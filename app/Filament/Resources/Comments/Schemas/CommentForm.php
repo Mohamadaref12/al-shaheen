@@ -42,6 +42,6 @@ class CommentForm
                             ->rows(5)
                             ->columnSpanFull(),
                     ]),
-            ]);
+            ])->columns(1);
     }
 }

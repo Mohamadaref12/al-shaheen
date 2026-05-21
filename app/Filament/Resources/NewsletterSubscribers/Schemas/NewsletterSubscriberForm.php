@@ -33,6 +33,6 @@ class NewsletterSubscriberForm
                             ->required()
                             ->default('active'),
                     ]),
-            ]);
+            ])->columns(1);
     }
 }

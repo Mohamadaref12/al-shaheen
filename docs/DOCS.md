@@ -125,9 +125,14 @@ draft → submitted → under_review → published
 
 | الجدول | الوصف |
 |--------|-------|
-| `users` | كل المستخدمين — role + is_verified flag + locale |
-| `writer_profiles` | بيانات الكاتب التفصيلية وحالة الطلب |
-| `writer_profile_categories` | pivot: أقسام اهتمام الكاتب |
+| `users` | البيانات المشتركة — name, email, locale, country, is_verified (بدون role أو phone) |
+| `readers` | profile سجل القارئ (user_id فقط) |
+| `contributors` | profile المساهم: bio, profile_photo, portfolio_link |
+| `contributor_profile_categories` | pivot: أقسام اهتمام المساهم |
+| `editors` | profile المحرر (user_id فقط) |
+| `admins` | profile المدير (user_id فقط) |
+| `writer` | بيانات الكاتب المعتمد: experience_level, languages, specialties, social_links, application_status |
+| `contributor_categories` | pivot: أقسام اهتمام الكاتب المعتمد |
 | `categories` | الأقسام (هرمية عبر parent_id، max 6-8 رئيسي) |
 | `tags` | التاجات |
 | `articles` | المقالات — subtitle, video_embed, read_time, is_breaking, locale |
@@ -162,10 +167,9 @@ Writer/Contributor → draft → submitted → under_review → ready → publis
 
 ### تسجيل كاتب (4 خطوات)
 ```
-1. Account (name, email, phone, country, language)
+1. Account (name, email, country, language)
 2. Profile (bio, photo, categories, portfolio)
 3. Expertise (experience level, languages, specialties)
-4. Portfolio (sample work, ID verification للـ Verified tier)
 ```
 
 ### الاشتراك
@@ -183,7 +187,7 @@ User → اختيار باقة → دفع → Subscription نشطة (plan field)
 - Package logic منفصل عن Role logic في قاعدة البيانات
 
 ### Implementation Notes
-- الـ roles تُخزن في `users.role`
+- الـ roles تُحدَّد بوجود سجل في جداول `readers`/`contributors`/`writer`/`editors`/`admins` (Class Table Inheritance) — لا يوجد عمود role في users
 - الـ packages تُخزن في `subscriptions.plan`
 - يجب عمل Permission Middleware Layer حتى تتطور الـ rules دون تغيير الـ controllers
 - Future: نظام Revenue Share أو Bounty للكتّاب المميزين
@@ -276,10 +280,15 @@ User → اختيار باقة → دفع → Subscription نشطة (plan field)
 ## ما تم حتى الآن
 
 - [x] إنشاء مشروع Laravel
-- [x] تثبيت Filament v3
-- [x] تشغيل Migrations الأساسية
+- [x] تثبيت Filament v5
+- [x] تشغيل Migrations الأساسية (25 migration)
 - [x] تصميم ERD
 - [x] توثيق DOCS.md و ERD.md الكاملين
+- [x] إنشاء Models مع العلاقات (User, Writer, Reader, Contributor, Editor, Admin, Article, Report, ...)
+- [x] Filament Resources لكل الـ roles (Readers, Contributors, Writers, Editors, Admins)
+- [x] Seeders كاملة لكل الجداول (15 seeder)
+- [x] Class Table Inheritance: جداول role profiles منفصلة (readers, contributors, editors, admins)
+- [x] إزالة phone و role من جدول users
 
 ## ما تبقى (Phase 1 — Foundation)
 

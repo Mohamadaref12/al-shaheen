@@ -34,25 +34,11 @@ class UserForm
                             ->dehydrateStateUsing(fn ($state) => filled($state) ? Hash::make($state) : null)
                             ->dehydrated(fn ($state) => filled($state))
                             ->required(fn (string $operation) => $operation === 'create'),
-
-                        TextInput::make('phone')
-                            ->tel()
-                            ->maxLength(50),
                     ]),
 
-                Section::make('Role & Settings')
+                Section::make('Settings')
                     ->columns(2)
                     ->schema([
-                        Select::make('role')
-                            ->options([
-                                'reader'      => 'Reader',
-                                'contributor' => 'Contributor',
-                                'writer'      => 'Writer',
-                                'editor'      => 'Editor',
-                                'admin'       => 'Admin',
-                            ])
-                            ->required(),
-
                         Select::make('locale')
                             ->options(['ar' => 'Arabic', 'en' => 'English'])
                             ->required(),
@@ -73,6 +59,6 @@ class UserForm
                         DateTimePicker::make('email_verified_at')
                             ->label('Email Verified At'),
                     ]),
-            ]);
+            ])->columns(1);
     }
 }

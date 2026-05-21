@@ -41,6 +41,6 @@ class UserCourseProgressForm
                         DateTimePicker::make('completed_at')
                             ->label('Completed At'),
                     ]),
-            ]);
+            ])->columns(1);
     }
 }

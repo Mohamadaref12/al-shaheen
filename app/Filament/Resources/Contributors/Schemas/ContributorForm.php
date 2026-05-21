@@ -2,8 +2,9 @@
 
 namespace App\Filament\Resources\Contributors\Schemas;
 
-use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
@@ -35,32 +36,49 @@ class ContributorForm
                             ->dehydrated(fn ($state) => filled($state))
                             ->required(fn (string $operation) => $operation === 'create'),
 
-                        TextInput::make('phone')
-                            ->tel()
-                            ->maxLength(50),
-                    ]),
-
-                Section::make('Settings')
-                    ->columns(2)
-                    ->schema([
-                        Select::make('locale')
-                            ->options(['ar' => 'Arabic', 'en' => 'English'])
-                            ->required()
-                            ->default('ar'),
-
                         TextInput::make('country')
                             ->maxLength(100),
 
                         TextInput::make('language')
                             ->maxLength(50),
 
+                        Select::make('locale')
+                            ->options(['ar' => 'Arabic', 'en' => 'English'])
+                            ->default('ar'),
+
                         Toggle::make('is_active')
                             ->label('Active')
-                            ->default(true),
-
-                        DateTimePicker::make('email_verified_at')
-                            ->label('Email Verified At'),
+                            ->default(true)
+                            ->columnSpanFull(),
                     ]),
-            ]);
+
+                Section::make('Writer Profile')
+                    ->relationship('contributor')
+                    ->columns(2)
+                    ->schema([
+                        FileUpload::make('profile_photo')
+                            ->label('Profile Photo')
+                            ->image()
+                            ->directory('contributors/photos')
+                            ->columnSpanFull(),
+
+                        Textarea::make('bio')
+                            ->rows(4)
+                            ->columnSpanFull(),
+
+                        TextInput::make('portfolio_link')
+                            ->label('Portfolio Link')
+                            ->url()
+                            ->maxLength(255),
+
+                        Select::make('categories')
+                            ->label('Writing Categories')
+                            ->relationship('categories', 'name')
+                            ->multiple()
+                            ->searchable()
+                            ->preload()
+                            ->columnSpanFull(),
+                    ]),
+            ])->columns(1);
     }
 }

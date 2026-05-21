@@ -84,6 +84,6 @@ class ReportForm
                             ->url()
                             ->columnSpanFull(),
                     ]),
-            ]);
+            ])->columns(1);
     }
 }

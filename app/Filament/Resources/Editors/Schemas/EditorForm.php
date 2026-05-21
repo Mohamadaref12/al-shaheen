@@ -31,13 +31,9 @@ class EditorForm
 
                         TextInput::make('password')
                             ->password()
-                            ->dehydrateStateUsing(fn ($state) => filled($state) ? Hash::make($state) : null)
-                            ->dehydrated(fn ($state) => filled($state))
-                            ->required(fn (string $operation) => $operation === 'create'),
-
-                        TextInput::make('phone')
-                            ->tel()
-                            ->maxLength(50),
+                            ->dehydrateStateUsing(fn($state) => filled($state) ? Hash::make($state) : null)
+                            ->dehydrated(fn($state) => filled($state))
+                            ->required(fn(string $operation) => $operation === 'create'),
                     ]),
 
                 Section::make('Settings')
@@ -61,6 +57,6 @@ class EditorForm
                         DateTimePicker::make('email_verified_at')
                             ->label('Email Verified At'),
                     ]),
-            ]);
+            ])->columns(1);
     }
 }

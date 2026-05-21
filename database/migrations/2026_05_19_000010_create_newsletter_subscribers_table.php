@@ -10,9 +10,12 @@ return new class extends Migration
     {
         Schema::create('newsletter_subscribers', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
             $table->string('email')->unique();
             $table->string('name')->nullable();
             $table->enum('status', ['active', 'unsubscribed'])->default('active');
+            $table->timestamp('subscribed_at')->nullable();
+            $table->timestamp('unsubscribed_at')->nullable();
             $table->timestamps();
         });
     }

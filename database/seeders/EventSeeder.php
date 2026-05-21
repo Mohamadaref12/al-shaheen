@@ -11,7 +11,7 @@ class EventSeeder extends Seeder
 {
     public function run(): void
     {
-        $authors = User::whereIn('role', ['editor', 'admin'])->pluck('id')->toArray();
+        $authors = User::whereHas('editor')->orWhereHas('admin')->pluck('id')->toArray();
 
         $events = [
             ['title' => 'مؤتمر الإعلام الرقمي 2026',          'location' => 'الكويت'],

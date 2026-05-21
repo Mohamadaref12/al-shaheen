@@ -54,6 +54,6 @@ class SubscriptionPackageForm
                             )
                             ->columnSpanFull(),
                     ]),
-            ]);
+            ])->columns(1);
     }
 }

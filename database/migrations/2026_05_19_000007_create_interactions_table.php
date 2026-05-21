@@ -12,8 +12,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->foreignId('article_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('parent_id')->nullable()->constrained('comments')->nullOnDelete();
             $table->text('body');
-            $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->enum('status', ['pending', 'approved', 'rejected', 'spam'])->default('pending');
             $table->timestamps();
         });
 
@@ -26,9 +27,9 @@ return new class extends Migration
 
         Schema::create('follows', function (Blueprint $table) {
             $table->foreignId('follower_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('following_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('writer_id')->constrained('writer')->cascadeOnDelete();
             $table->timestamp('created_at')->useCurrent();
-            $table->primary(['follower_id', 'following_id']);
+            $table->primary(['follower_id', 'writer_id']);
         });
     }
 

@@ -5,8 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use App\Models\User;
-use App\Models\Category;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Writer extends Model
 {
@@ -23,19 +22,22 @@ class Writer extends Model
         'editorial_specialties',
         'location',
         'social_links',
-        'id_verification',
+        'is_verified_writer',
+        'id_verification_file',
         'media_affiliation',
         'sample_publications',
         'application_status',
+        'reviewer_notes',
     ];
 
     protected function casts(): array
     {
         return [
-            'languages' => 'array',
+            'languages'             => 'array',
             'editorial_specialties' => 'array',
-            'social_links' => 'array',
-            'sample_publications' => 'array',
+            'social_links'          => 'array',
+            'sample_publications'   => 'array',
+            'is_verified_writer'    => 'boolean',
         ];
     }
 
@@ -46,7 +48,17 @@ class Writer extends Model
 
     public function categories(): BelongsToMany
     {
-        return $this->belongsToMany(Category::class, 'writer_categories', 'writer_id', 'category_id');
+        return $this->belongsToMany(Category::class, 'contributor_categories', 'contributor_id', 'category_id');
     }
 
+    public function followers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'follows', 'writer_id', 'follower_id');
+    }
+
+    public function contentSubmissions(): HasMany
+    {
+        return $this->hasMany(ContentSubmission::class, 'writer_id');
+    }
 }
+

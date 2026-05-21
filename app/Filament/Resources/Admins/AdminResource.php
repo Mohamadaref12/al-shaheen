@@ -35,7 +35,7 @@ class AdminResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->where('role', 'admin');
+        return parent::getEloquentQuery()->whereHas('admin');
     }
 
     public static function form(Schema $schema): Schema

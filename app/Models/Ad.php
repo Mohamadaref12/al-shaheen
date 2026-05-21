@@ -12,17 +12,19 @@ class Ad extends Model
         'image_url',
         'link_url',
         'ad_category',
+        'is_native',
+        'is_active',
         'starts_at',
         'ends_at',
-        'is_active',
     ];
 
     protected function casts(): array
     {
         return [
             'starts_at' => 'datetime',
-            'ends_at' => 'datetime',
+            'ends_at'   => 'datetime',
             'is_active' => 'boolean',
+            'is_native' => 'boolean',
         ];
     }
 }

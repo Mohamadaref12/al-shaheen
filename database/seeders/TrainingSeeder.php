@@ -84,7 +84,7 @@ class TrainingSeeder extends Seeder
             ],
         ];
 
-        $users = User::whereIn('role', ['reader', 'contributor', 'writer'])->pluck('id')->toArray();
+        $users = User::whereHas('reader')->orWhereHas('contributor')->orWhereHas('writer')->pluck('id')->toArray();
 
         foreach ($courses as $courseData) {
             $lessonsData = $courseData['lessons'];

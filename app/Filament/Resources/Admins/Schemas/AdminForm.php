@@ -34,10 +34,6 @@ class AdminForm
                             ->dehydrateStateUsing(fn ($state) => filled($state) ? Hash::make($state) : null)
                             ->dehydrated(fn ($state) => filled($state))
                             ->required(fn (string $operation) => $operation === 'create'),
-
-                        TextInput::make('phone')
-                            ->tel()
-                            ->maxLength(50),
                     ]),
 
                 Section::make('Settings')
@@ -61,6 +57,6 @@ class AdminForm
                         DateTimePicker::make('email_verified_at')
                             ->label('Email Verified At'),
                     ]),
-            ]);
+            ])->columns(1);
     }
 }

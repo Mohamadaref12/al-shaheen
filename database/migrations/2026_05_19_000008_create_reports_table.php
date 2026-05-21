@@ -18,9 +18,10 @@ return new class extends Migration
             $table->text('excerpt')->nullable();
             $table->string('featured_image')->nullable();
             $table->string('file_url')->nullable();
+            $table->unsignedInteger('views_count')->default(0);
             $table->boolean('is_premium')->default(false);
             $table->enum('locale', ['ar', 'en'])->default('ar');
-            $table->enum('status', ['draft', 'published'])->default('draft');
+            $table->enum('status', ['draft', 'under_review', 'published', 'archived'])->default('draft');
             $table->timestamp('published_at')->nullable();
             $table->timestamps();
         });

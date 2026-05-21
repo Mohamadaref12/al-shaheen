@@ -24,6 +24,6 @@ class TagForm
                             ->unique(ignoreRecord: true)
                             ->maxLength(100),
                     ]),
-            ]);
+            ])->columns(1);
     }
 }

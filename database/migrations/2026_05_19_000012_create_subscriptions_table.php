@@ -14,8 +14,10 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->text('description')->nullable();
             $table->decimal('price', 10, 2)->default(0);
+            $table->string('currency', 10)->default('USD');
             $table->integer('duration_days')->default(30);
             $table->json('features')->nullable();
+            $table->boolean('ad_light')->default(false);
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
@@ -27,7 +29,7 @@ return new class extends Migration
             $table->string('plan');
             $table->timestamp('starts_at');
             $table->timestamp('ends_at');
-            $table->enum('status', ['active', 'expired', 'cancelled'])->default('active');
+            $table->enum('status', ['active', 'expired', 'cancelled', 'pending'])->default('active');
             $table->timestamps();
         });
     }

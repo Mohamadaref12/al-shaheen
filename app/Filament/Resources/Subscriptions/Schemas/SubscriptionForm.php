@@ -47,6 +47,6 @@ class SubscriptionForm
                         DateTimePicker::make('ends_at')
                             ->label('Ends At'),
                     ]),
-            ]);
+            ])->columns(1);
     }
 }

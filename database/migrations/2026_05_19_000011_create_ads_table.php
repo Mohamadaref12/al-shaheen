@@ -15,6 +15,7 @@ return new class extends Migration
             $table->string('image_url')->nullable();
             $table->string('link_url');
             $table->string('ad_category')->nullable();
+            $table->boolean('is_native')->default(false);
             $table->timestamp('starts_at')->nullable();
             $table->timestamp('ends_at')->nullable();
             $table->boolean('is_active')->default(true);

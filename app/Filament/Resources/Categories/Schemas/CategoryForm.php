@@ -44,6 +44,6 @@ class CategoryForm
                             ->label('Active')
                             ->default(true),
                     ]),
-            ]);
+            ])->columns(1);
     }
 }

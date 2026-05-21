@@ -13,15 +13,22 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use App\Models\Writer;
+use App\Models\Reader;
+use App\Models\Contributor;
+use App\Models\Editor;
+use App\Models\Admin;
 use App\Models\Article;
 use App\Models\Report;
 use App\Models\Event;
+use App\Models\Interview;
+use App\Models\MediaItem;
 use App\Models\Subscription;
+use App\Models\Payment;
 use App\Models\ContentSubmission;
 use App\Models\Comment;
 use App\Models\UserCourseProgress;
 
-#[Fillable(['name', 'email', 'password', 'phone', 'role', 'country', 'language', 'locale', 'is_verified', 'is_active'])]
+#[Fillable(['name', 'email', 'password', 'country', 'language', 'locale', 'is_verified', 'is_active'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -43,6 +50,26 @@ class User extends Authenticatable
         return $this->hasOne(Writer::class);
     }
 
+    public function reader(): HasOne
+    {
+        return $this->hasOne(Reader::class);
+    }
+
+    public function contributor(): HasOne
+    {
+        return $this->hasOne(Contributor::class);
+    }
+
+    public function editor(): HasOne
+    {
+        return $this->hasOne(Editor::class);
+    }
+
+    public function admin(): HasOne
+    {
+        return $this->hasOne(Admin::class);
+    }
+
     public function articles(): HasMany
     {
         return $this->hasMany(Article::class, 'author_id');
@@ -58,9 +85,24 @@ class User extends Authenticatable
         return $this->hasMany(Event::class, 'author_id');
     }
 
+    public function interviews(): HasMany
+    {
+        return $this->hasMany(Interview::class, 'author_id');
+    }
+
+    public function mediaItems(): HasMany
+    {
+        return $this->hasMany(MediaItem::class, 'author_id');
+    }
+
     public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class);
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
     }
 
     public function submittedContent(): HasMany
@@ -90,11 +132,6 @@ class User extends Authenticatable
 
     public function following(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'follows', 'follower_id', 'following_id')->withTimestamps();
-    }
-
-    public function followers(): BelongsToMany
-    {
-        return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id')->withTimestamps();
+        return $this->belongsToMany(Writer::class, 'follows', 'follower_id', 'writer_id');
     }
 }

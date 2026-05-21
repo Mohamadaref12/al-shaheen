@@ -15,11 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('email')->unique();
-            $table->string('phone')->nullable();
-            $table->enum('role', ['reader', 'contributor', 'writer', 'editor', 'admin'])->default('reader');
             $table->string('country')->nullable();
             $table->string('language')->nullable();
-            $table->enum('locale', ['ar', 'en'])->default('ar');
+            $table->enum('locale', ['ar', 'en'])->default('en');
             $table->boolean('is_verified')->default(false);
             $table->boolean('is_active')->default(true);
             $table->timestamp('email_verified_at')->nullable();

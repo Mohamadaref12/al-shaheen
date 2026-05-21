@@ -65,6 +65,6 @@ class TrainingCourseForm
                             ->directory('courses')
                             ->columnSpanFull(),
                     ]),
-            ]);
+            ])->columns(1);
     }
 }

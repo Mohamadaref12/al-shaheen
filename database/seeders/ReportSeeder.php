@@ -12,7 +12,7 @@ class ReportSeeder extends Seeder
 {
     public function run(): void
     {
-        $writers    = User::whereIn('role', ['writer', 'editor', 'admin'])->pluck('id')->toArray();
+        $writers    = User::whereHas('writer')->orWhereHas('editor')->orWhereHas('admin')->pluck('id')->toArray();
         $categories = Category::whereNull('parent_id')->pluck('id')->toArray();
 
         for ($i = 0; $i < 10; $i++) {

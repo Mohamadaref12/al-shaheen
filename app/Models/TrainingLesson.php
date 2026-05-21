@@ -23,7 +23,9 @@ class TrainingLesson extends Model
     protected function casts(): array
     {
         return [
-            'is_premium' => 'boolean',
+            'is_premium'       => 'boolean',
+            'duration_minutes' => 'integer',
+            'sort_order'       => 'integer',
         ];
     }
 

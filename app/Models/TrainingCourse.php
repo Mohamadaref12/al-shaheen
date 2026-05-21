@@ -18,13 +18,15 @@ class TrainingCourse extends Model
         'thumbnail',
         'is_premium',
         'is_active',
+        'sort_order',
     ];
 
     protected function casts(): array
     {
         return [
             'is_premium' => 'boolean',
-            'is_active' => 'boolean',
+            'is_active'  => 'boolean',
+            'sort_order' => 'integer',
         ];
     }
 

@@ -10,6 +10,8 @@ use App\Models\User;
 use App\Models\Category;
 use App\Models\Tag;
 use App\Models\Comment;
+use App\Models\ArticleRevision;
+use App\Models\ArticleView;
 
 class Article extends Model
 {
@@ -27,17 +29,28 @@ class Article extends Model
         'read_time',
         'is_breaking',
         'status',
+        'approved_by',
+        'is_premium',
         'views_count',
+        'seo_title',
+        'seo_description',
+        'submitted_at',
+        'approved_at',
+        'scheduled_at',
         'published_at',
     ];
 
     protected function casts(): array
     {
         return [
-            'is_breaking' => 'boolean',
+            'is_breaking'  => 'boolean',
+            'is_premium'   => 'boolean',
+            'views_count'  => 'integer',
+            'read_time'    => 'integer',
+            'submitted_at' => 'datetime',
+            'approved_at'  => 'datetime',
+            'scheduled_at' => 'datetime',
             'published_at' => 'datetime',
-            'views_count' => 'integer',
-            'read_time' => 'integer',
         ];
     }
 
@@ -64,6 +77,21 @@ class Article extends Model
     public function comments(): HasMany
     {
         return $this->hasMany(Comment::class);
+    }
+
+    public function approvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function revisions(): HasMany
+    {
+        return $this->hasMany(ArticleRevision::class);
+    }
+
+    public function views(): HasMany
+    {
+        return $this->hasMany(ArticleView::class);
     }
 
     public function savedByUsers(): BelongsToMany

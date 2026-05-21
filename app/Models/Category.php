@@ -19,13 +19,15 @@ class Category extends Model
         'description',
         'image',
         'sort_order',
+        'is_top_level',
         'is_active',
     ];
 
     protected function casts(): array
     {
         return [
-            'is_active' => 'boolean',
+            'is_active'    => 'boolean',
+            'is_top_level' => 'boolean',
         ];
     }
 
@@ -51,7 +53,7 @@ class Category extends Model
 
     public function writers(): BelongsToMany
     {
-        return $this->belongsToMany(Writer::class, 'writer_categories', 'category_id', 'writer_id');
+        return $this->belongsToMany(Writer::class, 'contributor_categories', 'category_id', 'contributor_id');
     }
 
     public function secondaryArticles(): BelongsToMany

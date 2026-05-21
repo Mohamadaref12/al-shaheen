@@ -4,14 +4,17 @@ namespace Database\Seeders;
 
 use App\Models\ContentSubmission;
 use App\Models\User;
+use App\Models\Writer;
 use Illuminate\Database\Seeder;
 
 class ContentSubmissionSeeder extends Seeder
 {
     public function run(): void
     {
-        $contributors = User::whereIn('role', ['contributor', 'writer'])->pluck('id')->toArray();
-        $editors      = User::whereIn('role', ['editor', 'admin'])->pluck('id')->toArray();
+        $writerIds = Writer::pluck('id')->toArray();
+        $editors   = User::whereHas('editor')->orWhereHas('admin')->pluck('id')->toArray();
+
+        if (empty($writerIds)) return;
 
         $statuses = ['draft', 'submitted', 'under_review', 'approved', 'rejected'];
 
@@ -20,7 +23,7 @@ class ContentSubmissionSeeder extends Seeder
             $reviewed = in_array($status, ['approved', 'rejected', 'under_review']);
 
             ContentSubmission::create([
-                'writer_id'      => fake()->randomElement($contributors),
+                'writer_id'      => fake()->randomElement($writerIds),
                 'reviewer_id'    => $reviewed ? fake()->randomElement($editors) : null,
                 'title'          => fake('ar_SA')->sentence(rand(5, 10)),
                 'subtitle'       => fake('ar_SA')->sentence(5),

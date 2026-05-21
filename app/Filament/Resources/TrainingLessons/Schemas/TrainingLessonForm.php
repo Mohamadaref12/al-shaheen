@@ -51,6 +51,6 @@ class TrainingLessonForm
                             ->rows(4)
                             ->columnSpanFull(),
                     ]),
-            ]);
+            ])->columns(1);
     }
 }

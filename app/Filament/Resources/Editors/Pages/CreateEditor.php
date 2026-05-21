@@ -3,15 +3,15 @@
 namespace App\Filament\Resources\Editors\Pages;
 
 use App\Filament\Resources\Editors\EditorResource;
+use App\Models\Editor;
 use Filament\Resources\Pages\CreateRecord;
 
 class CreateEditor extends CreateRecord
 {
     protected static string $resource = EditorResource::class;
 
-    protected function mutateFormDataBeforeCreate(array $data): array
+    protected function afterCreate(): void
     {
-        $data['role'] = 'editor';
-        return $data;
+        Editor::create(['user_id' => $this->record->id]);
     }
 }

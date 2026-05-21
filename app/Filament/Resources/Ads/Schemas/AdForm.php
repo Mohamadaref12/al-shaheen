@@ -64,6 +64,6 @@ class AdForm
                             ->directory('ads')
                             ->columnSpanFull(),
                     ]),
-            ]);
+            ])->columns(1);
     }
 }

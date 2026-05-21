@@ -65,6 +65,6 @@ class EventForm
                             ->directory('events')
                             ->columnSpanFull(),
                     ]),
-            ]);
+            ])->columns(1);
     }
 }
