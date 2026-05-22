@@ -38,4 +38,11 @@ trait HttpResponses
             'data' => $data,
         ], $code);
     }
+
+    protected function handleException(\Throwable $exception, string $message = 'An error occurred.')
+    {
+        report($exception);
+
+        return $this->error(null, $message, 500);
+    }
 }

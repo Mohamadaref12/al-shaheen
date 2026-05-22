@@ -35,8 +35,6 @@ class DatabaseSeeder extends Seeder
             'interviews',
             'media_items',
             'events',
-            'pages',
-            'site_settings',
             'writer',
             'categories',
             'tags',
@@ -64,8 +62,6 @@ class DatabaseSeeder extends Seeder
             PaymentSeeder::class,           // 11. مدفوعات
             ContentSubmissionSeeder::class, // 12. طلبات محتوى
             TrainingSeeder::class,          // 13. دورات + دروس + تقدم المستخدم
-            PageSeeder::class,              // 14. صفحات ثابتة
-            SiteSettingSeeder::class,       // 15. إعدادات الموقع
         ]);
     }
 }

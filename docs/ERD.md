@@ -377,25 +377,6 @@ erDiagram
         timestamps updated_at
     }
 
-    pages {
-        bigint id PK
-        string title
-        string slug
-        longtext content
-        enum locale "ar|en"
-        boolean is_active
-        timestamps created_at
-        timestamps updated_at
-    }
-
-    site_settings {
-        bigint id PK
-        string key
-        json value
-        timestamps created_at
-        timestamps updated_at
-    }
-
     users ||--o| readers : "reader_profile"
     users ||--o| contributors : "contributor_profile"
     users ||--o| writers : "writer_profile"
@@ -467,6 +448,5 @@ erDiagram
 3. تم إضافة `article_revisions` لأن الـ editorial workflow يحتاج سجل مراجعة وتعديلات.
 4. تم إضافة `article_views` لدعم Trending و Most Read و Writer Analytics.
 5. تم إضافة `payments` لأن الاشتراك يتضمن خطوة دفع.
-6. تم إضافة `pages` و `site_settings` لإدارة About و Contact والإعدادات العامة.
-7. تم توسيع حالات المقال لتشمل `ready`, `scheduled`, و `archived`.
-8. تم إضافة `is_premium` و SEO fields للمحتوى العام القابل للنشر.
+6. تم توسيع حالات المقال لتشمل `ready`, `scheduled`, و `archived`.
+7. تم إضافة `is_premium` و SEO fields للمحتوى العام القابل للنشر.

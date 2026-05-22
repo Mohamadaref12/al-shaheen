@@ -1,0 +1,640 @@
+{
+  "info": {
+    "name": "Al-Shaheen",
+    "description": "Al-Shaheen News Platform — REST API v1",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "{{base_url}}"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register Reader",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.token) {",
+                  "  pm.environment.set('token', res.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/register",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"name\": \"Ahmed Reader\",\n  \"email\": \"reader@example.com\",\n  \"password\": \"Password@123\",\n  \"password_confirmation\": \"Password@123\",\n  \"type\": \"reader\",\n  \"locale\": \"ar\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register Contributor",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.token) {",
+                  "  pm.environment.set('token', res.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/register",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"name\": \"Sara Contributor\",\n  \"email\": \"contributor@example.com\",\n  \"password\": \"Password@123\",\n  \"password_confirmation\": \"Password@123\",\n  \"type\": \"contributor\",\n  \"locale\": \"ar\",\n  \"bio\": \"Passionate about journalism and media.\",\n  \"portfolio_link\": \"https://portfolio.example.com\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register Writer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.token) {",
+                  "  pm.environment.set('token', res.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/register",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"name\": \"Omar Writer\",\n  \"email\": \"writer@example.com\",\n  \"password\": \"Password@123\",\n  \"password_confirmation\": \"Password@123\",\n  \"type\": \"writer\",\n  \"locale\": \"ar\",\n  \"display_name\": \"Omar Al-Shaheen\",\n  \"bio\": \"Experienced journalist with 5 years in political reporting.\",\n  \"portfolio_link\": \"https://writer.example.com\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.token) {",
+                  "  pm.environment.set('token', res.data.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/login",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"email\": \"ahmed@example.com\",\n  \"password\": \"Password@123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/auth/me"
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/auth/profile",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"name\": \"Ahmed Updated\",\n  \"country\": \"SA\",\n  \"language\": \"ar\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/auth/change-password",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"current_password\": \"Password@123\",\n  \"password\": \"NewPass@456\",\n  \"password_confirmation\": \"NewPass@456\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.environment.set('token', '');"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/auth/logout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Articles",
+      "item": [
+        {
+          "name": "List Articles",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/articles?per_page=15&sort=latest",
+              "host": ["{{base_url}}"],
+              "path": ["articles"],
+              "query": [
+                { "key": "per_page", "value": "15" },
+                { "key": "sort", "value": "latest", "description": "latest | views | oldest" },
+                { "key": "category", "value": "", "disabled": true },
+                { "key": "tag", "value": "", "disabled": true },
+                { "key": "locale", "value": "", "disabled": true, "description": "ar | en" },
+                { "key": "breaking", "value": "true", "disabled": true },
+                { "key": "premium", "value": "true", "disabled": true },
+                { "key": "search", "value": "", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Show Article",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/articles/{{article_slug}}"
+          }
+        },
+        {
+          "name": "Create Article",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/articles",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"primary_category_id\": 1,\n  \"title\": \"مقالة تجريبية\",\n  \"slug\": \"trial-article-001\",\n  \"content\": \"محتوى المقالة كاملاً هنا...\",\n  \"excerpt\": \"ملخص قصير للمقالة\",\n  \"locale\": \"ar\",\n  \"is_breaking\": false,\n  \"is_premium\": false,\n  \"status\": \"draft\",\n  \"tags\": [],\n  \"secondary_categories\": []\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Article",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/articles/{{article_id}}",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"title\": \"عنوان محدّث\",\n  \"status\": \"pending\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Article",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/articles/{{article_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categories",
+      "item": [
+        {
+          "name": "List Categories",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/categories"
+          }
+        },
+        {
+          "name": "Show Category",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/categories/{{category_slug}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tags",
+      "item": [
+        {
+          "name": "List Tags",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/tags"
+          }
+        },
+        {
+          "name": "Show Tag (articles)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/tags/{{tag_slug}}?per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["tags", "{{tag_slug}}"],
+              "query": [
+                { "key": "per_page", "value": "15" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "item": [
+        {
+          "name": "List Comments",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/articles/{{article_id}}/comments"
+          }
+        },
+        {
+          "name": "Add Comment",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/articles/{{article_id}}/comments",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"body\": \"تعليق رائع على هذا المقال!\",\n  \"parent_id\": null\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Comment",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/comments/{{comment_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Events",
+      "item": [
+        {
+          "name": "List Events",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/events?per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["events"],
+              "query": [
+                { "key": "per_page", "value": "15" },
+                { "key": "upcoming", "value": "true", "disabled": true },
+                { "key": "featured", "value": "true", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Show Event",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/events/{{event_slug}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Interviews",
+      "item": [
+        {
+          "name": "List Interviews",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/interviews?per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["interviews"],
+              "query": [
+                { "key": "per_page", "value": "15" },
+                { "key": "category", "value": "", "disabled": true },
+                { "key": "locale", "value": "", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Show Interview",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/interviews/{{interview_slug}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Media",
+      "item": [
+        {
+          "name": "List Media",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/media?per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["media"],
+              "query": [
+                { "key": "per_page", "value": "15" },
+                { "key": "type", "value": "", "disabled": true, "description": "video | podcast | gallery" },
+                { "key": "category", "value": "", "disabled": true },
+                { "key": "locale", "value": "", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Show Media Item",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/media/{{media_slug}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "List Reports",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/reports?per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["reports"],
+              "query": [
+                { "key": "per_page", "value": "15" },
+                { "key": "category", "value": "", "disabled": true },
+                { "key": "locale", "value": "", "disabled": true },
+                { "key": "premium", "value": "true", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Show Report",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/reports/{{report_slug}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Training",
+      "item": [
+        {
+          "name": "List Courses",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/training/courses",
+              "host": ["{{base_url}}"],
+              "path": ["training", "courses"],
+              "query": [
+                { "key": "category", "value": "", "disabled": true },
+                { "key": "level", "value": "", "disabled": true, "description": "junior | mid | senior" },
+                { "key": "premium", "value": "true", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Show Course",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/training/courses/{{course_slug}}"
+          }
+        },
+        {
+          "name": "Mark Lesson Progress",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/training/courses/{{course_id}}/progress/{{lesson_id}}",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"is_completed\": true\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Subscriptions",
+      "item": [
+        {
+          "name": "List Packages",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/packages"
+          }
+        },
+        {
+          "name": "My Subscriptions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/subscriptions"
+          }
+        },
+        {
+          "name": "Subscribe",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/subscriptions",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"package_id\": 1,\n  \"plan\": \"monthly\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Newsletter",
+      "item": [
+        {
+          "name": "Subscribe",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/newsletter/subscribe",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"email\": \"reader@example.com\",\n  \"name\": \"محمد القارئ\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Unsubscribe",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/newsletter/unsubscribe",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"email\": \"reader@example.com\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Writers",
+      "item": [
+        {
+          "name": "List Writers",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/writers",
+              "host": ["{{base_url}}"],
+              "path": ["writers"],
+              "query": [
+                { "key": "verified", "value": "true", "disabled": true },
+                { "key": "speciality", "value": "", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Show Writer",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/writers/{{writer_id}}"
+          }
+        },
+        {
+          "name": "Update My Writer Profile",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/writers/profile",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"display_name\": \"أحمد الكاتب\",\n  \"bio\": \"صحفي متخصص في الشأن الاقتصادي\",\n  \"experience_level\": \"mid\",\n  \"languages\": [\"ar\", \"en\"],\n  \"editorial_specialties\": [\"economy\", \"politics\"],\n  \"location\": \"Riyadh, SA\",\n  \"social_links\": {\n    \"twitter\": \"https://twitter.com/ahmed\",\n    \"linkedin\": \"https://linkedin.com/in/ahmed\"\n  }\n}"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
