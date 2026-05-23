@@ -30,7 +30,7 @@ class InterviewSeeder extends Seeder
 
         for ($i = 0; $i < 12; $i++) {
             $guest  = fake()->randomElement($guests);
-            $title  = 'حوار مع ' . $guest['name'] . ' حول ' . fake('ar_SA')->words(rand(3, 6), true);
+            $title  = 'Interview with ' . $guest['name'] . ': ' . fake()->sentence(rand(3, 6));
             $status = fake()->randomElement($statuses);
 
             Interview::create([
@@ -40,8 +40,8 @@ class InterviewSeeder extends Seeder
                 'guest_title'    => $guest['title'],
                 'title'          => $title,
                 'slug'           => Str::slug($title) ?: 'interview-' . ($i + 1),
-                'excerpt'        => fake('ar_SA')->paragraph(2),
-                'content'        => implode("\n\n", fake('ar_SA')->paragraphs(rand(6, 12))),
+                'excerpt'        => fake()->paragraph(2),
+                'content'        => implode("\n\n", fake()->paragraphs(rand(6, 12))),
                 'locale'         => fake()->randomElement(['ar', 'ar', 'en']),
                 'is_premium'     => fake()->boolean(30),
                 'status'         => $status,

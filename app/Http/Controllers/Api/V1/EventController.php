@@ -39,10 +39,10 @@ class EventController extends Controller
         }
     }
 
-    public function show(string $slug): JsonResponse
+    public function show(int $eventId): JsonResponse
     {
         try {
-            $event = Event::with('author:id,name')->where('slug', $slug)->first();
+            $event = Event::with('author:id,name')->find($eventId);
 
             if (! $event) {
                 return $this->error(null, 'Event not found.', 404);

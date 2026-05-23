@@ -43,11 +43,11 @@ class MediaItemController extends Controller
         }
     }
 
-    public function show(string $slug): JsonResponse
+    public function show(int $mediaId): JsonResponse
     {
         try {
             $item = MediaItem::with(['author:id,name', 'category:id,name,slug'])
-                ->where('slug', $slug)
+                ->where('id', $mediaId)
                 ->where('status', 'published')
                 ->first();
 

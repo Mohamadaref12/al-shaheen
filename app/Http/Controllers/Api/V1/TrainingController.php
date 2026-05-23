@@ -34,13 +34,13 @@ class TrainingController extends Controller
         }
     }
 
-    public function show(string $slug): JsonResponse
+    public function show(int $courseId): JsonResponse
     {
         try {
             $course = TrainingCourse::with([
                 'lessons' => fn ($q) => $q->orderBy('sort_order'),
             ])
-                ->where('slug', $slug)
+                ->where('id', $courseId)
                 ->where('is_active', true)
                 ->first();
 
@@ -54,7 +54,7 @@ class TrainingController extends Controller
         }
     }
 
-    public function markProgress(Request $request, int $course, int $lesson): JsonResponse
+    public function markProgress(Request $request, int $courseId, int $lessonId): JsonResponse
     {
         try {
             $data = $request->validate([
@@ -64,8 +64,8 @@ class TrainingController extends Controller
             $progress = UserCourseProgress::updateOrCreate(
                 [
                     'user_id'   => $request->user()->id,
-                    'course_id' => $course,
-                    'lesson_id' => $lesson,
+                    'course_id' => $courseId,
+                    'lesson_id' => $lessonId,
                 ],
                 [
                     'is_completed' => $data['is_completed'],

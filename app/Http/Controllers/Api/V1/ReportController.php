@@ -43,11 +43,11 @@ class ReportController extends Controller
         }
     }
 
-    public function show(string $slug): JsonResponse
+    public function show(int $reportId): JsonResponse
     {
         try {
             $report = Report::with(['author:id,name', 'category:id,name,slug'])
-                ->where('slug', $slug)
+                ->where('id', $reportId)
                 ->where('status', 'published')
                 ->first();
 

@@ -31,11 +31,11 @@ class WriterController extends Controller
         }
     }
 
-    public function show(int $id): JsonResponse
+    public function show(int $writerId): JsonResponse
     {
         try {
             $writer = Writer::with(['user:id,name,country', 'categories:id,name,slug'])
-                ->where('id', $id)
+                ->where('id', $writerId)
                 ->where('application_status', 'approved')
                 ->first();
 

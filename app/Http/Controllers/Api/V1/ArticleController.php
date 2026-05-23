@@ -62,7 +62,7 @@ class ArticleController extends Controller
         }
     }
 
-    public function show(string $slug): JsonResponse
+    public function show(int $articleId): JsonResponse
     {
         try {
             $article = Article::with([
@@ -71,7 +71,7 @@ class ArticleController extends Controller
                 'secondaryCategories:id,name,slug',
                 'tags:id,name,slug',
             ])
-                ->where('slug', $slug)
+                ->where('id', $articleId)
                 ->where('status', 'published')
                 ->first();
 
@@ -144,11 +144,11 @@ class ArticleController extends Controller
         }
     }
 
-    public function update(Request $request, int $id): JsonResponse
+    public function update(Request $request, int $articleId): JsonResponse
     {
         try {
             $user    = $request->user();
-            $article = Article::find($id);
+            $article = Article::find($articleId);
 
             if (! $article) {
                 return $this->error(null, 'Article not found.', 404);
@@ -165,7 +165,7 @@ class ArticleController extends Controller
                 'primary_category_id'    => 'sometimes|exists:categories,id',
                 'title'                  => 'sometimes|string|max:500',
                 'subtitle'               => 'nullable|string|max:500',
-                'slug'                   => 'sometimes|string|unique:articles,slug,' . $id,
+                'slug'                   => 'sometimes|string|unique:articles,slug,' . $articleId,
                 'content'                => 'sometimes|string',
                 'excerpt'                => 'nullable|string|max:1000',
                 'featured_image'         => 'nullable|string',
@@ -203,11 +203,11 @@ class ArticleController extends Controller
         }
     }
 
-    public function destroy(Request $request, int $id): JsonResponse
+    public function destroy(Request $request, int $articleId): JsonResponse
     {
         try {
             $user    = $request->user();
-            $article = Article::find($id);
+            $article = Article::find($articleId);
 
             if (! $article) {
                 return $this->error(null, 'Article not found.', 404);

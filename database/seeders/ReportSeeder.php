@@ -16,7 +16,7 @@ class ReportSeeder extends Seeder
         $categories = Category::whereNull('parent_id')->pluck('id')->toArray();
 
         for ($i = 0; $i < 10; $i++) {
-            $title  = fake('ar_SA')->sentence(rand(6, 10));
+            $title  = fake()->sentence(rand(6, 10));
             $status = fake()->randomElement(['published', 'published', 'draft']);
 
             Report::create([
@@ -24,8 +24,8 @@ class ReportSeeder extends Seeder
                 'category_id'    => fake()->randomElement($categories),
                 'title'          => $title,
                 'slug'           => Str::slug($title) ?: 'report-' . ($i + 1),
-                'content'        => implode("\n\n", fake('ar_SA')->paragraphs(rand(6, 12))),
-                'excerpt'        => fake('ar_SA')->paragraph(2),
+                'content'        => implode("\n\n", fake()->paragraphs(rand(6, 12))),
+                'excerpt'        => fake()->paragraph(2),
                 'featured_image' => null,
                 'file_url'       => null,
                 'is_premium'     => fake()->boolean(30),

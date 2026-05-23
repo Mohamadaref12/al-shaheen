@@ -223,7 +223,7 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/articles/{{article_slug}}"
+            "url": "{{base_url}}/articles/{{article_id}}"
           }
         },
         {
@@ -263,24 +263,56 @@
       ]
     },
     {
-      "name": "Categories",
+      "name": "Primary Categories",
       "item": [
         {
-          "name": "List Categories",
+          "name": "List Primary Categories",
           "request": {
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/categories"
+            "url": "{{base_url}}/primary-categories"
           }
         },
         {
-          "name": "Show Category",
+          "name": "Show Primary Category",
           "request": {
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/categories/{{category_slug}}"
+            "url": "{{base_url}}/primary-categories/{{category_id}}"
+          }
+        },
+        {
+          "name": "List Secondary Categories of Primary",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/primary-categories/{{category_id}}/secondary-categories"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Secondary Categories",
+      "item": [
+        {
+          "name": "List Secondary Categories",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/secondary-categories"
+          }
+        },
+        {
+          "name": "Show Secondary Category",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/secondary-categories/{{category_id}}"
           }
         }
       ]
@@ -304,9 +336,9 @@
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
             "url": {
-              "raw": "{{base_url}}/tags/{{tag_slug}}?per_page=15",
+              "raw": "{{base_url}}/tags/{{tag_id}}?per_page=15",
               "host": ["{{base_url}}"],
-              "path": ["tags", "{{tag_slug}}"],
+              "path": ["tags", "{{tag_id}}"],
               "query": [
                 { "key": "per_page", "value": "15" }
               ]
@@ -377,7 +409,7 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/events/{{event_slug}}"
+            "url": "{{base_url}}/events/{{event_id}}"
           }
         }
       ]
@@ -409,7 +441,7 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/interviews/{{interview_slug}}"
+            "url": "{{base_url}}/interviews/{{interview_id}}"
           }
         }
       ]
@@ -442,7 +474,7 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/media/{{media_slug}}"
+            "url": "{{base_url}}/media/{{media_id}}"
           }
         }
       ]
@@ -475,7 +507,7 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/reports/{{report_slug}}"
+            "url": "{{base_url}}/reports/{{report_id}}"
           }
         }
       ]
@@ -507,7 +539,7 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/training/courses/{{course_slug}}"
+            "url": "{{base_url}}/training/courses/{{course_id}}"
           }
         },
         {

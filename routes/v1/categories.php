@@ -3,7 +3,15 @@
 use App\Http\Controllers\Api\V1\CategoryController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('categories')->group(function () {
-    Route::get('/',        [CategoryController::class, 'index']);
-    Route::get('/{slug}',  [CategoryController::class, 'show']);
+// Primary categories (parent_id IS NULL)
+Route::prefix('primary-categories')->group(function () {
+    Route::get('/',                                      [CategoryController::class, 'primaryIndex']);
+    Route::get('/{categoryId}',                          [CategoryController::class, 'primaryShow']);
+    Route::get('/{categoryId}/secondary-categories',     [CategoryController::class, 'primarySecondaryIndex']);
+});
+
+// Secondary categories / subcategories (parent_id IS NOT NULL)
+Route::prefix('secondary-categories')->group(function () {
+    Route::get('/',             [CategoryController::class, 'secondaryIndex']);
+    Route::get('/{categoryId}', [CategoryController::class, 'secondaryShow']);
 });

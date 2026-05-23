@@ -19,7 +19,7 @@ class WriterProfileSeeder extends Seeder
         foreach ($writers as $profile) {
             $profile->update([
                 'display_name'          => $profile->user->name,
-                'bio'                   => fake('ar_SA')->paragraph(3),
+                'bio'                   => fake()->paragraph(3),
                 'profile_photo'         => null,
                 'portfolio_link'        => fake()->url(),
                 'experience_level'      => fake()->randomElement($levels),

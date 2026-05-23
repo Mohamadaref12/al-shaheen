@@ -25,12 +25,12 @@ class ContentSubmissionSeeder extends Seeder
             ContentSubmission::create([
                 'writer_id'      => fake()->randomElement($writerIds),
                 'reviewer_id'    => $reviewed ? fake()->randomElement($editors) : null,
-                'title'          => fake('ar_SA')->sentence(rand(5, 10)),
-                'subtitle'       => fake('ar_SA')->sentence(5),
-                'content'        => implode("\n\n", fake('ar_SA')->paragraphs(rand(4, 8))),
+                'title'          => fake()->sentence(rand(5, 10)),
+                'subtitle'       => fake()->sentence(5),
+                'content'        => implode("\n\n", fake()->paragraphs(rand(4, 8))),
                 'type'           => fake()->randomElement(['article', 'report']),
                 'status'         => $status,
-                'reviewer_notes' => $reviewed ? fake('ar_SA')->sentence() : null,
+                'reviewer_notes' => $reviewed ? fake()->sentence() : null,
             ]);
         }
     }

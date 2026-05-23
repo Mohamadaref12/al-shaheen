@@ -11,36 +11,36 @@ class CategorySeeder extends Seeder
     public function run(): void
     {
         $main = [
-            ['name' => 'أخبار',       'slug' => 'news'],
-            ['name' => 'تقارير',      'slug' => 'reports'],
-            ['name' => 'مقابلات',     'slug' => 'interviews'],
-            ['name' => 'رأي',         'slug' => 'opinion'],
-            ['name' => 'وسائط متعددة','slug' => 'multimedia'],
-            ['name' => 'تدريب',       'slug' => 'training'],
+            ['name' => 'News',       'slug' => 'news'],
+            ['name' => 'Reports',    'slug' => 'reports'],
+            ['name' => 'Interviews', 'slug' => 'interviews'],
+            ['name' => 'Opinion',    'slug' => 'opinion'],
+            ['name' => 'Multimedia', 'slug' => 'multimedia'],
+            ['name' => 'Training',   'slug' => 'training'],
         ];
 
         $sub = [
             'news' => [
-                ['name' => 'محلي',    'slug' => 'local'],
-                ['name' => 'عربي',    'slug' => 'arab'],
-                ['name' => 'دولي',    'slug' => 'international'],
-                ['name' => 'اقتصاد',  'slug' => 'economy'],
-                ['name' => 'رياضة',   'slug' => 'sports'],
-                ['name' => 'تقنية',   'slug' => 'tech'],
+                ['name' => 'Local',         'slug' => 'local'],
+                ['name' => 'Arab World',    'slug' => 'arab'],
+                ['name' => 'International', 'slug' => 'international'],
+                ['name' => 'Economy',       'slug' => 'economy'],
+                ['name' => 'Sports',        'slug' => 'sports'],
+                ['name' => 'Technology',    'slug' => 'tech'],
             ],
             'reports' => [
-                ['name' => 'تحقيقات', 'slug' => 'investigations'],
-                ['name' => 'تحليلات', 'slug' => 'analysis'],
-                ['name' => 'إحصاءات', 'slug' => 'statistics'],
+                ['name' => 'Investigations', 'slug' => 'investigations'],
+                ['name' => 'Analysis',       'slug' => 'analysis'],
+                ['name' => 'Statistics',     'slug' => 'statistics'],
             ],
             'opinion' => [
-                ['name' => 'مقالات رأي',  'slug' => 'opinion-articles'],
-                ['name' => 'تعليقات',     'slug' => 'commentary'],
+                ['name' => 'Opinion Articles', 'slug' => 'opinion-articles'],
+                ['name' => 'Commentary',       'slug' => 'commentary'],
             ],
             'multimedia' => [
-                ['name' => 'فيديو',   'slug' => 'video'],
-                ['name' => 'بودكاست', 'slug' => 'podcast'],
-                ['name' => 'إنفوغراف','slug' => 'infographic'],
+                ['name' => 'Video',       'slug' => 'video'],
+                ['name' => 'Podcast',     'slug' => 'podcast'],
+                ['name' => 'Infographic', 'slug' => 'infographic'],
             ],
         ];
 

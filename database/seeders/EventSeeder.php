@@ -14,12 +14,12 @@ class EventSeeder extends Seeder
         $authors = User::whereHas('editor')->orWhereHas('admin')->pluck('id')->toArray();
 
         $events = [
-            ['title' => 'مؤتمر الإعلام الرقمي 2026',          'location' => 'الكويت'],
-            ['title' => 'ملتقى الصحافة الاستقصائية',           'location' => 'الرياض'],
-            ['title' => 'ورشة كتابة المحتوى الإبداعي',         'location' => 'دبي'],
-            ['title' => 'قمة ريادة الأعمال والإعلام',          'location' => 'أبوظبي'],
-            ['title' => 'منتدى حرية الصحافة العربية',          'location' => 'بيروت'],
-            ['title' => 'ندوة الذكاء الاصطناعي في الصحافة',   'location' => 'عمّان'],
+            ['title' => 'Digital Media Conference 2026',         'location' => 'الكويت'],
+            ['title' => 'Investigative Journalism Forum',          'location' => 'الرياض'],
+            ['title' => 'Creative Content Writing Workshop',       'location' => 'دبي'],
+            ['title' => 'Media & Entrepreneurship Summit',         'location' => 'أبوظبي'],
+            ['title' => 'Arab Press Freedom Forum',               'location' => 'بيروت'],
+            ['title' => 'AI in Journalism Seminar',               'location' => 'عمّان'],
         ];
 
         foreach ($events as $i => $data) {
@@ -28,7 +28,7 @@ class EventSeeder extends Seeder
                 'author_id'    => fake()->randomElement($authors),
                 'title'        => $data['title'],
                 'slug'         => Str::slug($data['title']) ?: 'event-' . ($i + 1),
-                'description'  => fake('ar_SA')->paragraph(3),
+                'description'  => fake()->paragraph(3),
                 'image'        => null,
                 'location'     => $data['location'],
                 'starts_at'    => $startsAt,

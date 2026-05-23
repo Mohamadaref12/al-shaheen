@@ -18,7 +18,7 @@ class UserSeeder extends Seeder
         // Admin
         $admin = User::create([
             'name'              => 'Admin',
-            'email'             => 'admin@al-shaheen.test',
+            'email'             => 'admin@sawatech.com',
             'password'          => Hash::make('password'),
             'locale'            => 'ar',
             'language'          => 'ar',
@@ -32,7 +32,7 @@ class UserSeeder extends Seeder
         // Editor
         $editor = User::create([
             'name'              => 'Editor',
-            'email'             => 'editor@al-shaheen.test',
+            'email'             => 'editor@sawatech.com',
             'password'          => Hash::make('password'),
             'locale'            => 'ar',
             'language'          => 'ar',

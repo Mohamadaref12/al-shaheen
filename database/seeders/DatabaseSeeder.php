@@ -9,7 +9,7 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // ---- مسح البيانات القديمة ----
+        // ---- Clear old data ----
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
 
         $tables = [
@@ -47,21 +47,21 @@ class DatabaseSeeder extends Seeder
 
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
-        // ---- إدراج البيانات ----
+        // ---- Seed data ----
         $this->call([
-            CategorySeeder::class,          // 1. أقسام وتصنيفات
-            TagSeeder::class,               // 2. تاجات
-            UserSeeder::class,              // 3. مستخدمون
-            WriterProfileSeeder::class,     // 4. بروفايلات الكتّاب
-            ArticleSeeder::class,           // 5. مقالات + تعليقات
-            ReportSeeder::class,            // 6. تقارير
-            InterviewSeeder::class,         // 7. مقابلات
-            MediaItemSeeder::class,         // 8. وسائط متعددة
-            EventSeeder::class,             // 9. فعاليات
-            MonetizationSeeder::class,      // 10. إعلانات + باقات + اشتراكات + نشرة
-            PaymentSeeder::class,           // 11. مدفوعات
-            ContentSubmissionSeeder::class, // 12. طلبات محتوى
-            TrainingSeeder::class,          // 13. دورات + دروس + تقدم المستخدم
+            CategorySeeder::class,          // 1. Categories & subcategories
+            TagSeeder::class,               // 2. Tags
+            UserSeeder::class,              // 3. Users
+            WriterProfileSeeder::class,     // 4. Writer profiles
+            ArticleSeeder::class,           // 5. Articles + comments
+            ReportSeeder::class,            // 6. Reports
+            InterviewSeeder::class,         // 7. Interviews
+            MediaItemSeeder::class,         // 8. Media items
+            EventSeeder::class,             // 9. Events
+            MonetizationSeeder::class,      // 10. Ads + packages + subscriptions + newsletter
+            PaymentSeeder::class,           // 11. Payments
+            ContentSubmissionSeeder::class, // 12. Content submissions
+            TrainingSeeder::class,          // 13. Courses + lessons + user progress
         ]);
     }
 }

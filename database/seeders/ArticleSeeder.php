@@ -23,17 +23,17 @@ class ArticleSeeder extends Seeder
         $statuses = ['published', 'published', 'published', 'draft', 'under_review', 'rejected'];
 
         for ($i = 0; $i < 30; $i++) {
-            $title  = fake('ar_SA')->sentence(rand(5, 10));
+            $title  = fake()->sentence(rand(5, 10));
             $status = fake()->randomElement($statuses);
 
             $article = Article::create([
                 'author_id'          => fake()->randomElement($writers),
                 'primary_category_id'=> fake()->randomElement($primaries),
                 'title'              => $title,
-                'subtitle'           => fake('ar_SA')->sentence(6),
+                'subtitle'           => fake()->sentence(6),
                 'slug'               => Str::slug($title) ?: 'article-' . ($i + 1),
-                'content'            => implode("\n\n", fake('ar_SA')->paragraphs(rand(5, 10))),
-                'excerpt'            => fake('ar_SA')->paragraph(2),
+                'content'            => implode("\n\n", fake()->paragraphs(rand(5, 10))),
+                'excerpt'            => fake()->paragraph(2),
                 'featured_image'     => null,
                 'locale'             => fake()->randomElement(['ar', 'en']),
                 'read_time'          => rand(3, 15),
@@ -62,7 +62,7 @@ class ArticleSeeder extends Seeder
                     Comment::create([
                         'user_id'    => fake()->randomElement($readers),
                         'article_id' => $article->id,
-                        'body'       => fake('ar_SA')->paragraph(),
+                        'body'       => fake()->paragraph(),
                         'status'     => fake()->randomElement(['approved', 'approved', 'pending', 'rejected']),
                     ]);
                 }

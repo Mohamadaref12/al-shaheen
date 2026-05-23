@@ -21,10 +21,10 @@ class TagController extends Controller
         }
     }
 
-    public function show(string $slug, Request $request): JsonResponse
+    public function show(int $tagId, Request $request): JsonResponse
     {
         try {
-            $tag = Tag::where('slug', $slug)->first();
+            $tag = Tag::find($tagId);
 
             if (! $tag) {
                 return $this->error(null, 'Tag not found.', 404);

@@ -10,16 +10,16 @@ class TagSeeder extends Seeder
     public function run(): void
     {
         $tags = [
-            'سياسة', 'اقتصاد', 'تقنية', 'صحة', 'تعليم', 'بيئة',
-            'رياضة', 'ثقافة', 'فن', 'سفر', 'عقارات', 'طاقة',
-            'ذكاء اصطناعي', 'ريادة أعمال', 'مال وأعمال', 'قضاء',
-            'دبلوماسية', 'أمن', 'مجتمع', 'صحافة',
+            'Politics', 'Economy', 'Technology', 'Health', 'Education', 'Environment',
+            'Sports', 'Culture', 'Art', 'Travel', 'Real Estate', 'Energy',
+            'Artificial Intelligence', 'Entrepreneurship', 'Finance & Business', 'Judiciary',
+            'Diplomacy', 'Security', 'Society', 'Journalism',
         ];
 
         foreach ($tags as $name) {
             Tag::create([
                 'name' => $name,
-                'slug' => \Illuminate\Support\Str::slug($name, '-', 'ar') ?: \Illuminate\Support\Str::slug($name),
+                'slug' => \Illuminate\Support\Str::slug($name),
             ]);
         }
     }

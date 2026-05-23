@@ -11,10 +11,10 @@ use Throwable;
 
 class CommentController extends Controller
 {
-    public function index(int $article): JsonResponse
+    public function index(int $articleId): JsonResponse
     {
         try {
-            $articleModel = Article::find($article);
+            $articleModel = Article::find($articleId);
 
             if (! $articleModel) {
                 return $this->error(null, 'Article not found.', 404);
@@ -23,7 +23,7 @@ class CommentController extends Controller
             $comments = Comment::with(['user:id,name', 'replies' => fn ($q) => $q
                 ->where('status', 'approved')
                 ->with('user:id,name')])
-                ->where('article_id', $article)
+                ->where('article_id', $articleId)
                 ->whereNull('parent_id')
                 ->where('status', 'approved')
                 ->orderByDesc('created_at')
@@ -35,10 +35,10 @@ class CommentController extends Controller
         }
     }
 
-    public function store(Request $request, int $article): JsonResponse
+    public function store(Request $request, int $articleId): JsonResponse
     {
         try {
-            $articleModel = Article::where('id', $article)
+            $articleModel = Article::where('id', $articleId)
                 ->where('status', 'published')
                 ->first();
 
@@ -53,7 +53,7 @@ class CommentController extends Controller
 
             $comment = Comment::create([
                 'user_id'    => $request->user()->id,
-                'article_id' => $article,
+                'article_id' => $articleId,
                 'parent_id'  => $data['parent_id'] ?? null,
                 'body'       => $data['body'],
                 'status'     => 'pending',
@@ -71,10 +71,10 @@ class CommentController extends Controller
         }
     }
 
-    public function destroy(Request $request, int $id): JsonResponse
+    public function destroy(Request $request, int $commentId): JsonResponse
     {
         try {
-            $comment = Comment::find($id);
+            $comment = Comment::find($commentId);
 
             if (! $comment) {
                 return $this->error(null, 'Comment not found.', 404);
