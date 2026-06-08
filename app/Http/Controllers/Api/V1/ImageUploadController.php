@@ -40,7 +40,30 @@ class ImageUploadController extends Controller
                 'path' => $path,
                 'url'  => Storage::disk($disk)->url($path),
             ], 'Image uploaded successfully.', 201);
+        } catch (\RuntimeException $e) {
+            if (str_contains($e->getMessage(), 'No supported PHP image extension')) {
+                report($e);
+
+                return $this->error(
+                    null,
+                    'Image processing is unavailable on the server. Install and enable PHP GD or Imagick.',
+                    503
+                );
+            }
+
+            return $this->handleException($e, 'Failed to upload image.');
         } catch (Throwable $e) {
+            if (str_contains($e->getMessage(), 'Permission denied')
+                || str_contains($e->getMessage(), 'failed to open stream')) {
+                report($e);
+
+                return $this->error(
+                    null,
+                    'Server cannot write uploaded files. Check storage directory permissions.',
+                    500
+                );
+            }
+
             return $this->handleException($e, 'Failed to upload image.');
         }
     }

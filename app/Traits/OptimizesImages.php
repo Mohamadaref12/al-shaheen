@@ -28,21 +28,17 @@ trait OptimizesImages
         int $quality = 85,
         string $disk = 'images'
     ): string {
-        // Generate unique filename with webp extension
-        $filename = Str::uuid() . '.webp';
+        $format      = $this->preferredImageFormat();
+        $filename    = Str::uuid() . '.' . $format;
         $storagePath = $directory . '/' . $filename;
+
+        Storage::disk($disk)->makeDirectory($directory);
+
         $fullPath = Storage::disk($disk)->path($storagePath);
 
-        // Ensure directory exists
-        $directoryPath = dirname($fullPath);
-        if (!is_dir($directoryPath)) {
-            mkdir($directoryPath, 0755, true);
-        }
-
-        // Load and optimize the image
         $this->makeImageEditor($file->getPathname())
-            ->fit(Fit::Max, $maxWidth, $maxWidth) // Resize if larger than max
-            ->format('webp')
+            ->fit(Fit::Max, $maxWidth, $maxWidth)
+            ->format($format)
             ->quality($quality)
             ->save($fullPath);
 
@@ -230,5 +226,23 @@ trait OptimizesImages
         }
 
         throw new \RuntimeException('No supported PHP image extension found. Install Imagick or GD.');
+    }
+
+    protected function preferredImageFormat(): string
+    {
+        return $this->supportsWebpEncoding() ? 'webp' : 'jpg';
+    }
+
+    protected function supportsWebpEncoding(): bool
+    {
+        if (extension_loaded('imagick')) {
+            return in_array('WEBP', \Imagick::queryFormats('WEBP'), true);
+        }
+
+        if (extension_loaded('gd')) {
+            return function_exists('imagewebp') && (gd_info()['WebP Support'] ?? false);
+        }
+
+        return false;
     }
 }
