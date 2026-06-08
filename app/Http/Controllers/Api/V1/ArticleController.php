@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Article;
+use App\Models\Tag;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Throwable;
@@ -200,6 +201,125 @@ class ArticleController extends Controller
             return $this->error($e->errors(), 'Validation failed.', 422);
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to update article.');
+        }
+    }
+
+    public function relatedStories(int $articleId): JsonResponse
+    {
+        try {
+            $article = Article::published()->find($articleId);
+
+            if (! $article) {
+                return $this->error(null, 'Article not found.', 404);
+            }
+
+            $tagIds       = $article->tags()->pluck('tags.id');
+            $secondaryIds = $article->secondaryCategories()->pluck('categories.id');
+
+            $related = Article::published()
+                ->with(['author:id,name', 'primaryCategory:id,name,slug', 'tags:id,name,slug'])
+                ->where('id', '!=', $article->id)
+                ->where(function ($query) use ($article, $tagIds, $secondaryIds) {
+                    $query->where('primary_category_id', $article->primary_category_id);
+
+                    if ($secondaryIds->isNotEmpty()) {
+                        $query->orWhereHas('secondaryCategories', fn ($q) => $q->whereIn('categories.id', $secondaryIds));
+                    }
+
+                    if ($tagIds->isNotEmpty()) {
+                        $query->orWhereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
+                    }
+                })
+                ->select([
+                    'id', 'author_id', 'primary_category_id', 'title', 'subtitle', 'slug',
+                    'excerpt', 'featured_image', 'locale', 'read_time', 'views_count', 'published_at',
+                ])
+                ->orderByDesc('published_at')
+                ->limit(6)
+                ->get();
+
+            return $this->success($related, 'Related stories retrieved successfully.');
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'Failed to retrieve related stories.');
+        }
+    }
+
+    public function trendingTopics(int $articleId): JsonResponse
+    {
+        try {
+            $article = Article::published()->find($articleId);
+
+            if (! $article) {
+                return $this->error(null, 'Article not found.', 404);
+            }
+
+            $topics = Tag::query()
+                ->select(['tags.id', 'tags.name', 'tags.slug'])
+                ->selectRaw('SUM(articles.views_count) as total_views')
+                ->selectRaw('COUNT(DISTINCT articles.id) as article_count')
+                ->join('article_tags', 'tags.id', '=', 'article_tags.tag_id')
+                ->join('articles', 'article_tags.article_id', '=', 'articles.id')
+                ->where('articles.status', 'published')
+                ->when($article->primary_category_id, fn ($q) => $q->where('articles.primary_category_id', $article->primary_category_id))
+                ->groupBy('tags.id', 'tags.name', 'tags.slug')
+                ->orderByDesc('total_views')
+                ->limit(10)
+                ->get();
+
+            return $this->success($topics, 'Trending topics retrieved successfully.');
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'Failed to retrieve trending topics.');
+        }
+    }
+
+    public function nextRead(int $articleId): JsonResponse
+    {
+        try {
+            $article = Article::published()->find($articleId);
+
+            if (! $article) {
+                return $this->error(null, 'Article not found.', 404);
+            }
+
+            $next = Article::published()
+                ->with(['author:id,name', 'primaryCategory:id,name,slug'])
+                ->where('primary_category_id', $article->primary_category_id)
+                ->where('id', '!=', $article->id)
+                ->where(function ($query) use ($article) {
+                    $query->where('published_at', '>', $article->published_at)
+                        ->orWhere(function ($q) use ($article) {
+                            $q->where('published_at', $article->published_at)
+                                ->where('id', '>', $article->id);
+                        });
+                })
+                ->select([
+                    'id', 'author_id', 'primary_category_id', 'title', 'subtitle', 'slug',
+                    'excerpt', 'featured_image', 'locale', 'read_time', 'views_count', 'published_at',
+                ])
+                ->orderBy('published_at')
+                ->orderBy('id')
+                ->first();
+
+            if (! $next) {
+                $next = Article::published()
+                    ->with(['author:id,name', 'primaryCategory:id,name,slug'])
+                    ->where('primary_category_id', $article->primary_category_id)
+                    ->where('id', '!=', $article->id)
+                    ->select([
+                        'id', 'author_id', 'primary_category_id', 'title', 'subtitle', 'slug',
+                        'excerpt', 'featured_image', 'locale', 'read_time', 'views_count', 'published_at',
+                    ])
+                    ->orderByDesc('published_at')
+                    ->first();
+            }
+
+            if (! $next) {
+                return $this->error(null, 'No next article found.', 404);
+            }
+
+            return $this->success($next, 'Next read retrieved successfully.');
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'Failed to retrieve next read.');
         }
     }
 

@@ -38,6 +38,8 @@ class ArticleSeeder extends Seeder
                 'locale'             => fake()->randomElement(['ar', 'en']),
                 'read_time'          => rand(3, 15),
                 'is_breaking'        => fake()->boolean(10),
+                'is_editor_pick'     => $status === 'published' && fake()->boolean(20),
+                'editor_pick_order'  => null,
                 'status'             => $status,
                 'views_count'        => $status === 'published' ? rand(50, 5000) : 0,
                 'published_at'       => $status === 'published' ? now()->subDays(rand(1, 60)) : null,
@@ -68,5 +70,11 @@ class ArticleSeeder extends Seeder
                 }
             }
         }
+
+        Article::query()
+            ->where('is_editor_pick', true)
+            ->orderByDesc('published_at')
+            ->get()
+            ->each(fn (Article $article, int $index) => $article->update(['editor_pick_order' => $index + 1]));
     }
 }

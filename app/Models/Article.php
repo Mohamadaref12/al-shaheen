@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -31,6 +32,8 @@ class Article extends Model
         'status',
         'approved_by',
         'is_premium',
+        'is_editor_pick',
+        'editor_pick_order',
         'views_count',
         'seo_title',
         'seo_description',
@@ -44,14 +47,21 @@ class Article extends Model
     {
         return [
             'is_breaking'  => 'boolean',
-            'is_premium'   => 'boolean',
-            'views_count'  => 'integer',
+            'is_premium'     => 'boolean',
+            'is_editor_pick' => 'boolean',
+            'editor_pick_order' => 'integer',
+            'views_count'    => 'integer',
             'read_time'    => 'integer',
             'submitted_at' => 'datetime',
             'approved_at'  => 'datetime',
             'scheduled_at' => 'datetime',
             'published_at' => 'datetime',
         ];
+    }
+
+    public function scopePublished(Builder $query): Builder
+    {
+        return $query->where('status', 'published');
     }
 
     public function author(): BelongsTo

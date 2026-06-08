@@ -76,7 +76,7 @@
             "body": {
               "mode": "raw",
               "options": { "raw": { "language": "json" } },
-              "raw": "{\n  \"name\": \"Sara Contributor\",\n  \"email\": \"contributor@example.com\",\n  \"password\": \"Password@123\",\n  \"password_confirmation\": \"Password@123\",\n  \"type\": \"contributor\",\n  \"locale\": \"ar\",\n  \"bio\": \"Passionate about journalism and media.\",\n  \"portfolio_link\": \"https://portfolio.example.com\"\n}"
+              "raw": "{\n  \"name\": \"Sara Contributor\",\n  \"email\": \"contributor@example.com\",\n  \"password\": \"Password@123\",\n  \"password_confirmation\": \"Password@123\",\n  \"type\": \"contributor\",\n  \"locale\": \"ar\",\n  \"bio\": \"Passionate about journalism and media.\",\n  \"portfolio_link\": \"https://portfolio.example.com\",\n  \"profile_photo\": \"{{profile_photo_path}}\",\n  \"categories\": [1, 2]\n}"
             }
           }
         },
@@ -104,7 +104,7 @@
             "body": {
               "mode": "raw",
               "options": { "raw": { "language": "json" } },
-              "raw": "{\n  \"name\": \"Omar Writer\",\n  \"email\": \"writer@example.com\",\n  \"password\": \"Password@123\",\n  \"password_confirmation\": \"Password@123\",\n  \"type\": \"writer\",\n  \"locale\": \"ar\",\n  \"display_name\": \"Omar Al-Shaheen\",\n  \"bio\": \"Experienced journalist with 5 years in political reporting.\",\n  \"portfolio_link\": \"https://writer.example.com\"\n}"
+              "raw": "{\n  \"name\": \"Omar Writer\",\n  \"email\": \"writer@example.com\",\n  \"password\": \"Password@123\",\n  \"password_confirmation\": \"Password@123\",\n  \"type\": \"writer\",\n  \"locale\": \"ar\",\n  \"display_name\": \"Omar Al-Shaheen\",\n  \"bio\": \"Experienced journalist with 5 years in political reporting.\",\n  \"portfolio_link\": \"https://writer.example.com\",\n  \"profile_photo\": \"{{profile_photo_path}}\",\n  \"categories\": [1, 2],\n  \"experience_level\": \"senior\",\n  \"languages\": [\"Arabic\", \"English\"],\n  \"editorial_specialties\": [\"Politics\", \"Investigative\"]\n}"
             }
           }
         },
@@ -192,6 +192,141 @@
       ]
     },
     {
+      "name": "Uploads",
+      "item": [
+        {
+          "name": "Upload Profile Image",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.path) {",
+                  "  pm.environment.set('profile_photo_path', res.data.path);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/uploads/images",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "type", "value": "profile", "type": "text", "description": "profile | featured | portfolio | general" },
+                { "key": "image", "type": "file", "src": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload Featured Image",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/uploads/images",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "type", "value": "featured", "type": "text" },
+                { "key": "image", "type": "file", "src": "" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Home",
+      "item": [
+        {
+          "name": "Top 3 Articles",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/home/top-articles?locale=ar",
+              "host": ["{{base_url}}"],
+              "path": ["home", "top-articles"],
+              "query": [
+                { "key": "locale", "value": "ar", "description": "ar | en" },
+                { "key": "category", "value": "", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Trending Articles",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/home/trending-article?locale=ar&limit=6",
+              "host": ["{{base_url}}"],
+              "path": ["home", "trending-article"],
+              "query": [
+                { "key": "locale", "value": "ar" },
+                { "key": "limit", "value": "6", "description": "عدد المقالات (أقصى 20)" },
+                { "key": "category", "value": "", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Editor Picks",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/home/editor-picks?locale=ar&limit=6",
+              "host": ["{{base_url}}"],
+              "path": ["home", "editor-picks"],
+              "query": [
+                { "key": "locale", "value": "ar" },
+                { "key": "limit", "value": "6" },
+                { "key": "category", "value": "", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filters",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/home/filters"
+          }
+        },
+        {
+          "name": "High-Performance Writers",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/home/writers?category_id=1&limit=5",
+              "host": ["{{base_url}}"],
+              "path": ["home", "writers"],
+              "query": [
+                { "key": "category_id", "value": "1" },
+                { "key": "limit", "value": "5" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "Articles",
       "item": [
         {
@@ -224,6 +359,33 @@
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
             "url": "{{base_url}}/articles/{{article_id}}"
+          }
+        },
+        {
+          "name": "Related Stories",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/articles/{{article_id}}/related"
+          }
+        },
+        {
+          "name": "Trending Topics",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/articles/{{article_id}}/trending-topics"
+          }
+        },
+        {
+          "name": "Next Read",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/articles/{{article_id}}/next-read"
           }
         },
         {

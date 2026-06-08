@@ -14,7 +14,8 @@ class WriterController extends Controller
     {
         try {
             $query = Writer::with('user:id,name,country')
-                ->where('application_status', 'approved');
+                ->where('application_status', 'approved')
+                ->withCount('articles');
 
             if ($request->boolean('verified')) {
                 $query->where('is_verified_writer', true);

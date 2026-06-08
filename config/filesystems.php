@@ -61,9 +61,10 @@ return [
         ],
         'images' => [
             'driver' => 'local',
-            'root' => public_path('image'),
-            'url' => rtrim(env('APP_URL', 'http://al-shaheen.test'), '/') . '/image',
+            'root' => storage_path('app/public/image'),
+            'url' => rtrim(env('APP_URL', 'http://al-shaheen.test'), '/') . '/storage/image',
             'visibility' => 'public',
+            'directory_visibility' => 'public',
         ],
 
     ],

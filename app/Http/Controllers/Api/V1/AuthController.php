@@ -37,18 +37,27 @@ class AuthController extends Controller
             $user->forceFill(['email_verified_at' => now()])->save();
 
             match ($data['type']) {
-                'contributor' => Contributor::create([
+                'contributor' => tap(Contributor::create([
                     'user_id'        => $user->id,
                     'bio'            => $data['bio'] ?? null,
                     'portfolio_link' => $data['portfolio_link'] ?? null,
-                ]),
-                'writer' => Writer::create([
-                    'user_id'            => $user->id,
-                    'display_name'       => $data['display_name'] ?? $data['name'],
-                    'bio'                => $data['bio'] ?? null,
-                    'portfolio_link'     => $data['portfolio_link'] ?? null,
-                    'application_status' => 'pending',
-                ]),
+                    'profile_photo'  => $data['profile_photo'],
+                ]), function (Contributor $contributor) use ($data): void {
+                    $contributor->categories()->attach($data['categories']);
+                }),
+                'writer' => tap(Writer::create([
+                    'user_id'               => $user->id,
+                    'display_name'          => $data['display_name'] ?? $data['name'],
+                    'bio'                   => $data['bio'] ?? null,
+                    'portfolio_link'        => $data['portfolio_link'] ?? null,
+                    'profile_photo'         => $data['profile_photo'],
+                    'experience_level'      => $data['experience_level'],
+                    'languages'             => $data['languages'],
+                    'editorial_specialties' => $data['editorial_specialties'],
+                    'application_status'    => 'submitted',
+                ]), function (Writer $writer) use ($data): void {
+                    $writer->categories()->attach($data['categories']);
+                }),
                 default => Reader::create(['user_id' => $user->id]),
             };
 

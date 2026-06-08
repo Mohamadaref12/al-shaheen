@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Writer extends Model
 {
@@ -59,6 +60,12 @@ class Writer extends Model
     public function contentSubmissions(): HasMany
     {
         return $this->hasMany(ContentSubmission::class, 'writer_id');
+    }
+
+    public function articles(): HasManyThrough
+    {
+        return $this->hasManyThrough(Article::class, User::class, 'id', 'author_id', 'user_id', 'id')
+            ->where('articles.status', 'published');
     }
 }
 
