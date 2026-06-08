@@ -24,6 +24,7 @@ class Article extends Model
         'slug',
         'content',
         'excerpt',
+        'writer_notes',
         'featured_image',
         'video_embed',
         'locale',

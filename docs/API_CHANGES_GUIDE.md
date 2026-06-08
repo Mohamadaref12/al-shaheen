@@ -331,6 +331,87 @@ GET /api/v1/writers
 
 ---
 
+## 5.1 Writer Dashboard — Overview
+
+```
+GET /api/v1/writers/me/overview
+Authorization: Bearer {token}
+```
+
+يعيد كل بيانات صفحة **Overview** للكاتب المسجّل دخوله في طلب واحد.
+
+### Response
+
+```json
+{
+  "success": true,
+  "status": "success",
+  "message": "Writer overview retrieved successfully.",
+  "data": {
+    "stats": {
+      "published_this_month": {
+        "value": 14,
+        "sub_label": "+3 this week"
+      },
+      "active_drafts": {
+        "value": 5,
+        "sub_label": "2 near final"
+      },
+      "total_readers": {
+        "value": "28.4K",
+        "raw_value": 28400,
+        "sub_label": "+18% growth"
+      },
+      "avg_read_time": {
+        "value": "4m 20s",
+        "minutes": 4.3,
+        "sub_label": "Above site avg"
+      }
+    },
+    "editorial_queue": [
+      {
+        "id": 12,
+        "title": "Energy Corridors: What Changes After the New Summit",
+        "slug": "energy-corridors-what-changes",
+        "status": "ready",
+        "status_label": "Needs Final Review",
+        "due_at": "2026-06-08T20:00:00+00:00",
+        "due_description": "Due in 4 hours"
+      }
+    ],
+    "performance_highlights": {
+      "best_category": {
+        "id": 2,
+        "name": "Economy",
+        "slug": "economy",
+        "total_views": 5200
+      },
+      "most_saved_story": {
+        "id": 8,
+        "title": "Policy Brief: Digital Privacy",
+        "slug": "policy-brief-digital-privacy",
+        "saves_count": 42
+      }
+    }
+  }
+}
+```
+
+### ملاحظات
+
+| القسم | المصدر |
+|-------|--------|
+| `published_this_month` | مقالات `published` خلال الشهر الحالي |
+| `active_drafts` | `draft`, `submitted`, `under_review`, `ready` |
+| `total_readers` | مجموع `views_count` للمقالات المنشورة |
+| `avg_read_time` | متوسط `read_time` (بالدقائق) مقارنة بمتوسط الموقع |
+| `editorial_queue` | مقالات بحالة `submitted`, `under_review`, `ready`, `scheduled` |
+| `due_at` | `scheduled_at` أو `submitted_at + 3 أيام` |
+| `best_category` | القسم الأعلى مشاهدة لدى الكاتب |
+| `most_saved_story` | المقال الأكثر حفظاً من جدول `saved_articles` |
+
+---
+
 ## 6. Migration جديدة
 
 **الملف:** `database/migrations/2026_06_08_000001_add_curation_fields_to_articles_table.php`
@@ -357,6 +438,7 @@ php artisan migrate
 | `app/Http/Requests/Api/V1/UploadImageRequest.php` | Validation رفع الصور |
 | `app/Rules/ValidImagePath.php` | التحقق من مسار الصورة |
 | `routes/v1/uploads.php` | Route رفع الصور |
+| `app/Http/Controllers/Api/V1/WriterDashboardController.php` | Writer dashboard overview |
 | `routes/v1/home.php` | Routes الصفحة الرئيسية |
 | `database/migrations/2026_06_08_000001_add_curation_fields_to_articles_table.php` | Editor picks fields |
 
@@ -440,6 +522,7 @@ php artisan migrate             # لحقول editor pick
 | `GET` | `/articles/{id}/related` | Article |
 | `GET` | `/articles/{id}/trending-topics` | Article |
 | `GET` | `/articles/{id}/next-read` | Article |
+| `GET` | `/writers/me/overview` | Writer Dashboard — Overview |
 
 ### Endpoints معدّلة
 

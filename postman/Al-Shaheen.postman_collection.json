@@ -816,6 +816,57 @@
           }
         },
         {
+          "name": "Writer Dashboard Overview",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/writers/me/overview"
+          }
+        },
+        {
+          "name": "My Articles",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/writers/me/articles?per_page=15&sort=latest",
+              "host": ["{{base_url}}"],
+              "path": ["writers", "me", "articles"],
+              "query": [
+                { "key": "per_page", "value": "15" },
+                { "key": "sort", "value": "latest", "description": "latest | oldest | views | saves" },
+                { "key": "status", "value": "", "disabled": true },
+                { "key": "category", "value": "", "disabled": true },
+                { "key": "search", "value": "", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "My Drafts",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/writers/me/drafts"
+          }
+        },
+        {
+          "name": "Writer Analytics",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/writers/me/analytics"
+          }
+        },
+        {
+          "name": "Preview My Article",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/writers/me/articles/{{article_id}}/preview"
+          }
+        },
+        {
           "name": "Update My Writer Profile",
           "request": {
             "method": "PUT",
