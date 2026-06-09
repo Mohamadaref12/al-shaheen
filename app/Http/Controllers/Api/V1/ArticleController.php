@@ -120,11 +120,16 @@ class ArticleController extends Controller
                 'secondary_categories.*' => 'exists:categories,id',
             ]);
 
+            $apiStatus = $data['status'] ?? 'pending';
+            unset($data['status']);
+
+            $status = $this->resolveArticleStatus($apiStatus);
+
             $article = Article::create([
                 ...$data,
                 'author_id'    => $user->id,
-                'status'       => $data['status'] ?? 'draft',
-                'submitted_at' => now(),
+                'status'       => $status,
+                'submitted_at' => $status === 'submitted' ? now() : null,
             ]);
 
             if (! empty($data['tags'])) {
@@ -135,7 +140,7 @@ class ArticleController extends Controller
             }
 
             return $this->success(
-                $article->load(['primaryCategory', 'tags']),
+                $this->formatArticleForApi($article->load(['primaryCategory', 'tags'])),
                 'Article created successfully.',
                 201
             );
@@ -186,6 +191,8 @@ class ArticleController extends Controller
                 'secondary_categories.*' => 'exists:categories,id',
             ]);
 
+            $this->applyStatusFields($data, $article);
+
             $article->fill($data)->save();
 
             if (isset($data['tags'])) {
@@ -196,7 +203,7 @@ class ArticleController extends Controller
             }
 
             return $this->success(
-                $article->load(['primaryCategory', 'tags']),
+                $this->formatArticleForApi($article->load(['primaryCategory', 'tags'])),
                 'Article updated successfully.'
             );
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -345,5 +352,41 @@ class ArticleController extends Controller
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to delete article.');
         }
+    }
+
+    private function resolveArticleStatus(?string $status): string
+    {
+        return $status === 'draft' ? 'draft' : 'submitted';
+    }
+
+    private function applyStatusFields(array &$data, ?Article $article = null): void
+    {
+        if (! array_key_exists('status', $data)) {
+            return;
+        }
+
+        if ($data['status'] === 'pending') {
+            $data['status'] = 'submitted';
+
+            if (! $article?->submitted_at) {
+                $data['submitted_at'] = now();
+            }
+
+            return;
+        }
+
+        if ($data['status'] === 'draft') {
+            $data['status']       = 'draft';
+            $data['submitted_at'] = null;
+        }
+    }
+
+    private function formatArticleForApi(Article $article): Article
+    {
+        if ($article->status === 'submitted') {
+            $article->status = 'pending';
+        }
+
+        return $article;
     }
 }
