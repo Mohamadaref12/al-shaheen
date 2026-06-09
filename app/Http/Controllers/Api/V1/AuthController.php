@@ -7,6 +7,7 @@ use App\Http\Requests\Api\V1\ChangePasswordRequest;
 use App\Http\Requests\Api\V1\LoginRequest;
 use App\Http\Requests\Api\V1\RegisterRequest;
 use App\Http\Requests\Api\V1\UpdateProfileRequest;
+use App\Http\Resources\Api\V1\UserResource;
 use App\Models\Contributor;
 use App\Models\Reader;
 use App\Models\User;
@@ -66,7 +67,7 @@ class AuthController extends Controller
             return $this->success([
                 'token'      => $token->plainTextToken,
                 'token_type' => 'Bearer',
-                'user'       => $this->userData($user),
+                'user'       => UserResource::makeLoaded($user->refresh()),
             ], 'Account created successfully.', 201);
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to create account.');
@@ -94,7 +95,7 @@ class AuthController extends Controller
             return $this->success([
                 'token'      => $token->plainTextToken,
                 'token_type' => 'Bearer',
-                'user'       => $this->userData($user),
+                'user'       => UserResource::makeLoaded($user),
             ], 'Logged in successfully.');
         } catch (Throwable $e) {
             return $this->handleException($e, 'Login failed.');
@@ -122,7 +123,10 @@ class AuthController extends Controller
             /** @var User $user */
             $user = $request->user();
 
-            return $this->success($this->userData($user), 'User data retrieved successfully.');
+            return $this->success(
+                UserResource::makeLoaded($user),
+                'User data retrieved successfully.'
+            );
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to retrieve user data.');
         }
@@ -141,9 +145,11 @@ class AuthController extends Controller
             }
 
             $user->fill($data)->save();
-            $user->refresh();
 
-            return $this->success($this->userData($user), 'Profile updated successfully.');
+            return $this->success(
+                UserResource::makeLoaded($user->refresh()),
+                'Profile updated successfully.'
+            );
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to update profile.');
         }
@@ -168,28 +174,5 @@ class AuthController extends Controller
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to change password.');
         }
-    }
-
-    private function userData(User $user): array
-    {
-        return [
-            'id'        => $user->id,
-            'name'      => $user->name,
-            'email'     => $user->email,
-            'role'      => $this->resolveRole($user),
-            'locale'    => $user->locale,
-            'country'   => $user->country,
-            'language'  => $user->language,
-            'is_active' => (bool) $user->is_active,
-        ];
-    }
-
-    private function resolveRole(User $user): string
-    {
-        if ($user->writer()->exists()) return 'writer';
-        if ($user->contributor()->exists()) return 'contributor';
-        if ($user->editor()->exists()) return 'editor';
-        if ($user->admin()->exists()) return 'admin';
-        return 'reader';
     }
 }
