@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Api\V1\HighPerformingWriterResource;
 use App\Models\Category;
 use App\Models\Writer;
 use App\Traits\FetchesPublishedArticles;
@@ -94,7 +95,7 @@ class HomeController extends Controller
             $categoryId = $request->input('category_id');
 
             $query = Writer::query()
-                ->with('user:id,name,country')
+                ->with('user:id,name')
                 ->where('application_status', 'approved')
                 ->withCount('articles');
 
@@ -114,7 +115,10 @@ class HomeController extends Controller
                 ->limit($limit)
                 ->get();
 
-            return $this->success($writers, 'High-performance writers retrieved successfully.');
+            return $this->success(
+                HighPerformingWriterResource::collection($writers)->resolve(),
+                'High-performance writers retrieved successfully.'
+            );
         } catch (\Illuminate\Validation\ValidationException $e) {
             return $this->error($e->errors(), 'Validation failed.', 422);
         } catch (Throwable $e) {

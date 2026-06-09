@@ -52,6 +52,19 @@ trait FetchesPublishedArticles
             ->get();
     }
 
+    protected function fetchEditorPicks(
+        Request $request,
+        ?int $categoryId = null,
+        ?string $categoryScope = null
+    ) {
+        return $this->publishedArticleQuery($request, $categoryId, $categoryScope)
+            ->where('is_editor_pick', true)
+            ->orderBy('editor_pick_order')
+            ->orderByDesc('published_at')
+            ->limit($this->trendingArticleLimit($request))
+            ->get();
+    }
+
     protected function applyPrimaryCategoryFilter(Builder $query, Request $request, int $primaryCategoryId): void
     {
         if ($request->filled('secondary')) {

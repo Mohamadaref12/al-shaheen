@@ -464,6 +464,41 @@
           }
         },
         {
+          "name": "Primary Category Editor Picks",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/primary-categories/{{category_id}}/editor-picks?locale=ar&limit=6&secondary=",
+              "host": ["{{base_url}}"],
+              "path": ["primary-categories", "{{category_id}}", "editor-picks"],
+              "query": [
+                { "key": "locale", "value": "ar" },
+                { "key": "limit", "value": "6" },
+                { "key": "secondary", "value": "", "description": "Optional secondary category ID under this primary" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Primary Category High-Performing Writers",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/primary-categories/{{category_id}}/writers?limit=5&secondary=",
+              "host": ["{{base_url}}"],
+              "path": ["primary-categories", "{{category_id}}", "writers"],
+              "query": [
+                { "key": "limit", "value": "5" },
+                { "key": "secondary", "value": "", "description": "Optional secondary category ID under this primary" }
+              ]
+            }
+          }
+        },
+        {
           "name": "List Secondary Categories of Primary",
           "request": {
             "auth": { "type": "noauth" },

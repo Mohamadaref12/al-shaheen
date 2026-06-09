@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('primary-categories')->group(function () {
     Route::get('/',                                      [CategoryController::class, 'primaryIndex']);
     Route::get('/{categoryId}/trending-article',         [CategoryController::class, 'primaryTrending']);
+    Route::get('/{categoryId}/editor-picks',           [CategoryController::class, 'primaryEditorPicks']);
+    Route::get('/{categoryId}/writers',               [CategoryController::class, 'primaryWriters']);
     Route::get('/{categoryId}',                          [CategoryController::class, 'primaryShow']);
     Route::get('/{categoryId}/secondary-categories',     [CategoryController::class, 'primarySecondaryIndex']);
 });
