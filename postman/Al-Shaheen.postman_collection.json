@@ -446,6 +446,24 @@
           }
         },
         {
+          "name": "Primary Category Trending Articles",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/primary-categories/{{category_id}}/trending-article?locale=ar&limit=6&secondary=",
+              "host": ["{{base_url}}"],
+              "path": ["primary-categories", "{{category_id}}", "trending-article"],
+              "query": [
+                { "key": "locale", "value": "ar" },
+                { "key": "limit", "value": "6" },
+                { "key": "secondary", "value": "", "description": "Optional secondary category ID under this primary" }
+              ]
+            }
+          }
+        },
+        {
           "name": "List Secondary Categories of Primary",
           "request": {
             "auth": { "type": "noauth" },

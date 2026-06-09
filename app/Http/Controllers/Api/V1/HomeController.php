@@ -3,19 +3,20 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\Article;
 use App\Models\Category;
 use App\Models\Writer;
+use App\Traits\FetchesPublishedArticles;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Throwable;
 
 class HomeController extends Controller
 {
+    use FetchesPublishedArticles;
     public function topArticles(Request $request): JsonResponse
     {
         try {
-            $articles = $this->baseArticleQuery($request)
+            $articles = $this->publishedArticleQuery($request)
                 ->orderByDesc('published_at')
                 ->limit(3)
                 ->get();
@@ -29,13 +30,7 @@ class HomeController extends Controller
     public function trendingArticle(Request $request): JsonResponse
     {
         try {
-            $limit = min((int) $request->input('limit', 6), 20);
-
-            $articles = $this->baseArticleQuery($request)
-                ->orderByDesc('views_count')
-                ->orderByDesc('published_at')
-                ->limit($limit)
-                ->get();
+            $articles = $this->fetchTrendingArticles($request);
 
             return $this->success($articles, 'Trending articles retrieved successfully.');
         } catch (Throwable $e) {
@@ -48,7 +43,7 @@ class HomeController extends Controller
         try {
             $limit = min((int) $request->input('limit', 6), 20);
 
-            $articles = $this->baseArticleQuery($request)
+            $articles = $this->publishedArticleQuery($request)
                 ->where('is_editor_pick', true)
                 ->orderBy('editor_pick_order')
                 ->orderByDesc('published_at')
@@ -127,24 +122,4 @@ class HomeController extends Controller
         }
     }
 
-    private function baseArticleQuery(Request $request)
-    {
-        $query = Article::published()
-            ->with(['author:id,name', 'primaryCategory:id,name,slug', 'tags:id,name,slug'])
-            ->select([
-                'id', 'author_id', 'primary_category_id', 'title', 'subtitle', 'slug',
-                'excerpt', 'featured_image', 'locale', 'read_time', 'is_breaking',
-                'is_premium', 'is_editor_pick', 'editor_pick_order', 'views_count', 'published_at',
-            ]);
-
-        if ($request->filled('locale')) {
-            $query->where('locale', $request->input('locale'));
-        }
-
-        if ($request->filled('category')) {
-            $query->where('primary_category_id', $request->input('category'));
-        }
-
-        return $query;
-    }
 }
