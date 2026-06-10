@@ -17,7 +17,7 @@ class EditWriter extends EditRecord
         ];
     }
 
-    protected function mutateRecordDataBeforeFill(array $data): array
+    protected function mutateFormDataBeforeFill(array $data): array
     {
         $user = $this->record->user;
         if ($user) {

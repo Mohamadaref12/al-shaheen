@@ -246,6 +246,23 @@
       "name": "Home",
       "item": [
         {
+          "name": "Breaking News Ticker",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/home/breaking-news?locale=ar&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["home", "breaking-news"],
+              "query": [
+                { "key": "locale", "value": "ar", "description": "ar | en" },
+                { "key": "limit", "value": "10", "description": "عدد العناوين (أقصى 20)" }
+              ]
+            }
+          }
+        },
+        {
           "name": "Top 3 Articles",
           "request": {
             "auth": { "type": "noauth" },
@@ -420,6 +437,87 @@
             "method": "DELETE",
             "header": [{ "key": "Accept", "value": "application/json" }],
             "url": "{{base_url}}/articles/{{article_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Me",
+      "item": [
+        {
+          "name": "Social Overview",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/me/social",
+            "description": "Counts: saved_articles_count, following_count, followers_count (writer only)."
+          }
+        },
+        {
+          "name": "My Saved Articles",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/me/social?type=saved&per_page=15&locale=",
+              "host": ["{{base_url}}"],
+              "path": ["me", "social"],
+              "query": [
+                { "key": "type", "value": "saved", "description": "saved | following | followers" },
+                { "key": "per_page", "value": "15" },
+                { "key": "locale", "value": "", "description": "ar | en (optional, saved only)" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "My Following",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/me/social?type=following&per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["me", "social"],
+              "query": [
+                { "key": "type", "value": "following" },
+                { "key": "per_page", "value": "15" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "My Followers",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/me/social?type=followers&per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["me", "social"],
+              "query": [
+                { "key": "type", "value": "followers", "description": "Writer only — returns 403 for non-writers" },
+                { "key": "per_page", "value": "15" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Toggle Save Article",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/articles/{{article_id}}/save",
+            "description": "Toggle save. Response: `saved` (bool), `action` (`saved` | `unsaved`)."
+          }
+        },
+        {
+          "name": "Toggle Follow Writer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/writers/{{writer_id}}/follow",
+            "description": "Toggle follow. Response: `following` (bool), `action` (`followed` | `unfollowed`)."
           }
         }
       ]
@@ -866,6 +964,23 @@
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
             "url": "{{base_url}}/writers/{{writer_id}}"
+          }
+        },
+        {
+          "name": "Writer Followers",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/writers/{{writer_id}}/followers?per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["writers", "{{writer_id}}", "followers"],
+              "query": [
+                { "key": "per_page", "value": "15" }
+              ]
+            },
+            "description": "Public list of users following this writer (writer profile page)."
           }
         },
         {

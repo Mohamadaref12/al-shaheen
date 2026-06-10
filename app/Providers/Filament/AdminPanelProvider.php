@@ -41,6 +41,16 @@ class AdminPanelProvider extends PanelProvider
                 AccountWidget::class,
                 FilamentInfoWidget::class,
             ])
+            ->navigationGroups([
+                'Users',
+                'Content',
+                'Catalog',
+                'Marketing',
+                'Events',
+                'Monetization',
+                'Subscriptions',
+                'Training',
+            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

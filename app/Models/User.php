@@ -128,11 +128,12 @@ class User extends Authenticatable
 
     public function savedArticles(): BelongsToMany
     {
-        return $this->belongsToMany(Article::class, 'saved_articles')->withTimestamps();
+        return $this->belongsToMany(Article::class, 'saved_articles')->withPivot('created_at');
     }
 
     public function following(): BelongsToMany
     {
-        return $this->belongsToMany(Writer::class, 'follows', 'follower_id', 'writer_id');
+        return $this->belongsToMany(Writer::class, 'follows', 'follower_id', 'writer_id')
+            ->withPivot('created_at');
     }
 }

@@ -14,6 +14,30 @@ use Throwable;
 class HomeController extends Controller
 {
     use FetchesPublishedArticles;
+    public function breakingNews(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'locale' => 'nullable|in:ar,en',
+                'limit'  => 'nullable|integer|min:1|max:20',
+            ]);
+
+            $limit = min((int) $request->input('limit', 10), 20);
+
+            $articles = $this->publishedArticleQuery($request)
+                ->where('is_breaking', true)
+                ->orderByDesc('published_at')
+                ->limit($limit)
+                ->get();
+
+            return $this->success($articles, 'Breaking news retrieved successfully.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->error($e->errors(), 'Validation failed.', 422);
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'Failed to retrieve breaking news.');
+        }
+    }
+
     public function topArticles(Request $request): JsonResponse
     {
         try {

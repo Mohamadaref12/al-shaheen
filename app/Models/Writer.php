@@ -54,7 +54,8 @@ class Writer extends Model
 
     public function followers(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'follows', 'writer_id', 'follower_id');
+        return $this->belongsToMany(User::class, 'follows', 'writer_id', 'follower_id')
+            ->withPivot('created_at');
     }
 
     public function contentSubmissions(): HasMany
