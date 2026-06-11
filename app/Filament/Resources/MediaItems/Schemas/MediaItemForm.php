@@ -38,6 +38,7 @@ class MediaItemForm
 
                     FileUpload::make('thumbnail')
                         ->image()
+                        ->disk('images')
                         ->directory('media/thumbnails'),
 
                     TextInput::make('duration_seconds')

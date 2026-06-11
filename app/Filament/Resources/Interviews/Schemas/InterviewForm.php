@@ -24,6 +24,7 @@ class InterviewForm
                     TextInput::make('guest_title')->columnSpanFull(),
                     FileUpload::make('guest_photo')
                         ->image()
+                        ->disk('images')
                         ->directory('interviews/guests'),
                 ]),
 
@@ -35,7 +36,10 @@ class InterviewForm
                     Textarea::make('excerpt')->columnSpanFull(),
                     RichEditor::make('content')->columnSpanFull(),
                     TextInput::make('video_embed')->label('Video Embed URL')->columnSpanFull(),
-                    FileUpload::make('featured_image')->image()->directory('interviews'),
+                    FileUpload::make('featured_image')
+                        ->image()
+                        ->disk('images')
+                        ->directory('interviews'),
 
                     Select::make('author_id')
                         ->label('Author')

@@ -76,6 +76,7 @@ class ReportForm
                         FileUpload::make('featured_image')
                             ->label('Featured Image')
                             ->image()
+                            ->disk('images')
                             ->directory('reports')
                             ->columnSpanFull(),
 

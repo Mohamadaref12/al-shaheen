@@ -110,6 +110,7 @@ class ArticleForm
                         FileUpload::make('featured_image')
                             ->label('Featured Image')
                             ->image()
+                            ->disk('images')
                             ->directory('articles')
                             ->columnSpanFull(),
                     ]),

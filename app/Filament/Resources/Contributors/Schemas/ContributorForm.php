@@ -59,6 +59,7 @@ class ContributorForm
                         FileUpload::make('profile_photo')
                             ->label('Profile Photo')
                             ->image()
+                            ->disk('images')
                             ->directory('contributors/photos')
                             ->columnSpanFull(),
 

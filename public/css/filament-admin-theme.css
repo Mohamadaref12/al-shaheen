@@ -1,0 +1,152 @@
+/* Al Shaheen 360 — Dashboard Brand Theme */
+
+:root {
+    --as-bg: #faf5f0;
+    --as-sand: #ffffff;
+    --as-border: #e8e0d8;
+    --as-navy: #28414e;
+    --as-charcoal: #28414e;
+    --as-accent: #28414e;
+    --as-body: #5a6a72;
+}
+
+/* ── Page shell ── */
+.fi-body {
+    background-color: var(--as-bg) !important;
+    color: var(--as-charcoal) !important;
+}
+
+/* ── Topbar ── */
+.fi-topbar {
+    background-color: var(--as-sand) !important;
+    border-bottom: 1px solid var(--as-border) !important;
+    box-shadow: none !important;
+}
+
+.fi-topbar .fi-logo {
+    filter: none;
+}
+
+/* ── Sidebar (navy) ── */
+.fi-sidebar.fi-sidebar-open {
+    background-color: var(--as-navy) !important;
+    box-shadow: 4px 0 24px rgba(40, 65, 78, 0.15) !important;
+}
+
+.fi-sidebar .fi-sidebar-group-label {
+    color: rgba(255, 255, 255, 0.45) !important;
+}
+
+.fi-sidebar .fi-sidebar-item-label {
+    color: rgba(255, 255, 255, 0.82) !important;
+}
+
+.fi-sidebar .fi-sidebar-item-btn > .fi-icon,
+.fi-sidebar .fi-sidebar-group-btn > .fi-icon {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.fi-sidebar .fi-sidebar-item.fi-sidebar-item-has-url > .fi-sidebar-item-btn:hover,
+.fi-sidebar .fi-sidebar-item.fi-sidebar-item-has-url > .fi-sidebar-item-btn:focus-visible {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.fi-sidebar .fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
+    background-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+.fi-sidebar .fi-sidebar-item.fi-active > .fi-sidebar-item-btn > .fi-sidebar-item-label,
+.fi-sidebar .fi-sidebar-item.fi-active > .fi-sidebar-item-btn > .fi-icon {
+    color: #fff !important;
+}
+
+.fi-sidebar .fi-sidebar-item-grouped-border-part {
+    background-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+.fi-sidebar .fi-sidebar-item-grouped-border-part-not-first,
+.fi-sidebar .fi-sidebar-item-grouped-border-part-not-last {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* ── Cards & sections ── */
+.fi-section,
+.fi-wi-stats-overview-stat,
+.fi-ta-ctn,
+.fi-fo-field-wrp,
+.fi-in-entry-wrp {
+    background-color: var(--as-sand) !important;
+    border-color: var(--as-border) !important;
+}
+
+.fi-section {
+    border: 1px solid var(--as-border) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 1px 3px rgba(40, 65, 78, 0.06) !important;
+}
+
+.fi-section-header-heading {
+    color: var(--as-navy) !important;
+}
+
+/* ── Page header ── */
+.fi-header-heading {
+    color: var(--as-navy) !important;
+}
+
+.fi-breadcrumbs-item-label {
+    color: var(--as-body) !important;
+}
+
+/* ── Tables ── */
+.fi-ta-header-cell-label {
+    color: var(--as-charcoal) !important;
+}
+
+.fi-ta-row {
+    border-color: var(--as-border) !important;
+}
+
+.fi-ta-row:hover {
+    background-color: rgba(250, 245, 240, 0.8) !important;
+}
+
+/* ── Form inputs ── */
+.fi-input-wrp {
+    background-color: #fff !important;
+    border-color: var(--as-border) !important;
+}
+
+/* ── Login page ── */
+.fi-simple-layout {
+    background-color: var(--as-bg) !important;
+}
+
+.fi-simple-main {
+    background-color: var(--as-sand) !important;
+    border: 1px solid var(--as-border) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 8px 32px rgba(40, 65, 78, 0.1) !important;
+}
+
+.fi-simple-header-heading {
+    color: var(--as-navy) !important;
+}
+
+/* ── Widgets ── */
+.fi-wi-stats-overview-stat-value {
+    color: var(--as-navy) !important;
+}
+
+.fi-wi-stats-overview-stat-label {
+    color: var(--as-body) !important;
+}
+
+/* ── Tabs (Writers etc.) ── */
+.fi-tabs-item.fi-active .fi-tabs-item-label {
+    color: var(--as-accent) !important;
+}
+
+.fi-tabs-item.fi-active {
+    border-color: var(--as-accent) !important;
+}

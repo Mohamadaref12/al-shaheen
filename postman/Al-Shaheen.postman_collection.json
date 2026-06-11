@@ -145,15 +145,44 @@
           }
         },
         {
-          "name": "Update Profile",
+          "name": "Update Profile (Reader)",
           "request": {
             "method": "PUT",
             "header": [{ "key": "Accept", "value": "application/json" }],
             "url": "{{base_url}}/auth/profile",
+            "description": "Reader: user fields only — name, email, country, language, locale.",
             "body": {
               "mode": "raw",
               "options": { "raw": { "language": "json" } },
-              "raw": "{\n  \"name\": \"Ahmed Updated\",\n  \"country\": \"SA\",\n  \"language\": \"ar\"\n}"
+              "raw": "{\n  \"name\": \"Ahmed Reader Updated\",\n  \"country\": \"SA\",\n  \"language\": \"ar\",\n  \"locale\": \"ar\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Profile (Contributor)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/auth/profile",
+            "description": "Contributor: user fields + bio, profile_photo, portfolio_link, categories. Upload profile image first (Uploads → Upload Profile Image).",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"name\": \"Sara Contributor Updated\",\n  \"country\": \"SA\",\n  \"locale\": \"ar\",\n  \"bio\": \"Updated contributor bio.\",\n  \"portfolio_link\": \"https://portfolio.example.com/sara\",\n  \"profile_photo\": \"{{profile_photo_path}}\",\n  \"categories\": [1, 2]\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Profile (Writer)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/auth/profile",
+            "description": "Writer: user fields + display_name, bio, profile_photo, portfolio_link, experience_level, languages, editorial_specialties, location, social_links, media_affiliation, categories.",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"name\": \"Omar Writer\",\n  \"display_name\": \"Omar Al-Shaheen\",\n  \"bio\": \"Updated writer bio.\",\n  \"portfolio_link\": \"https://writer.example.com/omar\",\n  \"profile_photo\": \"{{profile_photo_path}}\",\n  \"experience_level\": \"senior\",\n  \"languages\": [\"Arabic\", \"English\"],\n  \"editorial_specialties\": [\"Politics\", \"Economy\"],\n  \"location\": \"Riyadh, SA\",\n  \"social_links\": {\n    \"twitter\": \"https://twitter.com/omar\",\n    \"linkedin\": \"https://linkedin.com/in/omar\"\n  },\n  \"media_affiliation\": \"Al-Shaheen Media\",\n  \"categories\": [1, 2]\n}"
             }
           }
         },
@@ -1040,10 +1069,11 @@
             "method": "PUT",
             "header": [{ "key": "Accept", "value": "application/json" }],
             "url": "{{base_url}}/writers/profile",
+            "description": "Writer-only alias of PUT /auth/profile. Returns full user object (UserResource) with role profile. Same fields as Auth → Update Profile (Writer).",
             "body": {
               "mode": "raw",
               "options": { "raw": { "language": "json" } },
-              "raw": "{\n  \"display_name\": \"أحمد الكاتب\",\n  \"bio\": \"صحفي متخصص في الشأن الاقتصادي\",\n  \"experience_level\": \"mid\",\n  \"languages\": [\"ar\", \"en\"],\n  \"editorial_specialties\": [\"economy\", \"politics\"],\n  \"location\": \"Riyadh, SA\",\n  \"social_links\": {\n    \"twitter\": \"https://twitter.com/ahmed\",\n    \"linkedin\": \"https://linkedin.com/in/ahmed\"\n  }\n}"
+              "raw": "{\n  \"display_name\": \"Omar Al-Shaheen\",\n  \"bio\": \"Experienced journalist with 5 years in political reporting.\",\n  \"profile_photo\": \"{{profile_photo_path}}\",\n  \"portfolio_link\": \"https://writer.example.com/omar\",\n  \"experience_level\": \"senior\",\n  \"languages\": [\"Arabic\", \"English\"],\n  \"editorial_specialties\": [\"Politics\", \"Investigative\"],\n  \"location\": \"Riyadh, SA\",\n  \"social_links\": {\n    \"twitter\": \"https://twitter.com/omar\",\n    \"linkedin\": \"https://linkedin.com/in/omar\"\n  },\n  \"media_affiliation\": \"Al-Shaheen Media\",\n  \"categories\": [1, 2]\n}"
             }
           }
         }

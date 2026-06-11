@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Actions\UpdateUserProfileAction;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\ChangePasswordRequest;
 use App\Http\Requests\Api\V1\LoginRequest;
@@ -132,22 +133,16 @@ class AuthController extends Controller
         }
     }
 
-    public function updateProfile(UpdateProfileRequest $request): JsonResponse
+    public function updateProfile(UpdateProfileRequest $request, UpdateUserProfileAction $updateProfile): JsonResponse
     {
         try {
             /** @var User $user */
             $user = $request->user();
 
-            $data = $request->validated();
-
-            if (isset($data['email'])) {
-                $data['email'] = strtolower((string) $data['email']);
-            }
-
-            $user->fill($data)->save();
+            $user = $updateProfile->execute($user, $request->validated());
 
             return $this->success(
-                UserResource::makeLoaded($user->refresh()),
+                UserResource::makeLoaded($user),
                 'Profile updated successfully.'
             );
         } catch (Throwable $e) {

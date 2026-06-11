@@ -3,8 +3,10 @@
 namespace App\Filament\Resources\Articles\Pages;
 
 use App\Filament\Resources\Articles\ArticleResource;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
+use Filament\Support\Icons\Heroicon;
 
 class EditArticle extends EditRecord
 {
@@ -13,6 +15,10 @@ class EditArticle extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('view')
+                ->label('Preview')
+                ->icon(Heroicon::OutlinedEye)
+                ->url(fn (): string => ArticleResource::getUrl('view', ['record' => $this->getRecord()])),
             DeleteAction::make(),
         ];
     }

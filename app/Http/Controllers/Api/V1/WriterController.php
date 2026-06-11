@@ -2,7 +2,10 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Actions\UpdateUserProfileAction;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\V1\UpdateProfileRequest;
+use App\Http\Resources\Api\V1\UserResource;
 use App\Models\Writer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -50,37 +53,21 @@ class WriterController extends Controller
         }
     }
 
-    public function updateProfile(Request $request): JsonResponse
+    public function updateProfile(UpdateProfileRequest $request, UpdateUserProfileAction $updateProfile): JsonResponse
     {
         try {
-            $user   = $request->user();
-            $writer = $user->writer;
+            $user = $request->user();
 
-            if (! $writer) {
+            if (! $user->writer) {
                 return $this->error(null, 'You do not have a writer profile.', 403);
             }
 
-            $data = $request->validate([
-                'display_name'          => 'sometimes|string|max:255',
-                'bio'                   => 'nullable|string|max:2000',
-                'profile_photo'         => 'nullable|string',
-                'portfolio_link'        => 'nullable|url|max:500',
-                'experience_level'      => 'nullable|in:junior,mid,senior',
-                'languages'             => 'nullable|array',
-                'editorial_specialties' => 'nullable|array',
-                'location'              => 'nullable|string|max:255',
-                'social_links'          => 'nullable|array',
-                'media_affiliation'     => 'nullable|string|max:500',
-            ]);
-
-            $writer->fill($data)->save();
+            $user = $updateProfile->execute($user, $request->validated());
 
             return $this->success(
-                $writer->fresh(['user:id,name', 'categories:id,name,slug']),
-                'Writer profile updated successfully.'
+                UserResource::makeLoaded($user),
+                'Profile updated successfully.'
             );
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return $this->error($e->errors(), 'Validation failed.', 422);
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to update writer profile.');
         }

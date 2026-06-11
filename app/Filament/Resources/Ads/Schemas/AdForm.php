@@ -61,6 +61,7 @@ class AdForm
                         FileUpload::make('image_url')
                             ->label('Ad Image')
                             ->image()
+                            ->disk('images')
                             ->directory('ads')
                             ->columnSpanFull(),
                     ]),

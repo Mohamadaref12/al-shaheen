@@ -62,6 +62,7 @@ class TrainingCourseForm
                         FileUpload::make('thumbnail')
                             ->label('Thumbnail')
                             ->image()
+                            ->disk('images')
                             ->directory('courses')
                             ->columnSpanFull(),
                     ]),

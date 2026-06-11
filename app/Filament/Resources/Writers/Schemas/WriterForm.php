@@ -56,6 +56,7 @@ class WriterForm
 
                         FileUpload::make('profile_photo')
                             ->image()
+                            ->disk('images')
                             ->directory('writers/photos')
                             ->columnSpanFull(),
 
@@ -95,6 +96,7 @@ class WriterForm
 
                         FileUpload::make('id_verification_file')
                             ->label('ID Verification File')
+                            ->disk('images')
                             ->directory('writers/verification')
                             ->columnSpanFull(),
 

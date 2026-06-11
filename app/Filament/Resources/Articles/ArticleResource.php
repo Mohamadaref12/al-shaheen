@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Articles;
 use App\Filament\Resources\Articles\Pages\CreateArticle;
 use App\Filament\Resources\Articles\Pages\EditArticle;
 use App\Filament\Resources\Articles\Pages\ListArticles;
+use App\Filament\Resources\Articles\Pages\ViewArticle;
 use App\Filament\Resources\Articles\Schemas\ArticleForm;
 use App\Filament\Resources\Articles\Tables\ArticlesTable;
 use App\Models\Article;
@@ -50,9 +51,10 @@ class ArticleResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListArticles::route('/'),
+            'index'  => ListArticles::route('/'),
             'create' => CreateArticle::route('/create'),
-            'edit' => EditArticle::route('/{record}/edit'),
+            'view'   => ViewArticle::route('/{record}'),
+            'edit'   => EditArticle::route('/{record}/edit'),
         ];
     }
 }
