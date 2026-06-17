@@ -19,7 +19,7 @@ trait FetchesHighPerformingWriters
         ?int $secondaryCategoryId = null
     ) {
         $query = Writer::query()
-            ->with('user:id,name')
+            ->with('user:id,name,country')
             ->where('application_status', 'approved')
             ->withCount('articles');
 

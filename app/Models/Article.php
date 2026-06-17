@@ -13,6 +13,7 @@ use App\Models\Tag;
 use App\Models\Comment;
 use App\Models\ArticleRevision;
 use App\Models\ArticleView;
+use App\Models\ArticleAiSuggestion;
 
 class Article extends Model
 {
@@ -108,5 +109,10 @@ class Article extends Model
     public function savedByUsers(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'saved_articles')->withTimestamps();
+    }
+
+    public function aiSuggestions(): HasMany
+    {
+        return $this->hasMany(ArticleAiSuggestion::class);
     }
 }

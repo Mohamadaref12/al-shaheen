@@ -7,7 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\V1\UpdateProfileRequest;
 use App\Http\Resources\Api\V1\UserResource;
 use App\Http\Resources\Api\V1\WriterResource;
+use App\Http\Resources\Api\V1\WriterSpotlightResource;
 use App\Models\Writer;
+use App\Traits\FetchesHighPerformingWriters;
 use App\Traits\MarksSavedArticles;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,7 +17,34 @@ use Throwable;
 
 class WriterController extends Controller
 {
+    use FetchesHighPerformingWriters;
     use MarksSavedArticles;
+
+    public function spotlight(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'category_id' => 'nullable|integer|exists:categories,id',
+            ]);
+
+            $request->merge(['limit' => 3]);
+
+            $writers = $this->fetchHighPerformingWriters(
+                $request,
+                $request->filled('category_id') ? (int) $request->input('category_id') : null
+            );
+
+            return $this->success(
+                WriterSpotlightResource::collection($writers)->resolve(),
+                'Writer spotlight retrieved successfully.'
+            );
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->error($e->errors(), 'Validation failed.', 422);
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'Failed to retrieve writer spotlight.');
+        }
+    }
+
     public function index(Request $request): JsonResponse
     {
         try {

@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\WriterDashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('writers')->group(function () {
+    Route::get('/spotlight', [WriterController::class, 'spotlight']);
     Route::get('/', [WriterController::class, 'index']);
 
     Route::middleware('auth:sanctum')->group(function () {

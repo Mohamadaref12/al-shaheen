@@ -1070,6 +1070,23 @@
       "name": "Writers",
       "item": [
         {
+          "name": "Writer Spotlight",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/writers/spotlight?category_id=",
+              "host": ["{{base_url}}"],
+              "path": ["writers", "spotlight"],
+              "query": [
+                { "key": "category_id", "value": "", "description": "Optional primary category ID" }
+              ]
+            },
+            "description": "Top 3 writers by total article views. Optional category filter."
+          }
+        },
+        {
           "name": "List Writers",
           "request": {
             "auth": { "type": "noauth" },
