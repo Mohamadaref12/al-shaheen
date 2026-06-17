@@ -564,6 +564,36 @@
           }
         },
         {
+          "name": "Primary Category Filters",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/primary-categories/{{category_id}}/filters"
+          }
+        },
+        {
+          "name": "Primary Category Articles",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/primary-categories/{{category_id}}/articles?locale=ar&sort=latest&format=all&date_range=all&secondary=&per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["primary-categories", "{{category_id}}", "articles"],
+              "query": [
+                { "key": "locale", "value": "ar", "description": "ar | en" },
+                { "key": "sort", "value": "latest", "description": "latest | views | trending | oldest" },
+                { "key": "format", "value": "all", "description": "all | breaking | premium | video" },
+                { "key": "date_range", "value": "all", "description": "all | today | week | month" },
+                { "key": "secondary", "value": "", "description": "Optional secondary category ID" },
+                { "key": "per_page", "value": "15" }
+              ]
+            }
+          }
+        },
+        {
           "name": "Show Primary Category",
           "request": {
             "auth": { "type": "noauth" },
@@ -646,6 +676,35 @@
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
             "url": "{{base_url}}/secondary-categories"
+          }
+        },
+        {
+          "name": "Secondary Category Filters",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/secondary-categories/{{category_id}}/filters"
+          }
+        },
+        {
+          "name": "Secondary Category Articles",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/secondary-categories/{{category_id}}/articles?locale=ar&sort=latest&format=all&date_range=all&per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["secondary-categories", "{{category_id}}", "articles"],
+              "query": [
+                { "key": "locale", "value": "ar" },
+                { "key": "sort", "value": "latest" },
+                { "key": "format", "value": "all" },
+                { "key": "date_range", "value": "all" },
+                { "key": "per_page", "value": "15" }
+              ]
+            }
           }
         },
         {
@@ -930,6 +989,47 @@
               "options": { "raw": { "language": "json" } },
               "raw": "{\n  \"package_id\": 1,\n  \"plan\": \"monthly\"\n}"
             }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ads",
+      "item": [
+        {
+          "name": "List Ads",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/ads?placement=&ad_category=&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["ads"],
+              "query": [
+                { "key": "placement", "value": "", "description": "leaderboard | hero | in_feed | mid_article | right_rail | footer" },
+                { "key": "ad_category", "value": "", "disabled": true },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Leaderboard Ad",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/ads?placement=leaderboard&limit=1"
+          }
+        },
+        {
+          "name": "In-Feed Ads",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/ads?placement=in_feed&limit=5"
           }
         }
       ]

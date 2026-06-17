@@ -7,6 +7,7 @@ use App\Http\Resources\Api\V1\HighPerformingWriterResource;
 use App\Models\Category;
 use App\Models\Writer;
 use App\Traits\FetchesPublishedArticles;
+use App\Traits\MarksSavedArticles;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Throwable;
@@ -14,6 +15,7 @@ use Throwable;
 class HomeController extends Controller
 {
     use FetchesPublishedArticles;
+    use MarksSavedArticles;
     public function breakingNews(Request $request): JsonResponse
     {
         try {
@@ -30,7 +32,10 @@ class HomeController extends Controller
                 ->limit($limit)
                 ->get();
 
-            return $this->success($articles, 'Breaking news retrieved successfully.');
+            return $this->success(
+                $this->withIsSavedOnCollection($articles, $request)->values(),
+                'Breaking news retrieved successfully.'
+            );
         } catch (\Illuminate\Validation\ValidationException $e) {
             return $this->error($e->errors(), 'Validation failed.', 422);
         } catch (Throwable $e) {
@@ -46,7 +51,10 @@ class HomeController extends Controller
                 ->limit(3)
                 ->get();
 
-            return $this->success($articles, 'Top articles retrieved successfully.');
+            return $this->success(
+                $this->withIsSavedOnCollection($articles, $request)->values(),
+                'Top articles retrieved successfully.'
+            );
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to retrieve top articles.');
         }
@@ -55,9 +63,12 @@ class HomeController extends Controller
     public function trendingArticle(Request $request): JsonResponse
     {
         try {
-            $articles = $this->fetchTrendingArticles($request);
+            $articles = $this->withIsSavedOnCollection(
+                $this->fetchTrendingArticles($request),
+                $request
+            );
 
-            return $this->success($articles, 'Trending articles retrieved successfully.');
+            return $this->success($articles->values(), 'Trending articles retrieved successfully.');
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to retrieve trending articles.');
         }
@@ -75,7 +86,10 @@ class HomeController extends Controller
                 ->limit($limit)
                 ->get();
 
-            return $this->success($articles, 'Editor picks retrieved successfully.');
+            return $this->success(
+                $this->withIsSavedOnCollection($articles, $request)->values(),
+                'Editor picks retrieved successfully.'
+            );
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to retrieve editor picks.');
         }

@@ -25,12 +25,12 @@ class AdForm
 
                         Select::make('placement')
                             ->options([
-                                'header'       => 'Header',
-                                'sidebar'      => 'Sidebar',
-                                'footer'       => 'Footer',
-                                'article_top'  => 'Article Top',
-                                'article_mid'  => 'Article Middle',
-                                'article_end'  => 'Article End',
+                                'leaderboard'  => 'Leaderboard (728×90)',
+                                'hero'         => 'Hero Takeover',
+                                'in_feed'      => 'In-Feed Native',
+                                'mid_article'  => 'Mid-Article (300×250)',
+                                'right_rail'   => 'Right Rail (300×600)',
+                                'footer'       => 'Footer (728×90)',
                             ])
                             ->required(),
 

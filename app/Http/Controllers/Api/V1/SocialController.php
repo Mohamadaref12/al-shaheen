@@ -112,6 +112,7 @@ class SocialController extends Controller
 
         $items = $paginator->getCollection()->map(function (Article $article) {
             $article->setAttribute('saved_at', $article->pivot->created_at);
+            $article->setAttribute('is_saved', true);
 
             return $article;
         });

@@ -5,12 +5,14 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Models\Tag;
+use App\Traits\MarksSavedArticles;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Throwable;
 
 class ArticleController extends Controller
 {
+    use MarksSavedArticles;
     public function index(Request $request): JsonResponse
     {
         try {
@@ -46,7 +48,10 @@ class ArticleController extends Controller
                 default  => $query->orderByDesc('published_at'),
             };
 
-            $paginator = $query->paginate($request->input('per_page', 15));
+            $paginator = $this->withIsSavedOnPaginator(
+                $query->paginate($request->input('per_page', 15)),
+                $request
+            );
 
             return $this->pagedSuccess(
                 $paginator->items(),
@@ -63,7 +68,7 @@ class ArticleController extends Controller
         }
     }
 
-    public function show(int $articleId): JsonResponse
+    public function show(Request $request, int $articleId): JsonResponse
     {
         try {
             $article = Article::with([
@@ -82,7 +87,10 @@ class ArticleController extends Controller
 
             $article->increment('views_count');
 
-            return $this->success($article, 'Article retrieved successfully.');
+            return $this->success(
+                $this->withIsSaved($article, $request),
+                'Article retrieved successfully.'
+            );
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to retrieve article.');
         }
@@ -213,7 +221,7 @@ class ArticleController extends Controller
         }
     }
 
-    public function relatedStories(int $articleId): JsonResponse
+    public function relatedStories(Request $request, int $articleId): JsonResponse
     {
         try {
             $article = Article::published()->find($articleId);
@@ -247,7 +255,10 @@ class ArticleController extends Controller
                 ->limit(6)
                 ->get();
 
-            return $this->success($related, 'Related stories retrieved successfully.');
+            return $this->success(
+                $this->withIsSavedOnCollection($related, $request)->values(),
+                'Related stories retrieved successfully.'
+            );
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to retrieve related stories.');
         }
@@ -281,7 +292,7 @@ class ArticleController extends Controller
         }
     }
 
-    public function nextRead(int $articleId): JsonResponse
+    public function nextRead(Request $request, int $articleId): JsonResponse
     {
         try {
             $article = Article::published()->find($articleId);
@@ -326,7 +337,10 @@ class ArticleController extends Controller
                 return $this->error(null, 'No next article found.', 404);
             }
 
-            return $this->success($next, 'Next read retrieved successfully.');
+            return $this->success(
+                $this->withIsSaved($next, $request),
+                'Next read retrieved successfully.'
+            );
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to retrieve next read.');
         }

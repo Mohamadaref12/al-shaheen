@@ -50,12 +50,12 @@ class AdsTable
             ->filters([
                 SelectFilter::make('placement')
                     ->options([
-                        'header'      => 'Header',
-                        'sidebar'     => 'Sidebar',
-                        'footer'      => 'Footer',
-                        'article_top' => 'Article Top',
-                        'article_mid' => 'Article Middle',
-                        'article_end' => 'Article End',
+                        'leaderboard'  => 'Leaderboard',
+                        'hero'         => 'Hero',
+                        'in_feed'      => 'In-Feed',
+                        'mid_article'  => 'Mid-Article',
+                        'right_rail'   => 'Right Rail',
+                        'footer'       => 'Footer',
                     ]),
 
                 TernaryFilter::make('is_active')

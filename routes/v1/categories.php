@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Route;
 // Primary categories (parent_id IS NULL)
 Route::prefix('primary-categories')->group(function () {
     Route::get('/',                                      [CategoryController::class, 'primaryIndex']);
+    Route::get('/{categoryId}/filters',                  [CategoryController::class, 'primaryFilters']);
+    Route::get('/{categoryId}/articles',                 [CategoryController::class, 'primaryArticles']);
     Route::get('/{categoryId}/trending-article',         [CategoryController::class, 'primaryTrending']);
     Route::get('/{categoryId}/editor-picks',           [CategoryController::class, 'primaryEditorPicks']);
     Route::get('/{categoryId}/writers',               [CategoryController::class, 'primaryWriters']);
@@ -16,5 +18,7 @@ Route::prefix('primary-categories')->group(function () {
 // Secondary categories / subcategories (parent_id IS NOT NULL)
 Route::prefix('secondary-categories')->group(function () {
     Route::get('/',             [CategoryController::class, 'secondaryIndex']);
+    Route::get('/{categoryId}/filters',  [CategoryController::class, 'secondaryFilters']);
+    Route::get('/{categoryId}/articles', [CategoryController::class, 'secondaryArticles']);
     Route::get('/{categoryId}', [CategoryController::class, 'secondaryShow']);
 });

@@ -96,4 +96,102 @@ trait FetchesPublishedArticles
             }
         });
     }
+
+    protected function applySecondaryCategoryFilter(Builder $query, int $secondaryCategoryId): void
+    {
+        $query->whereHas(
+            'secondaryCategories',
+            fn ($q) => $q->where('categories.id', $secondaryCategoryId)
+        );
+    }
+
+    protected function applyArticleListingFilters(Builder $query, Request $request): Builder
+    {
+        if ($request->filled('format') && $request->input('format') !== 'all') {
+            match ($request->input('format')) {
+                'breaking' => $query->where('is_breaking', true),
+                'premium'  => $query->where('is_premium', true),
+                'video'    => $query->whereNotNull('video_embed')->where('video_embed', '!=', ''),
+                default    => null,
+            };
+        } else {
+            if ($request->boolean('breaking')) {
+                $query->where('is_breaking', true);
+            }
+
+            if ($request->boolean('premium')) {
+                $query->where('is_premium', true);
+            }
+        }
+
+        if ($request->filled('date_range') && $request->input('date_range') !== 'all') {
+            match ($request->input('date_range')) {
+                'today' => $query->whereDate('published_at', today()),
+                'week'  => $query->where('published_at', '>=', now()->startOfWeek()),
+                'month' => $query->where('published_at', '>=', now()->startOfMonth()),
+                default => null,
+            };
+        }
+
+        if ($request->filled('from_date')) {
+            $query->whereDate('published_at', '>=', $request->input('from_date'));
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('published_at', '<=', $request->input('to_date'));
+        }
+
+        match ($request->input('sort', 'latest')) {
+            'views', 'trending' => $query->orderByDesc('views_count')->orderByDesc('published_at'),
+            'oldest'            => $query->orderBy('published_at'),
+            default             => $query->orderByDesc('published_at'),
+        };
+
+        return $query;
+    }
+
+    protected function categoryListingValidationRules(): array
+    {
+        return [
+            'secondary'   => 'nullable|integer|exists:categories,id',
+            'locale'      => 'nullable|in:ar,en',
+            'sort'        => 'nullable|in:latest,views,trending,oldest',
+            'format'      => 'nullable|in:all,breaking,premium,video',
+            'date_range'  => 'nullable|in:all,today,week,month',
+            'from_date'   => 'nullable|date',
+            'to_date'     => 'nullable|date|after_or_equal:from_date',
+            'breaking'    => 'nullable|boolean',
+            'premium'     => 'nullable|boolean',
+            'per_page'    => 'nullable|integer|min:1|max:50',
+            'page'        => 'nullable|integer|min:1',
+        ];
+    }
+
+    protected function categoryFilterOptions(): array
+    {
+        return [
+            'locales' => [
+                ['value' => 'ar', 'label' => 'Arabic'],
+                ['value' => 'en', 'label' => 'English'],
+            ],
+            'sort' => [
+                ['value' => 'latest', 'label' => 'Latest'],
+                ['value' => 'views', 'label' => 'Most Read'],
+                ['value' => 'trending', 'label' => 'Trending'],
+                ['value' => 'oldest', 'label' => 'Oldest'],
+            ],
+            'formats' => [
+                ['value' => 'all', 'label' => 'All Content'],
+                ['value' => 'breaking', 'label' => 'Breaking'],
+                ['value' => 'premium', 'label' => 'Premium'],
+                ['value' => 'video', 'label' => 'Video'],
+            ],
+            'date_ranges' => [
+                ['value' => 'all', 'label' => 'All Time'],
+                ['value' => 'today', 'label' => 'Today'],
+                ['value' => 'week', 'label' => 'This Week'],
+                ['value' => 'month', 'label' => 'This Month'],
+            ],
+        ];
+    }
 }
