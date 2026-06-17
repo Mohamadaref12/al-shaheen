@@ -24,6 +24,8 @@ class Ad extends Model
         'ad_category',
         'is_native',
         'is_active',
+        'views_count',
+        'clicks_count',
         'starts_at',
         'ends_at',
     ];
@@ -31,10 +33,12 @@ class Ad extends Model
     protected function casts(): array
     {
         return [
-            'starts_at' => 'datetime',
-            'ends_at'   => 'datetime',
-            'is_active' => 'boolean',
-            'is_native' => 'boolean',
+            'starts_at'         => 'datetime',
+            'ends_at'           => 'datetime',
+            'is_active'         => 'boolean',
+            'is_native'         => 'boolean',
+            'views_count'  => 'integer',
+            'clicks_count'      => 'integer',
         ];
     }
 

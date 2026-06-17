@@ -32,6 +32,16 @@ class AdsTable
                     ->label('Active')
                     ->boolean(),
 
+                TextColumn::make('views_count')
+                    ->label('Views')
+                    ->numeric()
+                    ->sortable(),
+
+                TextColumn::make('clicks_count')
+                    ->label('Clicks')
+                    ->numeric()
+                    ->sortable(),
+
                 TextColumn::make('starts_at')
                     ->label('Starts')
                     ->date()

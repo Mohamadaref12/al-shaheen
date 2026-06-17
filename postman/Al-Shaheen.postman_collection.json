@@ -1031,6 +1031,26 @@
             "header": [{ "key": "Accept", "value": "application/json" }],
             "url": "{{base_url}}/ads?placement=in_feed&limit=5"
           }
+        },
+        {
+          "name": "Track Ad View",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/ads/{{ad_id}}/view",
+            "description": "Call when the ad is displayed to the user. Returns updated views_count and clicks_count."
+          }
+        },
+        {
+          "name": "Track Ad Click",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/ads/{{ad_id}}/click",
+            "description": "Call when the user clicks the ad link."
+          }
         }
       ]
     },

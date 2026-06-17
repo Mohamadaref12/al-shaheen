@@ -44,4 +44,36 @@ class AdController extends Controller
             return $this->handleException($e, 'Failed to retrieve ads.');
         }
     }
+
+    public function trackView(int $adId): JsonResponse
+    {
+        return $this->trackMetric($adId, 'views_count', 'View recorded successfully.');
+    }
+
+    public function trackClick(int $adId): JsonResponse
+    {
+        return $this->trackMetric($adId, 'clicks_count', 'Click recorded successfully.');
+    }
+
+    protected function trackMetric(int $adId, string $column, string $message): JsonResponse
+    {
+        try {
+            $ad = Ad::query()->active()->where('id', $adId)->first();
+
+            if (! $ad) {
+                return $this->error(null, 'Ad not found or not active.', 404);
+            }
+
+            $ad->increment($column);
+            $ad->refresh();
+
+            return $this->success([
+                'ad_id'        => $ad->id,
+                'views_count'  => $ad->views_count,
+                'clicks_count' => $ad->clicks_count,
+            ], $message);
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'Failed to record ad metric.');
+        }
+    }
 }
