@@ -395,7 +395,8 @@
                 { "key": "premium", "value": "true", "disabled": true },
                 { "key": "search", "value": "", "disabled": true }
               ]
-            }
+            },
+            "description": "List returns featured_image_url per item. Use featured_image_url for <img src>."
           }
         },
         {
@@ -466,6 +467,44 @@
             "method": "DELETE",
             "header": [{ "key": "Accept", "value": "application/json" }],
             "url": "{{base_url}}/articles/{{article_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "News",
+      "item": [
+        {
+          "name": "List News",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/news?per_page=15&sort=latest",
+              "host": ["{{base_url}}"],
+              "path": ["news"],
+              "query": [
+                { "key": "per_page", "value": "15" },
+                { "key": "sort", "value": "latest", "description": "latest | views | oldest" },
+                { "key": "category", "value": "", "disabled": true },
+                { "key": "locale", "value": "", "disabled": true, "description": "ar | en" },
+                { "key": "breaking", "value": "true", "disabled": true },
+                { "key": "premium", "value": "true", "disabled": true },
+                { "key": "search", "value": "", "disabled": true }
+              ]
+            },
+            "description": "Returns published news with featured_image_url ready for display."
+          }
+        },
+        {
+          "name": "Show News",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/news/{{news_id}}",
+            "description": "Increments views_count. Response includes featured_image_url."
           }
         }
       ]

@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             'articles',
             'reports',
             'interviews',
+            'news',
             'media_items',
             'events',
             'writer',
@@ -56,14 +57,13 @@ class DatabaseSeeder extends Seeder
             ArticleSeeder::class,           // 5. Articles + comments
             ReportSeeder::class,            // 6. Reports
             InterviewSeeder::class,         // 7. Interviews
-            MediaItemSeeder::class,         // 8. Media items
-            EventSeeder::class,             // 9. Events
-            MonetizationSeeder::class,      // 10. Ads + packages + subscriptions + newsletter
-            PaymentSeeder::class,           // 11. Payments
-            ContentSubmissionSeeder::class, // 12. Content submissions
-            TrainingSeeder::class,          // 13. Courses + lessons + user progress
+            NewsSeeder::class,              // 8. News
+            MediaItemSeeder::class,         // 9. Media items
+            EventSeeder::class,             // 10. Events
+            MonetizationSeeder::class,      // 11. Ads + packages + subscriptions + newsletter
+            PaymentSeeder::class,           // 12. Payments
+            ContentSubmissionSeeder::class, // 13. Content submissions
+            TrainingSeeder::class,          // 14. Courses + lessons + user progress
         ]);
     }
 }
-
-
