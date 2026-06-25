@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\Api\V1\ArticleSummaryResource;
 use App\Models\Article;
 use App\Models\Tag;
 use App\Traits\MarksSavedArticles;
@@ -54,7 +55,7 @@ class ArticleController extends Controller
             );
 
             return $this->pagedSuccess(
-                $paginator->items(),
+                ArticleSummaryResource::collection($paginator->items())->resolve(),
                 [
                     'current_page' => $paginator->currentPage(),
                     'per_page'     => $paginator->perPage(),

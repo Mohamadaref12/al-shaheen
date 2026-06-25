@@ -27,6 +27,10 @@ class ArticleSummaryResource extends JsonResource
             'views_count'      => $this->views_count,
             'published_at'     => $this->published_at?->toIso8601String(),
             'is_saved'         => (bool) ($this->is_saved ?? false),
+            'author'             => $this->whenLoaded('author', fn () => [
+                'id'   => $this->author?->id,
+                'name' => $this->author?->name,
+            ]),
             'primary_category' => $this->whenLoaded('primaryCategory', fn () => [
                 'id'   => $this->primaryCategory?->id,
                 'name' => $this->primaryCategory?->name,

@@ -27,8 +27,10 @@
 2. [صفحة الكاتب Writer Profile](#2-صفحة-الكاتب-writer-profile)
 3. [الإعلانات Ads](#3-الإعلانات-ads)
 4. [فلاتر صفحة القسم Category Page](#4-فلاتر-صفحة-القسم-category-page)
-5. [ملخص Endpoints](#5-ملخص-endpoints)
-6. [أمثلة تكامل سريعة](#6-أمثلة-تكامل-سريعة)
+5. [Writer Spotlight](#5-writer-spotlight)
+6. [تحسين المقال بالـ AI](#6-تحسين-المقال-بال-ai)
+7. [ملخص Endpoints](#7-ملخص-endpoints)
+8. [أمثلة تكامل سريعة](#8-أمثلة-تكامل-سريعة)
 
 ---
 
@@ -197,7 +199,7 @@ GET /writers/{writerId}
 
 ## 3. الإعلانات Ads
 
-### Endpoint
+### 3.1 جلب الإعلانات
 
 ```
 GET /ads
@@ -205,7 +207,7 @@ GET /ads
 
 **Auth:** غير مطلوب (public)
 
-### Query params
+#### Query params
 
 | Param | القيم | الوصف |
 |-------|-------|-------|
@@ -213,7 +215,7 @@ GET /ads
 | `ad_category` | string | فلترة حسب تصنيف الإعلان |
 | `limit` | 1–20 | عدد النتائج (افتراضي 10) |
 
-### أمثلة
+#### أمثلة
 
 ```
 GET /ads?placement=leaderboard&limit=1
@@ -223,7 +225,7 @@ GET /ads?placement=mid_article&limit=1
 GET /ads?placement=footer&limit=1
 ```
 
-### Response
+#### Response
 
 ```json
 {
@@ -243,7 +245,7 @@ GET /ads?placement=footer&limit=1
 }
 ```
 
-### Placements — أين تستخدم كل واحد
+#### Placements — أين تستخدم كل واحد
 
 | `placement` | مكان العرض بالواجهة |
 |-------------|---------------------|
@@ -257,6 +259,51 @@ GET /ads?placement=footer&limit=1
 > إذا `is_native: true` → اعرض label **Sponsored** بوضوح.
 
 > **Ad-light للـ Premium:** لسه غير مطبّق — المشترك Premium حالياً يشوف نفس الإعلانات.
+
+---
+
+### 3.2 تتبّع المشاهدات والنقرات
+
+> **مهم:** لا تعدّ `GET /ads` كمشاهدة. استدعِ endpoints التتبّع لما الإعلان **فعلاً** يظهر أو ينضغط.
+
+| Method | Endpoint | متى تستدعيه |
+|--------|----------|-------------|
+| `POST` | `/ads/{adId}/view` | لما الإعلان يظهر للمستخدم |
+| `POST` | `/ads/{adId}/click` | لما المستخدم يضغط على اللينك |
+
+**Auth:** غير مطلوب  
+**شرط:** الإعلان لازم يكون **active** (ضمن التواريخ)
+
+**Response (كلا الـ endpoints):**
+
+```json
+{
+  "success": true,
+  "data": {
+    "ad_id": 1,
+    "views_count": 42,
+    "clicks_count": 5
+  }
+}
+```
+
+| الحقل | المعنى |
+|-------|--------|
+| `views_count` | عدد مرات ظهور الإعلان (نفس تسمية `views_count` بالمقالات) |
+| `clicks_count` | عدد مرات الضغط على اللينك |
+
+> الإحصائيات تظهر في Filament Admin (`/admin/ads`) — **ما** ترجع ضمن `GET /ads`.
+
+#### مثال فرونت
+
+```javascript
+// لما الإعلان يدخل viewport
+await fetch(`/api/v1/ads/${ad.id}/view`, { method: 'POST' });
+
+// لما المستخدم يضغط
+await fetch(`/api/v1/ads/${ad.id}/click`, { method: 'POST' });
+window.open(ad.link_url, '_blank');
+```
 
 ---
 
@@ -387,18 +434,207 @@ GET /primary-categories/1/articles?locale=ar&sort=views&format=breaking&date_ran
 ### 4.3 تدفق صفحة القسم الموصى به
 
 ```
-1. GET /primary-categories/{id}/filters     → بناء UI الفلاتر + chips الأقسام الفرعية
-2. GET /primary-categories/{id}/articles      → شبكة المقالات (Lead + Grid)
-3. GET /primary-categories/{id}/trending-article  → Sidebar: Trending
-4. GET /primary-categories/{id}/editor-picks      → Sidebar: Editor Picks
-5. GET /primary-categories/{id}/writers           → Sidebar: Top Writers
-6. GET /ads?placement=right_rail&limit=1            → Sidebar Ad
-7. GET /ads?placement=in_feed&limit=5              → Native ads بين البطاقات
+1. GET /primary-categories/{id}/filters          → بناء UI الفلاتر + chips الأقسام الفرعية
+2. GET /primary-categories/{id}/articles         → شبكة المقالات (Lead + Grid)
+3. GET /primary-categories/{id}/trending-article → Sidebar: Trending
+4. GET /primary-categories/{id}/editor-picks     → Sidebar: Editor Picks
+5. GET /primary-categories/{id}/writers          → Sidebar: Top Writers
+6. GET /writers/spotlight                        → Writer Spotlight (3 كتّاب)
+7. GET /ads?placement=right_rail&limit=1         → Sidebar Ad
+8. GET /ads?placement=in_feed&limit=5           → Native ads بين البطاقات
 ```
 
 ---
 
-## 5. ملخص Endpoints
+## 5. Writer Spotlight
+
+### Endpoint
+
+```
+GET /writers/spotlight
+```
+
+**Auth:** غير مطلوب  
+**يرجّع:** **3 كتّاب** الأعلى مشاهدة (حسب `total_views` ثم `articles_count`)
+
+#### Query (اختياري)
+
+| Param | الوصف |
+|-------|-------|
+| `category_id` | فلترة حسب قسم رئيسي |
+
+#### مثال
+
+```
+GET /writers/spotlight
+GET /writers/spotlight?category_id=1
+```
+
+#### Response
+
+```json
+{
+  "data": [
+    {
+      "id": 4,
+      "display_name": "Violet Brown",
+      "bio": "Repellendus possimus earum...",
+      "profile_photo_url": null,
+      "is_verified_writer": false,
+      "articles_count": 5,
+      "total_views": 11092,
+      "user": {
+        "id": 6,
+        "name": "Violet Brown",
+        "country": "Mauritania"
+      }
+    }
+  ]
+}
+```
+
+> للقائمة الكاملة أو فلترة مختلفة استخدم `GET /home/writers?limit=5` أو `GET /writers`.
+
+---
+
+## 6. تحسين المقال بالـ AI
+
+> **مهم:** الـ AI **ما بيعدّل المقال مباشرة**. يرجّع **اقتراحات** منفصلة — الكاتب يقرر يطبّقها يدوياً عبر `PUT /articles/{id}`.
+
+### حالة التفعيل
+
+```
+GET /articles/ai/status
+Authorization: Bearer {token}
+```
+
+**Response (معطّل حالياً):**
+
+```json
+{
+  "data": {
+    "available": false,
+    "provider": "openai",
+    "enabled": false
+  }
+}
+```
+
+| `available` | ماذا يعمل الفرونت |
+|-------------|-------------------|
+| `false` | أخفِ زر AI أو اعرض "قريباً" |
+| `true` | فعّل زر "حسّن بالـ AI" |
+
+---
+
+### طلب اقتراحات — مسودة (قبل الحفظ)
+
+```
+POST /articles/ai/suggest
+Authorization: Bearer {token}
+```
+
+**Body (JSON):**
+
+```json
+{
+  "focus": "all",
+  "locale": "ar",
+  "title": "عنوان المقال",
+  "subtitle": "...",
+  "content": "محتوى المقال...",
+  "excerpt": "...",
+  "seo_title": "...",
+  "seo_description": "..."
+}
+```
+
+| `focus` | الوصف |
+|---------|-------|
+| `all` | تحسين شامل (افتراضي) |
+| `grammar` | قواعد ولغة |
+| `seo` | SEO |
+| `clarity` | وضوح |
+| `headline` | العناوين |
+
+---
+
+### طلب اقتراحات — مقال محفوظ
+
+```
+POST /articles/{articleId}/ai/suggest
+Authorization: Bearer {token}
+```
+
+يقرأ بيانات المقال من DB. يمكن إرسال حقول اختيارية لت override (نفس body أعلاه).
+
+**Auth:** writer (صاحب المقال) \| editor \| admin
+
+---
+
+### Response (AI معطّل)
+
+```json
+{
+  "success": true,
+  "data": {
+    "available": false,
+    "message": "AI article improvement is not enabled yet.",
+    "suggestion": null
+  }
+}
+```
+
+### Response (AI مفعّل)
+
+```json
+{
+  "success": true,
+  "data": {
+    "available": true,
+    "message": "AI suggestions generated successfully.",
+    "suggestion": {
+      "id": 1,
+      "article_id": 12,
+      "focus": "all",
+      "locale": "ar",
+      "original_snapshot": { "title": "...", "content": "..." },
+      "suggestions": {
+        "title": "عنوان محسّن",
+        "subtitle": "...",
+        "excerpt": "...",
+        "content": "...",
+        "seo_title": "...",
+        "seo_description": "..."
+      },
+      "notes": [
+        { "field": "title", "reason": "..." }
+      ],
+      "provider": "openai",
+      "model": "gpt-4o-mini",
+      "status": "completed",
+      "created_at": "2026-06-17T12:00:00+00:00"
+    }
+  }
+}
+```
+
+> اعرض `suggestions` كمعاينة — لما المستخدم يوافق، أرسل القيم عبر **`PUT /articles/{id}`** العادي.
+
+---
+
+### سجل الاقتراحات السابقة
+
+```
+GET /articles/{articleId}/ai/suggestions?per_page=10
+Authorization: Bearer {token}
+```
+
+يرجّع pagination من الاقتراحات المكتملة (`status: completed`).
+
+---
+
+## 7. ملخص Endpoints
 
 | Method | Endpoint | Auth | جديد / محدّث |
 |--------|----------|------|--------------|
@@ -406,10 +642,17 @@ GET /primary-categories/1/articles?locale=ar&sort=views&format=breaking&date_ran
 | `GET` | `/articles/{id}` | اختياري | ✅ `is_saved` |
 | `GET` | `/articles/{id}/related` | اختياري | ✅ `is_saved` |
 | `GET` | `/articles/{id}/next-read` | اختياري | ✅ `is_saved` |
-| `POST` | `/articles/{id}/save` | ✅ | موجود (toggle) |
+| `POST` | `/articles/{id}/save` | ✅ | toggle حفظ |
+| `GET` | `/articles/ai/status` | ✅ | ✅ **جديد** |
+| `POST` | `/articles/ai/suggest` | ✅ | ✅ **جديد** |
+| `POST` | `/articles/{id}/ai/suggest` | ✅ | ✅ **جديد** |
+| `GET` | `/articles/{id}/ai/suggestions` | ✅ | ✅ **جديد** |
 | `GET` | `/home/*` (مقالات) | اختياري | ✅ `is_saved` |
 | `GET` | `/writers/{id}` | اختياري | ✅ social + articles |
+| `GET` | `/writers/spotlight` | — | ✅ **جديد** |
 | `GET` | `/ads` | — | ✅ Ads API |
+| `POST` | `/ads/{id}/view` | — | ✅ **جديد** |
+| `POST` | `/ads/{id}/click` | — | ✅ **جديد** |
 | `GET` | `/primary-categories/{id}/filters` | — | ✅ **جديد** |
 | `GET` | `/primary-categories/{id}/articles` | اختياري | ✅ **جديد** |
 | `GET` | `/secondary-categories/{id}/filters` | — | ✅ **جديد** |
@@ -417,12 +660,11 @@ GET /primary-categories/1/articles?locale=ar&sort=views&format=breaking&date_ran
 
 ---
 
-## 6. أمثلة تكامل سريعة
+## 8. أمثلة تكامل سريعة
 
 ### أ) بطاقة مقال + زر Save
 
 ```javascript
-// جلب المقالات — أرسل token إذا المستخدم مسجل
 const res = await fetch('/api/v1/articles?category=1', {
   headers: {
     Accept: 'application/json',
@@ -431,12 +673,10 @@ const res = await fetch('/api/v1/articles?category=1', {
 });
 const { data } = await res.json();
 
-// عرض أيقونة Save
 data.forEach(article => {
-  const saved = article.is_saved; // true | false
+  const saved = article.is_saved;
 });
 
-// Toggle save
 await fetch(`/api/v1/articles/${id}/save`, {
   method: 'POST',
   headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
@@ -454,52 +694,92 @@ const res = await fetch('/api/v1/writers/1?locale=ar&per_page=10', {
 });
 const { data: writer } = await res.json();
 
-if (writer.twitter) { /* render Twitter icon → writer.twitter */ }
-if (writer.linkedin) { /* render LinkedIn icon → writer.linkedin */ }
-
-writer.articles.forEach(article => { /* article cards */ });
+if (writer.twitter) { /* أيقونة Twitter */ }
+if (writer.linkedin) { /* أيقونة LinkedIn */ }
+writer.articles.forEach(article => { /* بطاقات */ });
 ```
 
 ### ج) صفحة القسم
 
 ```javascript
-// 1) الفلاتر
 const filters = await fetch('/api/v1/primary-categories/1/filters').then(r => r.json());
 
-// 2) المقالات
 const params = new URLSearchParams({
-  locale: 'ar',
-  sort: 'latest',
-  format: 'all',
-  date_range: 'all',
-  per_page: '15',
+  locale: 'ar', sort: 'latest', format: 'all', date_range: 'all', per_page: '15',
 });
 const articles = await fetch(`/api/v1/primary-categories/1/articles?${params}`, {
   headers: token ? { Authorization: `Bearer ${token}` } : {},
 }).then(r => r.json());
 ```
 
-### د) الإعلانات
+### د) الإعلانات + تتبّع
 
 ```javascript
-const leaderboard = await fetch('/api/v1/ads?placement=leaderboard&limit=1').then(r => r.json());
-const inFeed = await fetch('/api/v1/ads?placement=in_feed&limit=5').then(r => r.json());
+const { data: [ad] } = await fetch('/api/v1/ads?placement=leaderboard&limit=1')
+  .then(r => r.json());
+
+// لما يظهر
+await fetch(`/api/v1/ads/${ad.id}/view`, { method: 'POST' });
+
+// لما ينضغط
+adLink.onclick = async () => {
+  await fetch(`/api/v1/ads/${ad.id}/click`, { method: 'POST' });
+  window.open(ad.link_url, '_blank');
+};
+```
+
+### هـ) Writer Spotlight
+
+```javascript
+const { data: writers } = await fetch('/api/v1/writers/spotlight').then(r => r.json());
+// 3 writers max — render spotlight section
+```
+
+### و) AI تحسين (Writer Dashboard)
+
+```javascript
+const { data: aiStatus } = await fetch('/api/v1/articles/ai/status', {
+  headers: { Authorization: `Bearer ${token}` },
+}).then(r => r.json());
+
+if (!aiStatus.available) return; // hide button
+
+const { data } = await fetch('/api/v1/articles/ai/suggest', {
+  method: 'POST',
+  headers: {
+    Authorization: `Bearer ${token}`,
+    Accept: 'application/json',
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({ title, content, excerpt, locale: 'ar', focus: 'all' }),
+}).then(r => r.json());
+
+// اعرض data.suggestion.suggestions للمعاينة
+// عند الموافقة → PUT /articles/{id} بالقيم المختارة
 ```
 
 ---
 
 ## Postman
 
-كل الـ endpoints موجودة في collection:  
-`postman/Al-Shaheen.postman_collection.json`
+Collection: `postman/Al-Shaheen.postman_collection.json`
 
-أقسام: **Ads**, **Primary Categories** (Filters + Articles), **Writers** (Show Writer).
+| القسم | Endpoints |
+|-------|-----------|
+| **Ads** | List, Leaderboard, In-Feed, **Track Ad View**, **Track Ad Click** |
+| **Primary Categories** | Filters, Articles |
+| **Writers** | **Writer Spotlight**, Show Writer |
+| **Articles** | AI endpoints (عند إضافتها للـ collection) |
+
+Environment variable: `ad_id` للتتبّع.
 
 ---
 
 ## ملاحظات مهمة
 
 1. **`is_saved`** — أرسلوا Bearer token على أي request فيه مقالات إذا بدكم حالة الحفظ صحيحة.
-2. **`featured_image_url` / `profile_photo_url` / `image_url`** — جاهزة للعرض مباشرة (URLs كاملة).
-3. **Pagination** — استخدموا `meta.current_page`, `meta.last_page`, `meta.total` للـ infinite scroll أو pagination UI.
-4. **404** — إذا `categoryId` أو `writerId` مو موجود أو مو approved، يرجع `{ "success": false, "message": "..." }` مع status 404.
+2. **`featured_image_url` / `profile_photo_url` / `image_url`** — URLs جاهزة للعرض.
+3. **Pagination** — استخدموا `meta.current_page`, `meta.last_page`, `meta.total`.
+4. **404** — إذا `categoryId` أو `writerId` أو `adId` مو موجود/غير active.
+5. **AI** — معطّل افتراضياً (`AI_ENABLED=false`) — ما بيأثر على أي endpoint موجود.
+6. **Ads tracking** — `views_count` / `clicks_count` للإحصائيات بالأدمن فقط، مو ضمن `GET /ads`.

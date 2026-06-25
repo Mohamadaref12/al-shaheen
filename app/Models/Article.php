@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Support\ImageStorage;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -17,6 +19,8 @@ use App\Models\ArticleAiSuggestion;
 
 class Article extends Model
 {
+    protected $appends = ['featured_image_url'];
+
     protected $fillable = [
         'author_id',
         'primary_category_id',
@@ -44,6 +48,11 @@ class Article extends Model
         'scheduled_at',
         'published_at',
     ];
+
+    protected function featuredImageUrl(): Attribute
+    {
+        return Attribute::get(fn () => ImageStorage::url($this->featured_image));
+    }
 
     protected function casts(): array
     {
