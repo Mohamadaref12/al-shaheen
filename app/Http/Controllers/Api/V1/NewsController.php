@@ -5,16 +5,22 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\NewsSummaryResource;
 use App\Models\News;
+use App\Traits\AppliesTranslatableLocale;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Throwable;
 
 class NewsController extends Controller
 {
+    use AppliesTranslatableLocale;
+
     public function index(Request $request): JsonResponse
     {
         try {
+            $locale = $this->resolveApiLocale($request);
+
             $query = News::published()
+                ->withTranslation($locale)
                 ->with(['author:id,name', 'category:id,name,slug']);
 
             if ($request->filled('category')) {
@@ -22,7 +28,7 @@ class NewsController extends Controller
             }
 
             if ($request->filled('locale')) {
-                $query->where('locale', $request->input('locale'));
+                $query->translatedIn($request->input('locale'));
             }
 
             if ($request->boolean('breaking')) {
@@ -34,10 +40,7 @@ class NewsController extends Controller
             }
 
             if ($request->filled('search')) {
-                $term = $request->input('search');
-                $query->where(fn ($q) => $q
-                    ->where('title', 'like', "%{$term}%")
-                    ->orWhere('excerpt', 'like', "%{$term}%"));
+                $this->applyTranslationSearch($query, $request->input('search'), $request->input('locale'));
             }
 
             match ($request->input('sort', 'latest')) {
@@ -63,11 +66,14 @@ class NewsController extends Controller
         }
     }
 
-    public function show(int $newsId): JsonResponse
+    public function show(Request $request, int $newsId): JsonResponse
     {
         try {
+            $locale = $this->resolveApiLocale($request);
+
             $news = News::published()
-                ->with(['author:id,name', 'category:id,name,slug'])
+                ->withTranslation($locale)
+                ->with(['author:id,name', 'category:id,name,slug', 'translations'])
                 ->where('id', $newsId)
                 ->first();
 
@@ -77,7 +83,15 @@ class NewsController extends Controller
 
             $news->increment('views_count');
 
-            return $this->success($news, 'News retrieved successfully.');
+            $translation = $news->translate($locale, false) ?? $news->translate($locale);
+
+            return $this->success([
+                ...(new NewsSummaryResource($news))->toArray($request),
+                'content' => $translation?->content,
+                'seo_title' => $translation?->seo_title,
+                'seo_description' => $translation?->seo_description,
+                'video_embed' => $news->video_embed,
+            ], 'News retrieved successfully.');
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to retrieve news.');
         }

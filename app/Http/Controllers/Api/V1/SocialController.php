@@ -6,12 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Models\User;
 use App\Models\Writer;
+use App\Traits\AppliesTranslatableLocale;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Throwable;
 
 class SocialController extends Controller
 {
+    use AppliesTranslatableLocale;
+
     public function index(Request $request): JsonResponse
     {
         try {
@@ -93,19 +96,17 @@ class SocialController extends Controller
 
     protected function savedArticles(Request $request): JsonResponse
     {
+        $locale = $this->resolveApiLocale($request);
+
         $query = $request->user()
             ->savedArticles()
             ->published()
+            ->withTranslation($locale)
             ->with(['author:id,name', 'primaryCategory:id,name,slug', 'tags:id,name,slug'])
-            ->select([
-                'articles.id', 'author_id', 'primary_category_id', 'title', 'subtitle', 'slug',
-                'excerpt', 'featured_image', 'locale', 'read_time', 'is_breaking',
-                'is_premium', 'is_editor_pick', 'views_count', 'published_at',
-            ])
             ->orderByPivot('created_at', 'desc');
 
         if ($request->filled('locale')) {
-            $query->where('articles.locale', $request->input('locale'));
+            $query->translatedIn($request->input('locale'));
         }
 
         $paginator = $query->paginate((int) $request->input('per_page', 15));

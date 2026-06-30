@@ -11,6 +11,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Validation\Rule;
 
 class NewsForm
 {
@@ -21,21 +22,6 @@ class NewsForm
                 Section::make('News Details')
                     ->columns(2)
                     ->schema([
-                        TextInput::make('title')
-                            ->required()
-                            ->maxLength(500)
-                            ->columnSpanFull(),
-
-                        TextInput::make('subtitle')
-                            ->maxLength(500)
-                            ->columnSpanFull(),
-
-                        TextInput::make('slug')
-                            ->required()
-                            ->unique(ignoreRecord: true)
-                            ->maxLength(500)
-                            ->columnSpanFull(),
-
                         Select::make('author_id')
                             ->label('Author')
                             ->relationship('author', 'name')
@@ -46,10 +32,6 @@ class NewsForm
                             ->label('Category')
                             ->relationship('category', 'name')
                             ->searchable(),
-
-                        Select::make('locale')
-                            ->options(['ar' => 'Arabic', 'en' => 'English'])
-                            ->required(),
 
                         TextInput::make('read_time')
                             ->label('Read Time (minutes)')
@@ -77,15 +59,14 @@ class NewsForm
                             ->label('Published At'),
                     ]),
 
-                Section::make('Content')
+                Section::make('English Content')
+                    ->schema(self::translationFields('en')),
+
+                Section::make('Arabic Content')
+                    ->schema(self::translationFields('ar')),
+
+                Section::make('Media')
                     ->schema([
-                        Textarea::make('excerpt')
-                            ->rows(3)
-                            ->columnSpanFull(),
-
-                        RichEditor::make('content')
-                            ->columnSpanFull(),
-
                         FileUpload::make('featured_image')
                             ->label('Featured Image')
                             ->image()
@@ -98,19 +79,53 @@ class NewsForm
                             ->url()
                             ->columnSpanFull(),
                     ]),
-
-                Section::make('SEO')
-                    ->collapsed()
-                    ->schema([
-                        TextInput::make('seo_title')
-                            ->maxLength(200)
-                            ->columnSpanFull(),
-
-                        Textarea::make('seo_description')
-                            ->rows(2)
-                            ->maxLength(400)
-                            ->columnSpanFull(),
-                    ]),
             ])->columns(1);
+    }
+
+    private static function translationFields(string $locale): array
+    {
+        $label = strtoupper($locale);
+
+        return [
+            TextInput::make("title_{$locale}")
+                ->label("Title ({$label})")
+                ->required()
+                ->maxLength(500)
+                ->columnSpanFull(),
+
+            TextInput::make("subtitle_{$locale}")
+                ->label("Subtitle ({$label})")
+                ->maxLength(500)
+                ->columnSpanFull(),
+
+            TextInput::make("slug_{$locale}")
+                ->label("Slug ({$label})")
+                ->required()
+                ->maxLength(500)
+                ->rule(fn ($record) => Rule::unique('news_translations', 'slug')
+                    ->where('locale', $locale)
+                    ->ignore($record?->translate($locale, false)?->id))
+                ->columnSpanFull(),
+
+            Textarea::make("excerpt_{$locale}")
+                ->label("Excerpt ({$label})")
+                ->rows(3)
+                ->columnSpanFull(),
+
+            RichEditor::make("content_{$locale}")
+                ->label("Content ({$label})")
+                ->columnSpanFull(),
+
+            TextInput::make("seo_title_{$locale}")
+                ->label("SEO Title ({$label})")
+                ->maxLength(200)
+                ->columnSpanFull(),
+
+            Textarea::make("seo_description_{$locale}")
+                ->label("SEO Description ({$label})")
+                ->rows(2)
+                ->maxLength(400)
+                ->columnSpanFull(),
+        ];
     }
 }

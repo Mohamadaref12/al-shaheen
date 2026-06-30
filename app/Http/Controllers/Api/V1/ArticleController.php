@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\ArticleSummaryResource;
 use App\Models\Article;
 use App\Models\Tag;
+use App\Services\Articles\ArticlePdfService;
+use App\Traits\AppliesTranslatableLocale;
 use App\Traits\MarksSavedArticles;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,11 +15,16 @@ use Throwable;
 
 class ArticleController extends Controller
 {
+    use AppliesTranslatableLocale;
     use MarksSavedArticles;
     public function index(Request $request): JsonResponse
     {
+        
         try {
-            $query = Article::with(['author:id,name', 'primaryCategory:id,name,slug', 'tags:id,name,slug'])
+            $locale = $this->resolveApiLocale($request);
+
+            $query = Article::withTranslation($locale)
+                ->with(['author:id,name', 'primaryCategory:id,name,slug', 'tags:id,name,slug'])
                 ->where('status', 'published');
 
             if ($request->filled('category')) {
@@ -28,7 +35,7 @@ class ArticleController extends Controller
                 $query->whereHas('tags', fn ($q) => $q->where('slug', $search));
             }
             if ($request->filled('locale')) {
-                $query->where('locale', $request->input('locale'));
+                $query->translatedIn($request->input('locale'));
             }
             if ($request->boolean('breaking')) {
                 $query->where('is_breaking', true);
@@ -37,10 +44,7 @@ class ArticleController extends Controller
                 $query->where('is_premium', true);
             }
             if ($request->filled('search')) {
-                $term = $request->input('search');
-                $query->where(fn ($q) => $q
-                    ->where('title', 'like', "%{$term}%")
-                    ->orWhere('excerpt', 'like', "%{$term}%"));
+                $this->applyTranslationSearch($query, $request->input('search'), $request->input('locale'));
             }
 
             match ($request->input('sort', 'latest')) {
@@ -72,11 +76,15 @@ class ArticleController extends Controller
     public function show(Request $request, int $articleId): JsonResponse
     {
         try {
-            $article = Article::with([
+            $locale = $this->resolveApiLocale($request);
+
+            $article = Article::withTranslation($locale)
+                ->with([
                 'author:id,name',
                 'primaryCategory:id,name,slug',
                 'secondaryCategories:id,name,slug',
                 'tags:id,name,slug',
+                'translations',
             ])
                 ->where('id', $articleId)
                 ->where('status', 'published')
@@ -89,11 +97,42 @@ class ArticleController extends Controller
             $article->increment('views_count');
 
             return $this->success(
-                $this->withIsSaved($article, $request),
+                $this->formatArticleDetailForApi($this->withIsSaved($article, $request), $request),
                 'Article retrieved successfully.'
             );
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to retrieve article.');
+        }
+    }
+
+    public function downloadPdf(Request $request, int $articleId)
+    {
+        try {
+            $request->validate([
+                'locale' => 'nullable|in:ar,en',
+            ]);
+
+            $locale = $this->resolveApiLocale($request);
+
+            $article = Article::published()
+                ->withTranslation($locale)
+                ->with(['author', 'primaryCategory', 'tags', 'translations'])
+                ->where('id', $articleId)
+                ->first();
+
+            if (! $article) {
+                return $this->error(null, 'Article not found.', 404);
+            }
+
+            if (! $article->translate($locale, false)) {
+                return $this->error(null, 'Article translation not found for the requested locale.', 404);
+            }
+
+            return app(ArticlePdfService::class)->download($article, $locale);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->error($e->errors(), 'Validation failed.', 422);
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'Failed to generate article PDF.');
         }
     }
 
@@ -108,10 +147,20 @@ class ArticleController extends Controller
 
             $data = $request->validate([
                 'primary_category_id'    => 'required|exists:categories,id',
-                'title'                  => 'required|string|max:500',
+                'title_en'               => 'nullable|string|max:500',
+                'title_ar'               => 'nullable|string|max:500',
+                'subtitle_en'            => 'nullable|string|max:500',
+                'subtitle_ar'            => 'nullable|string|max:500',
+                'slug_en'                => 'nullable|string|max:500|unique:article_translations,slug,NULL,id,locale,en',
+                'slug_ar'                => 'nullable|string|max:500|unique:article_translations,slug,NULL,id,locale,ar',
+                'content_en'             => 'nullable|string',
+                'content_ar'             => 'nullable|string',
+                'excerpt_en'             => 'nullable|string|max:1000',
+                'excerpt_ar'             => 'nullable|string|max:1000',
+                'title'                  => 'nullable|string|max:500',
                 'subtitle'               => 'nullable|string|max:500',
-                'slug'                   => 'required|string|unique:articles,slug',
-                'content'                => 'required|string',
+                'slug'                   => 'nullable|string|max:500',
+                'content'                => 'nullable|string',
                 'excerpt'                => 'nullable|string|max:1000',
                 'writer_notes'           => 'nullable|string|max:500',
                 'featured_image'         => 'nullable|string',
@@ -120,6 +169,10 @@ class ArticleController extends Controller
                 'read_time'              => 'nullable|integer|min:1',
                 'is_breaking'            => 'boolean',
                 'is_premium'             => 'boolean',
+                'seo_title_en'           => 'nullable|string|max:200',
+                'seo_title_ar'           => 'nullable|string|max:200',
+                'seo_description_en'     => 'nullable|string|max:400',
+                'seo_description_ar'     => 'nullable|string|max:400',
                 'seo_title'              => 'nullable|string|max:200',
                 'seo_description'        => 'nullable|string|max:400',
                 'status'                 => 'nullable|in:draft,pending',
@@ -129,17 +182,21 @@ class ArticleController extends Controller
                 'secondary_categories.*' => 'exists:categories,id',
             ]);
 
+            $this->mapLegacyTranslationInput($data);
+
             $apiStatus = $data['status'] ?? 'pending';
             unset($data['status']);
 
             $status = $this->resolveArticleStatus($apiStatus);
 
             $article = Article::create([
-                ...$data,
+                ...$this->extractArticleBaseAttributes($data),
                 'author_id'    => $user->id,
                 'status'       => $status,
                 'submitted_at' => $status === 'submitted' ? now() : null,
             ]);
+
+            $this->fillArticleTranslations($article, $data);
 
             if (! empty($data['tags'])) {
                 $article->tags()->sync($data['tags']);
@@ -179,10 +236,20 @@ class ArticleController extends Controller
 
             $data = $request->validate([
                 'primary_category_id'    => 'sometimes|exists:categories,id',
-                'title'                  => 'sometimes|string|max:500',
+                'title_en'               => 'nullable|string|max:500',
+                'title_ar'               => 'nullable|string|max:500',
+                'subtitle_en'            => 'nullable|string|max:500',
+                'subtitle_ar'            => 'nullable|string|max:500',
+                'slug_en'                => 'nullable|string|max:500',
+                'slug_ar'                => 'nullable|string|max:500',
+                'content_en'             => 'nullable|string',
+                'content_ar'             => 'nullable|string',
+                'excerpt_en'             => 'nullable|string|max:1000',
+                'excerpt_ar'             => 'nullable|string|max:1000',
+                'title'                  => 'nullable|string|max:500',
                 'subtitle'               => 'nullable|string|max:500',
-                'slug'                   => 'sometimes|string|unique:articles,slug,' . $articleId,
-                'content'                => 'sometimes|string',
+                'slug'                   => 'nullable|string|max:500',
+                'content'                => 'nullable|string',
                 'excerpt'                => 'nullable|string|max:1000',
                 'writer_notes'           => 'nullable|string|max:500',
                 'featured_image'         => 'nullable|string',
@@ -191,6 +258,10 @@ class ArticleController extends Controller
                 'read_time'              => 'nullable|integer|min:1',
                 'is_breaking'            => 'boolean',
                 'is_premium'             => 'boolean',
+                'seo_title_en'           => 'nullable|string|max:200',
+                'seo_title_ar'           => 'nullable|string|max:200',
+                'seo_description_en'     => 'nullable|string|max:400',
+                'seo_description_ar'     => 'nullable|string|max:400',
                 'seo_title'              => 'nullable|string|max:200',
                 'seo_description'        => 'nullable|string|max:400',
                 'status'                 => 'nullable|in:draft,pending,published,archived',
@@ -200,9 +271,12 @@ class ArticleController extends Controller
                 'secondary_categories.*' => 'exists:categories,id',
             ]);
 
+            $this->mapLegacyTranslationInput($data);
+
             $this->applyStatusFields($data, $article);
 
-            $article->fill($data)->save();
+            $article->fill($this->extractArticleBaseAttributes($data))->save();
+            $this->fillArticleTranslations($article, $data);
 
             if (isset($data['tags'])) {
                 $article->tags()->sync($data['tags']);
@@ -234,7 +308,10 @@ class ArticleController extends Controller
             $tagIds       = $article->tags()->pluck('tags.id');
             $secondaryIds = $article->secondaryCategories()->pluck('categories.id');
 
+            $locale = $this->resolveApiLocale($request);
+
             $related = Article::published()
+                ->withTranslation($locale)
                 ->with(['author:id,name', 'primaryCategory:id,name,slug', 'tags:id,name,slug'])
                 ->where('id', '!=', $article->id)
                 ->where(function ($query) use ($article, $tagIds, $secondaryIds) {
@@ -248,10 +325,6 @@ class ArticleController extends Controller
                         $query->orWhereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
                     }
                 })
-                ->select([
-                    'id', 'author_id', 'primary_category_id', 'title', 'subtitle', 'slug',
-                    'excerpt', 'featured_image', 'locale', 'read_time', 'views_count', 'published_at',
-                ])
                 ->orderByDesc('published_at')
                 ->limit(6)
                 ->get();
@@ -302,7 +375,10 @@ class ArticleController extends Controller
                 return $this->error(null, 'Article not found.', 404);
             }
 
+            $locale = $this->resolveApiLocale($request);
+
             $next = Article::published()
+                ->withTranslation($locale)
                 ->with(['author:id,name', 'primaryCategory:id,name,slug'])
                 ->where('primary_category_id', $article->primary_category_id)
                 ->where('id', '!=', $article->id)
@@ -313,23 +389,16 @@ class ArticleController extends Controller
                                 ->where('id', '>', $article->id);
                         });
                 })
-                ->select([
-                    'id', 'author_id', 'primary_category_id', 'title', 'subtitle', 'slug',
-                    'excerpt', 'featured_image', 'locale', 'read_time', 'views_count', 'published_at',
-                ])
                 ->orderBy('published_at')
                 ->orderBy('id')
                 ->first();
 
             if (! $next) {
                 $next = Article::published()
+                    ->withTranslation($locale)
                     ->with(['author:id,name', 'primaryCategory:id,name,slug'])
                     ->where('primary_category_id', $article->primary_category_id)
                     ->where('id', '!=', $article->id)
-                    ->select([
-                        'id', 'author_id', 'primary_category_id', 'title', 'subtitle', 'slug',
-                        'excerpt', 'featured_image', 'locale', 'read_time', 'views_count', 'published_at',
-                    ])
                     ->orderByDesc('published_at')
                     ->first();
             }
@@ -403,5 +472,70 @@ class ArticleController extends Controller
         }
 
         return $article;
+    }
+
+    private function formatArticleDetailForApi(Article $article, Request $request): array
+    {
+        $locale = $this->resolveApiLocale($request);
+        $translation = $article->translate($locale, false) ?? $article->translate($locale);
+        $article = $this->formatArticleForApi($article);
+
+        return [
+            ...(new ArticleSummaryResource($article))->toArray($request),
+            'content'          => $translation?->content,
+            'seo_title'        => $translation?->seo_title,
+            'seo_description'  => $translation?->seo_description,
+            'video_embed'      => $article->video_embed,
+            'writer_notes'     => $article->writer_notes,
+            'secondary_categories' => $article->relationLoaded('secondaryCategories')
+                ? $article->secondaryCategories->map(fn ($category) => [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'slug' => $category->slug,
+                ])
+                : [],
+        ];
+    }
+
+    private function extractArticleBaseAttributes(array $data): array
+    {
+        return collect($data)->only([
+            'primary_category_id',
+            'writer_notes',
+            'featured_image',
+            'video_embed',
+            'read_time',
+            'is_breaking',
+            'is_premium',
+        ])->all();
+    }
+
+    private function fillArticleTranslations(Article $article, array $data): void
+    {
+        foreach ($article->translatedAttributeNames() as $field) {
+            foreach (['en', 'ar'] as $locale) {
+                $key = "{$field}_{$locale}";
+                if (array_key_exists($key, $data)) {
+                    $article->setAttribute($key, $data[$key]);
+                }
+            }
+        }
+
+        $article->save();
+    }
+
+    private function mapLegacyTranslationInput(array &$data): void
+    {
+        if (! isset($data['locale'])) {
+            return;
+        }
+
+        $locale = $data['locale'];
+
+        foreach (['title', 'subtitle', 'slug', 'content', 'excerpt', 'seo_title', 'seo_description'] as $field) {
+            if (array_key_exists($field, $data) && ! array_key_exists("{$field}_{$locale}", $data)) {
+                $data["{$field}_{$locale}"] = $data[$field];
+            }
+        }
     }
 }

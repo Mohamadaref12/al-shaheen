@@ -25,16 +25,17 @@ class EditorialQueueWidget extends TableWidget
             ->heading('Editorial Queue')
             ->description('Articles waiting for editorial action')
             ->query(fn (): Builder => Article::query()
-                ->with(['author:id,name', 'primaryCategory:id,name'])
+                ->with(['author:id,name', 'primaryCategory:id,name', 'translations'])
                 ->whereIn('status', ['submitted', 'under_review', 'review', 'ready', 'scheduled'])
                 ->orderByRaw("FIELD(status, 'submitted', 'under_review', 'review', 'ready', 'scheduled')")
                 ->orderBy('submitted_at')
                 ->orderBy('created_at'))
             ->paginated([5])
             ->columns([
-                TextColumn::make('title')
+                TextColumn::make('display_title')
+                    ->label('Title')
                     ->limit(35)
-                    ->tooltip(fn (Article $record): string => $record->title),
+                    ->tooltip(fn (Article $record): string => $record->display_title),
 
                 TextColumn::make('author.name')
                     ->label('Author')

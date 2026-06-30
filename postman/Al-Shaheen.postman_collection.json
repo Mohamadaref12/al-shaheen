@@ -409,6 +409,22 @@
           }
         },
         {
+          "name": "Download Article PDF",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/pdf" }],
+            "url": {
+              "raw": "{{base_url}}/articles/{{article_id}}/pdf?locale=ar",
+              "host": ["{{base_url}}"],
+              "path": ["articles", "{{article_id}}", "pdf"],
+              "query": [
+                { "key": "locale", "value": "ar", "description": "ar | en" }
+              ]
+            }
+          }
+        },
+        {
           "name": "Related Stories",
           "request": {
             "auth": { "type": "noauth" },

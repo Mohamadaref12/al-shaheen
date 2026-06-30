@@ -9,21 +9,21 @@ use Illuminate\Http\Request;
 
 trait FetchesPublishedArticles
 {
+    use AppliesTranslatableLocale;
+
     protected function publishedArticleQuery(
         Request $request,
         ?int $categoryId = null,
         ?string $categoryScope = null
     ): Builder {
+        $locale = $this->resolveApiLocale($request);
+
         $query = Article::published()
-            ->with(['author:id,name', 'primaryCategory:id,name,slug', 'tags:id,name,slug'])
-            ->select([
-                'id', 'author_id', 'primary_category_id', 'title', 'subtitle', 'slug',
-                'excerpt', 'featured_image', 'locale', 'read_time', 'is_breaking',
-                'is_premium', 'is_editor_pick', 'editor_pick_order', 'views_count', 'published_at',
-            ]);
+            ->withTranslation($locale)
+            ->with(['author:id,name', 'primaryCategory:id,name,slug', 'tags:id,name,slug']);
 
         if ($request->filled('locale')) {
-            $query->where('locale', $request->input('locale'));
+            $query->translatedIn($request->input('locale'));
         }
 
         if ($categoryId && $categoryScope === 'primary') {

@@ -12,29 +12,39 @@ class NewsSummaryResource extends JsonResource
 
     public function toArray(Request $request): array
     {
+        $locale = $this->requestedLocale($request);
+        $translation = $this->translate($locale, false) ?? $this->translate($locale);
+
         return [
-            'id' => $this->id,
-            'title' => $this->title,
-            'subtitle' => $this->subtitle,
-            'slug' => $this->slug,
-            'excerpt' => $this->excerpt,
-            'featured_image' => $this->featured_image,
+            'id'                 => $this->id,
+            'title'              => $translation?->title,
+            'subtitle'           => $translation?->subtitle,
+            'slug'               => $translation?->slug,
+            'excerpt'            => $translation?->excerpt,
+            'featured_image'     => $this->featured_image,
             'featured_image_url' => $this->imageUrl($this->featured_image),
-            'locale' => $this->locale,
-            'read_time' => $this->read_time,
-            'is_breaking' => (bool) $this->is_breaking,
-            'is_premium' => (bool) $this->is_premium,
-            'views_count' => $this->views_count,
-            'published_at' => $this->published_at?->toIso8601String(),
-            'author' => $this->whenLoaded('author', fn () => [
-                'id' => $this->author?->id,
+            'locale'             => $locale,
+            'read_time'          => $this->read_time,
+            'is_breaking'        => (bool) $this->is_breaking,
+            'is_premium'         => (bool) $this->is_premium,
+            'views_count'        => $this->views_count,
+            'published_at'       => $this->published_at?->toIso8601String(),
+            'author'             => $this->whenLoaded('author', fn () => [
+                'id'   => $this->author?->id,
                 'name' => $this->author?->name,
             ]),
-            'category' => $this->whenLoaded('category', fn () => [
-                'id' => $this->category?->id,
+            'category'           => $this->whenLoaded('category', fn () => [
+                'id'   => $this->category?->id,
                 'name' => $this->category?->name,
                 'slug' => $this->category?->slug,
             ]),
         ];
+    }
+
+    private function requestedLocale(Request $request): string
+    {
+        $locale = $request->input('locale', config('app.locale', 'ar'));
+
+        return in_array($locale, ['ar', 'en'], true) ? $locale : 'ar';
     }
 }

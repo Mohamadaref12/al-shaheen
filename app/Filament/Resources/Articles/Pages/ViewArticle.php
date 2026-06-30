@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Articles\Pages;
 
+use App\Filament\Actions\DownloadArticlePdfAction;
 use App\Filament\Resources\Articles\ArticleResource;
 use App\Models\Comment;
 use Filament\Actions\EditAction;
@@ -29,6 +30,7 @@ class ViewArticle extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            DownloadArticlePdfAction::make(),
             EditAction::make(),
         ];
     }
@@ -102,7 +104,7 @@ class ViewArticle extends ViewRecord
                 View::make('filament.articles.view-article')
                     ->viewData(fn (): array => [
                         'article'       => $this->getRecord()
-                            ->load(['author', 'primaryCategory', 'tags', 'secondaryCategories', 'approvedBy']),
+                            ->load(['author', 'primaryCategory', 'tags', 'secondaryCategories', 'approvedBy', 'translations']),
                         'comments'      => $this->getArticleComments(),
                         'commentCounts' => $this->getCommentCounts(),
                     ]),

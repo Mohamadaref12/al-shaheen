@@ -16,6 +16,8 @@ class DatabaseSeeder extends Seeder
             'user_course_progress',
             'article_views',
             'article_revisions',
+            'article_translations',
+            'news_translations',
             'follows',
             'saved_articles',
             'article_tags',

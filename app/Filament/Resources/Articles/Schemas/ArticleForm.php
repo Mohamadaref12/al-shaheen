@@ -2,9 +2,6 @@
 
 namespace App\Filament\Resources\Articles\Schemas;
 
-use App\Models\Category;
-use App\Models\Tag;
-use App\Models\User;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
@@ -14,6 +11,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Validation\Rule;
 
 class ArticleForm
 {
@@ -24,21 +22,6 @@ class ArticleForm
                 Section::make('Article Details')
                     ->columns(2)
                     ->schema([
-                        TextInput::make('title')
-                            ->required()
-                            ->maxLength(500)
-                            ->columnSpanFull(),
-
-                        TextInput::make('subtitle')
-                            ->maxLength(500)
-                            ->columnSpanFull(),
-
-                        TextInput::make('slug')
-                            ->required()
-                            ->unique(ignoreRecord: true)
-                            ->maxLength(500)
-                            ->columnSpanFull(),
-
                         Select::make('author_id')
                             ->label('Author')
                             ->relationship('author', 'name')
@@ -49,10 +32,6 @@ class ArticleForm
                             ->label('Primary Category')
                             ->relationship('primaryCategory', 'name')
                             ->searchable()
-                            ->required(),
-
-                        Select::make('locale')
-                            ->options(['ar' => 'Arabic', 'en' => 'English'])
                             ->required(),
 
                         Select::make('status')
@@ -76,6 +55,13 @@ class ArticleForm
                         DateTimePicker::make('published_at')
                             ->label('Published At'),
                     ]),
+
+                Section::make('English Content')
+                    ->schema(self::translationFields('en')),
+
+                Section::make('Arabic Content')
+                    ->schema(self::translationFields('ar')),
+
                 Section::make('Taxonomy')
                     ->schema([
                         Select::make('secondaryCategories')
@@ -92,30 +78,68 @@ class ArticleForm
                             ->searchable()
                             ->preload(),
                     ]),
-                Section::make('Content')
+
+                Section::make('Media')
                     ->schema([
-                        RichEditor::make('content')
-                            ->label('Article Body')
-                            ->columnSpanFull(),
-
-                        Textarea::make('excerpt')
-                            ->rows(3)
-                            ->columnSpanFull(),
-
-                        TextInput::make('video_embed')
-                            ->label('Video Embed URL')
-                            ->url()
-                            ->columnSpanFull(),
-
                         FileUpload::make('featured_image')
                             ->label('Featured Image')
                             ->image()
                             ->disk('images')
                             ->directory('articles')
                             ->columnSpanFull(),
+
+                        TextInput::make('video_embed')
+                            ->label('Video Embed URL')
+                            ->url()
+                            ->columnSpanFull(),
                     ]),
-
-
             ])->columns(1);
+    }
+
+    private static function translationFields(string $locale): array
+    {
+        $label = strtoupper($locale);
+
+        return [
+            TextInput::make("title_{$locale}")
+                ->label("Title ({$label})")
+                ->required()
+                ->maxLength(500)
+                ->columnSpanFull(),
+
+            TextInput::make("subtitle_{$locale}")
+                ->label("Subtitle ({$label})")
+                ->maxLength(500)
+                ->columnSpanFull(),
+
+            TextInput::make("slug_{$locale}")
+                ->label("Slug ({$label})")
+                ->required()
+                ->maxLength(500)
+                ->rule(fn ($record) => Rule::unique('article_translations', 'slug')
+                    ->where('locale', $locale)
+                    ->ignore($record?->translate($locale, false)?->id))
+                ->columnSpanFull(),
+
+            Textarea::make("excerpt_{$locale}")
+                ->label("Excerpt ({$label})")
+                ->rows(3)
+                ->columnSpanFull(),
+
+            RichEditor::make("content_{$locale}")
+                ->label("Article Body ({$label})")
+                ->columnSpanFull(),
+
+            TextInput::make("seo_title_{$locale}")
+                ->label("SEO Title ({$label})")
+                ->maxLength(200)
+                ->columnSpanFull(),
+
+            Textarea::make("seo_description_{$locale}")
+                ->label("SEO Description ({$label})")
+                ->rows(2)
+                ->maxLength(400)
+                ->columnSpanFull(),
+        ];
     }
 }

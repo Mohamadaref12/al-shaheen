@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Articles\Tables;
 
+use App\Filament\Actions\DownloadArticlePdfAction;
 use App\Filament\Resources\Articles\ArticleResource;
 use App\Models\Article;
 use Filament\Actions\Action;
@@ -24,7 +25,9 @@ class ArticlesTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->modifyQueryUsing(fn (Builder $query) => $query->withCount([
+            ->modifyQueryUsing(fn (Builder $query) => $query
+                ->with('translations')
+                ->withCount([
                 'comments',
                 'comments as pending_comments_count' => fn (Builder $q) => $q->where('status', 'pending'),
             ]))
@@ -36,16 +39,17 @@ class ArticlesTable
                     ->disk('images')
                     ->circular()
                     ->imageHeight(44)
-                    ->defaultImageUrl(fn (Article $record): string => 'https://ui-avatars.com/api/?name=' . urlencode(Str::limit($record->title, 1, '')) . '&background=28414e&color=fff&size=88'),
+                    ->defaultImageUrl(fn (Article $record): string => 'https://ui-avatars.com/api/?name=' . urlencode(Str::limit($record->title_ar ?: $record->title_en ?: 'A', 1, '')) . '&background=28414e&color=fff&size=88'),
 
-                TextColumn::make('title')
-                    ->description(fn (Article $record): ?string => $record->subtitle
-                        ?: ($record->excerpt ? Str::limit($record->excerpt, 70) : null))
+                TextColumn::make('title_ar')
+                    ->label('Title (AR)')
+                    ->description(fn (Article $record): ?string => $record->title_en)
                     ->weight(FontWeight::SemiBold)
-                    ->searchable()
-                    ->sortable()
-                    ->limit(45)
-                    ->tooltip(fn (Article $record): string => $record->title),
+                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->whereHas(
+                        'translations',
+                        fn (Builder $q) => $q->where('title', 'like', "%{$search}%")
+                    ))
+                    ->limit(45),
 
                 TextColumn::make('author.name')
                     ->label('Author')
@@ -87,11 +91,6 @@ class ArticlesTable
                         'ready'     => 'info',
                         default     => 'warning',
                     }),
-
-                TextColumn::make('locale')
-                    ->badge()
-                    ->formatStateUsing(fn (string $state): string => strtoupper($state))
-                    ->color(fn (string $state): string => $state === 'ar' ? 'warning' : 'info'),
 
                 IconColumn::make('is_breaking')
                     ->label('Breaking')
@@ -143,8 +142,19 @@ class ArticlesTable
                         'archived'     => 'Archived',
                     ]),
 
-                SelectFilter::make('locale')
-                    ->options(['ar' => 'Arabic', 'en' => 'English']),
+                TernaryFilter::make('has_arabic')
+                    ->label('Has Arabic')
+                    ->queries(
+                        true: fn (Builder $query) => $query->translatedIn('ar'),
+                        false: fn (Builder $query) => $query->whereDoesntHave('translations', fn (Builder $q) => $q->where('locale', 'ar')),
+                    ),
+
+                TernaryFilter::make('has_english')
+                    ->label('Has English')
+                    ->queries(
+                        true: fn (Builder $query) => $query->translatedIn('en'),
+                        false: fn (Builder $query) => $query->whereDoesntHave('translations', fn (Builder $q) => $q->where('locale', 'en')),
+                    ),
 
                 TernaryFilter::make('is_breaking')
                     ->label('Breaking'),
@@ -162,6 +172,7 @@ class ArticlesTable
                     ->icon(Heroicon::OutlinedEye)
                     ->color('gray')
                     ->url(fn (Article $record): string => ArticleResource::getUrl('view', ['record' => $record])),
+                DownloadArticlePdfAction::make(),
                 EditAction::make(),
             ])
             ->toolbarActions([

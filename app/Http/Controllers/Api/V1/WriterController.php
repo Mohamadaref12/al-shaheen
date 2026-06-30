@@ -10,6 +10,7 @@ use App\Http\Resources\Api\V1\WriterResource;
 use App\Http\Resources\Api\V1\WriterSpotlightResource;
 use App\Models\Writer;
 use App\Traits\FetchesHighPerformingWriters;
+use App\Traits\AppliesTranslatableLocale;
 use App\Traits\MarksSavedArticles;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,6 +18,7 @@ use Throwable;
 
 class WriterController extends Controller
 {
+    use AppliesTranslatableLocale;
     use FetchesHighPerformingWriters;
     use MarksSavedArticles;
 
@@ -89,19 +91,15 @@ class WriterController extends Controller
                 return $this->error(null, 'Writer not found.', 404);
             }
 
+            $locale = $this->resolveApiLocale($request);
+
             $articlesQuery = $writer->articles()
+                ->withTranslation($locale)
                 ->with(['primaryCategory:id,name,slug', 'tags:id,name,slug'])
-                ->select([
-                    'articles.id', 'articles.author_id', 'articles.primary_category_id',
-                    'articles.title', 'articles.subtitle', 'articles.slug', 'articles.excerpt',
-                    'articles.featured_image', 'articles.locale', 'articles.read_time',
-                    'articles.is_breaking', 'articles.is_premium', 'articles.views_count',
-                    'articles.published_at',
-                ])
                 ->orderByDesc('articles.published_at');
 
             if ($request->filled('locale')) {
-                $articlesQuery->where('articles.locale', $request->input('locale'));
+                $articlesQuery->translatedIn($request->input('locale'));
             }
 
             $articles = $this->withIsSavedOnPaginator(

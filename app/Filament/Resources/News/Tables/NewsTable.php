@@ -19,6 +19,7 @@ class NewsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn ($query) => $query->with('translations'))
             ->defaultSort('published_at', 'desc')
             ->columns([
                 ImageColumn::make('featured_image')
@@ -27,12 +28,14 @@ class NewsTable
                     ->circular()
                     ->imageHeight(44),
 
-                TextColumn::make('title')
-                    ->searchable()
-                    ->sortable()
-                    ->limit(50)
-                    ->description(fn ($record): ?string => $record->subtitle
-                        ?: ($record->excerpt ? Str::limit($record->excerpt, 60) : null)),
+                TextColumn::make('title_ar')
+                    ->label('Title (AR)')
+                    ->description(fn ($record): ?string => $record->title_en)
+                    ->searchable(query: fn ($query, string $search) => $query->whereHas(
+                        'translations',
+                        fn ($q) => $q->where('title', 'like', "%{$search}%")
+                    ))
+                    ->limit(50),
 
                 TextColumn::make('author.name')
                     ->label('Author')
@@ -53,10 +56,6 @@ class NewsTable
                         'archived' => 'danger',
                         default => 'gray',
                     }),
-
-                TextColumn::make('locale')
-                    ->badge()
-                    ->formatStateUsing(fn (string $state): string => strtoupper($state)),
 
                 IconColumn::make('is_breaking')
                     ->label('Breaking')
@@ -87,8 +86,19 @@ class NewsTable
                         'archived' => 'Archived',
                     ]),
 
-                SelectFilter::make('locale')
-                    ->options(['ar' => 'Arabic', 'en' => 'English']),
+                TernaryFilter::make('has_arabic')
+                    ->label('Has Arabic')
+                    ->queries(
+                        true: fn ($query) => $query->translatedIn('ar'),
+                        false: fn ($query) => $query->whereDoesntHave('translations', fn ($q) => $q->where('locale', 'ar')),
+                    ),
+
+                TernaryFilter::make('has_english')
+                    ->label('Has English')
+                    ->queries(
+                        true: fn ($query) => $query->translatedIn('en'),
+                        false: fn ($query) => $query->whereDoesntHave('translations', fn ($q) => $q->where('locale', 'en')),
+                    ),
 
                 TernaryFilter::make('is_breaking')
                     ->label('Breaking'),

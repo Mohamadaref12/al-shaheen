@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Models\Category;
+use App\Traits\AppliesTranslatableLocale;
 use Carbon\Carbon;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\JsonResponse;
@@ -14,6 +15,8 @@ use Throwable;
 
 class WriterDashboardController extends Controller
 {
+    use AppliesTranslatableLocale;
+
     private const EDITORIAL_STATUSES = ['submitted', 'under_review', 'ready', 'scheduled'];
 
     private const DRAFT_STATUSES = ['draft', 'submitted', 'under_review', 'ready'];
@@ -63,10 +66,7 @@ class WriterDashboardController extends Controller
             }
 
             if ($request->filled('search')) {
-                $term = $request->input('search');
-                $query->where(fn ($q) => $q
-                    ->where('title', 'like', "%{$term}%")
-                    ->orWhere('excerpt', 'like', "%{$term}%"));
+                $this->applyTranslationSearch($query, $request->input('search'));
             }
 
             match ($request->input('sort', 'latest')) {
@@ -105,13 +105,9 @@ class WriterDashboardController extends Controller
             $drafts = Article::query()
                 ->where('author_id', $authorId)
                 ->whereIn('status', self::WORKSPACE_DRAFT_STATUSES)
-                ->with(['primaryCategory:id,name,slug'])
+                ->with(['primaryCategory:id,name,slug', 'translations'])
                 ->orderByDesc('updated_at')
-                ->get([
-                    'id', 'title', 'slug', 'status', 'primary_category_id',
-                    'content', 'excerpt', 'featured_image', 'writer_notes',
-                    'updated_at', 'created_at',
-                ]);
+                ->get();
 
             $rows = $drafts->map(fn (Article $article) => $this->formatDraftRow($article));
 
@@ -181,14 +177,14 @@ class WriterDashboardController extends Controller
             $lastReturningRate = max(0, $returningRate - 2.7);
 
             $topArticles = (clone $published)
-                ->with(['primaryCategory:id,name,slug'])
+                ->with(['primaryCategory:id,name,slug', 'translations'])
                 ->withCount([
                     'comments as comments_count' => fn ($q) => $q->where('status', 'approved'),
                     'savedByUsers',
                 ])
                 ->orderByDesc('views_count')
                 ->limit(5)
-                ->get(['id', 'title', 'slug', 'views_count', 'primary_category_id', 'published_at'])
+                ->get()
                 ->map(fn (Article $article) => [
                     'id'              => $article->id,
                     'title'           => $article->title,
@@ -245,6 +241,7 @@ class WriterDashboardController extends Controller
                     'primaryCategory:id,name,slug',
                     'secondaryCategories:id,name,slug',
                     'tags:id,name,slug',
+                    'translations',
                 ])
                 ->where('id', $articleId)
                 ->where('author_id', $user->id)
@@ -318,7 +315,8 @@ class WriterDashboardController extends Controller
             $editorialQueue = Article::query()
                 ->where('author_id', $authorId)
                 ->whereIn('status', self::EDITORIAL_STATUSES)
-                ->get(['id', 'title', 'slug', 'status', 'submitted_at', 'scheduled_at'])
+                ->with('translations')
+                ->get()
                 ->sortBy(fn (Article $article) => $article->scheduled_at
                     ?? ($article->submitted_at?->copy()->addDays(3) ?? now()->addYear()))
                 ->take(10)
@@ -348,10 +346,11 @@ class WriterDashboardController extends Controller
             }
 
             $mostSavedStory = (clone $publishedArticles)
+                ->with('translations')
                 ->withCount('savedByUsers')
                 ->orderByDesc('saved_by_users_count')
                 ->orderByDesc('views_count')
-                ->first(['id', 'title', 'slug']);
+                ->first();
 
             $mostSavedStoryData = null;
             if ($mostSavedStory) {
@@ -421,10 +420,7 @@ class WriterDashboardController extends Controller
     {
         return Article::query()
             ->where('author_id', $authorId)
-            ->select([
-                'id', 'title', 'slug', 'status', 'primary_category_id',
-                'views_count', 'published_at', 'updated_at', 'scheduled_at',
-            ]);
+            ->with('translations');
     }
 
     private function buildArticlesSummary(int $authorId): array

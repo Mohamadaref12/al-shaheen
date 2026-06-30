@@ -25,24 +25,20 @@ class RecentArticlesWidget extends TableWidget
             ->heading('Recently Published')
             ->description('Latest live articles')
             ->query(fn (): Builder => Article::query()
-                ->with(['author:id,name', 'primaryCategory:id,name'])
+                ->with(['author:id,name', 'primaryCategory:id,name', 'translations'])
                 ->where('status', 'published')
                 ->orderByDesc('published_at'))
             ->paginated([5])
             ->columns([
-                TextColumn::make('title')
+                TextColumn::make('display_title')
+                    ->label('Title')
                     ->limit(35)
-                    ->tooltip(fn (Article $record): string => $record->title),
+                    ->tooltip(fn (Article $record): string => $record->display_title),
 
                 TextColumn::make('primaryCategory.name')
                     ->label('Category')
                     ->badge()
                     ->color('gray'),
-
-                TextColumn::make('locale')
-                    ->badge()
-                    ->formatStateUsing(fn (string $state): string => strtoupper($state))
-                    ->color(fn (string $state): string => $state === 'ar' ? 'warning' : 'info'),
 
                 TextColumn::make('views_count')
                     ->label('Views')

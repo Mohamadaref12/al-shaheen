@@ -14,16 +14,17 @@ class CommentsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn ($query) => $query->with(['article.translations']))
             ->columns([
                 TextColumn::make('user.name')
                     ->label('User')
                     ->sortable()
                     ->searchable(),
 
-                TextColumn::make('article.title')
+                TextColumn::make('article_title')
                     ->label('Article')
                     ->limit(50)
-                    ->sortable(),
+                    ->getStateUsing(fn ($record): string => $record->article?->display_title ?? '—'),
 
                 TextColumn::make('body')
                     ->limit(80)

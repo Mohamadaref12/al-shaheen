@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Comments\Schemas;
 
+use App\Models\Article;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Components\Section;
@@ -24,7 +25,12 @@ class CommentForm
 
                         Select::make('article_id')
                             ->label('Article')
-                            ->relationship('article', 'title')
+                            ->relationship(
+                                name: 'article',
+                                titleAttribute: 'id',
+                                modifyQueryUsing: fn ($query) => $query->with('translations'),
+                            )
+                            ->getOptionLabelFromRecordUsing(fn (Article $record): string => $record->display_title)
                             ->searchable()
                             ->required(),
 

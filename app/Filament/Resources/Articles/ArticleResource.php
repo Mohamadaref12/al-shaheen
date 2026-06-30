@@ -14,6 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class ArticleResource extends Resource
 {
@@ -29,7 +30,14 @@ class ArticleResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Articles';
 
-    protected static ?string $recordTitleAttribute = 'title';
+    protected static ?string $recordTitleAttribute = 'display_title';
+
+    public static function getRecordTitle(?Model $record): string | \Illuminate\Contracts\Support\Htmlable | null
+    {
+        return $record instanceof Article
+            ? $record->display_title
+            : parent::getRecordTitle($record);
+    }
 
     public static function form(Schema $schema): Schema
     {

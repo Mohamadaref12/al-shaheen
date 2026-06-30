@@ -24,7 +24,7 @@ class PendingCommentsWidget extends TableWidget
             ->heading('Pending Comments')
             ->description('Comments awaiting moderation')
             ->query(fn (): Builder => Comment::query()
-                ->with(['user:id,name', 'article:id,title'])
+                ->with(['user:id,name', 'article.translations'])
                 ->where('status', 'pending')
                 ->latest())
             ->paginated([5])
@@ -33,10 +33,11 @@ class PendingCommentsWidget extends TableWidget
                     ->label('User')
                     ->placeholder('Guest'),
 
-                TextColumn::make('article.title')
+                TextColumn::make('display_title')
                     ->label('Article')
                     ->limit(40)
-                    ->tooltip(fn (Comment $record): ?string => $record->article?->title),
+                    ->getStateUsing(fn (Comment $record): string => $record->article?->display_title ?? '—')
+                    ->tooltip(fn (Comment $record): ?string => $record->article?->display_title),
 
                 TextColumn::make('body')
                     ->limit(60)
