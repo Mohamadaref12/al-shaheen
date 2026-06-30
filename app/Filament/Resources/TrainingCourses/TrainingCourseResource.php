@@ -30,6 +30,8 @@ class TrainingCourseResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'title';
 
+    protected static ?int $navigationSort = 2;
+
     public static function form(Schema $schema): Schema
     {
         return TrainingCourseForm::configure($schema);

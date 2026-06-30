@@ -22,8 +22,10 @@ class TrainingCoursesTable
                     ->sortable()
                     ->limit(60),
 
-                TextColumn::make('category')
-                    ->badge(),
+                TextColumn::make('category.name')
+                    ->label('Category')
+                    ->badge()
+                    ->sortable(),
 
                 TextColumn::make('level')
                     ->badge()
@@ -33,6 +35,10 @@ class TrainingCoursesTable
                         'advanced'     => 'danger',
                         default        => 'gray',
                     }),
+
+                TextColumn::make('price')
+                    ->money('usd')
+                    ->sortable(),
 
                 TextColumn::make('lessons_count')
                     ->label('Lessons')
@@ -53,14 +59,9 @@ class TrainingCoursesTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                SelectFilter::make('category')
-                    ->options([
-                        'journalism'   => 'Journalism',
-                        'media'        => 'Media',
-                        'writing'      => 'Writing',
-                        'photography'  => 'Photography',
-                        'broadcasting' => 'Broadcasting',
-                    ]),
+                SelectFilter::make('course_category_id')
+                    ->label('Category')
+                    ->relationship('category', 'name'),
 
                 SelectFilter::make('level')
                     ->options([

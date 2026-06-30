@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Dashboard;
+use App\Filament\Resources\CourseCategories\CourseCategoryResource;
 use App\Filament\Widgets\ArticlesPublishedChart;
 use App\Filament\Widgets\ContentStatsOverview;
 use App\Filament\Widgets\EditorialQueueWidget;
@@ -45,6 +46,9 @@ class AdminPanelProvider extends PanelProvider
                 fn (): string => '<link rel="stylesheet" href="'.asset('css/filament-admin-theme.css').'">',
             )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
+            ->resources([
+                CourseCategoryResource::class,
+            ])
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
                 Dashboard::class,

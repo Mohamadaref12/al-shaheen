@@ -30,6 +30,7 @@ class DatabaseSeeder extends Seeder
             'ads',
             'training_lessons',
             'training_courses',
+            'course_categories',
             'articles',
             'reports',
             'interviews',
@@ -63,7 +64,8 @@ class DatabaseSeeder extends Seeder
             MonetizationSeeder::class,      // 11. Ads + packages + subscriptions + newsletter
             PaymentSeeder::class,           // 12. Payments
             ContentSubmissionSeeder::class, // 13. Content submissions
-            TrainingSeeder::class,          // 14. Courses + lessons + user progress
+            CourseCategorySeeder::class,    // 14. Course categories
+            TrainingSeeder::class,          // 15. Courses + lessons + user progress
         ]);
     }
 }

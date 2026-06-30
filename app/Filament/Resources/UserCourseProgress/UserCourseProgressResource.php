@@ -28,6 +28,8 @@ class UserCourseProgressResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Progress';
 
+    protected static ?int $navigationSort = 4;
+
     public static function form(Schema $schema): Schema
     {
         return UserCourseProgressForm::configure($schema);

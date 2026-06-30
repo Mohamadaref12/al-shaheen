@@ -956,6 +956,33 @@
       "name": "Training",
       "item": [
         {
+          "name": "Filters",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/training/filters"
+          }
+        },
+        {
+          "name": "List Categories",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/training/categories"
+          }
+        },
+        {
+          "name": "Show Category",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/training/categories/{{category_slug}}"
+          }
+        },
+        {
           "name": "List Courses",
           "request": {
             "auth": { "type": "noauth" },
@@ -966,9 +993,12 @@
               "host": ["{{base_url}}"],
               "path": ["training", "courses"],
               "query": [
-                { "key": "category", "value": "", "disabled": true },
-                { "key": "level", "value": "", "disabled": true, "description": "junior | mid | senior" },
-                { "key": "premium", "value": "true", "disabled": true }
+                { "key": "category", "value": "journalism", "disabled": true },
+                { "key": "level", "value": "beginner", "disabled": true },
+                { "key": "premium", "value": "true", "disabled": true },
+                { "key": "search", "value": "", "disabled": true },
+                { "key": "sort", "value": "default", "disabled": true, "description": "default | newest | price_asc | price_desc | rating" },
+                { "key": "per_page", "value": "12", "disabled": true }
               ]
             }
           }
@@ -979,7 +1009,41 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/training/courses/{{course_id}}"
+            "url": "{{base_url}}/training/courses/{{course_slug}}"
+          }
+        },
+        {
+          "name": "Course Lessons",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/training/courses/{{course_slug}}/lessons"
+          }
+        },
+        {
+          "name": "Related Courses",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/training/courses/{{course_slug}}/related",
+              "host": ["{{base_url}}"],
+              "path": ["training", "courses", "{{course_slug}}", "related"],
+              "query": [
+                { "key": "limit", "value": "3", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Show Lesson",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/training/lessons/{{lesson_id}}"
           }
         },
         {
