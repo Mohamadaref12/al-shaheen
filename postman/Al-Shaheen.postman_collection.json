@@ -538,9 +538,9 @@
             "body": {
               "mode": "raw",
               "options": { "raw": { "language": "json" } },
-              "raw": "{\n  \"title_ar\": \"عنوان عربي محدّث\",\n  \"content_ar\": \"محتوى عربي محدّث...\",\n  \"title_en\": \"Updated English title\",\n  \"content_en\": \"Updated English content...\",\n  \"status\": \"pending\"\n}"
+              "raw": "{\n  \"title_ar\": \"عنوان عربي محدّث\",\n  \"subtitle_ar\": \"عنوان فرعي محدّث\",\n  \"content_ar\": \"محتوى عربي محدّث كامل...\",\n  \"excerpt_ar\": \"ملخص محدّث\",\n  \"seo_title_ar\": \"SEO محدّث\",\n  \"title_en\": \"Updated English title\",\n  \"subtitle_en\": \"Updated English subtitle\",\n  \"content_en\": \"Updated English full content...\",\n  \"tags\": [1, 2],\n  \"read_time\": 10,\n  \"is_breaking\": false,\n  \"status\": \"pending\"\n}"
             },
-            "description": "Update one or both locales. Only sent fields are updated. status: draft | pending | published | archived (owner or editor)."
+            "description": "Update any combination of fields. content accepts plain text or TipTap JSON. tags: [1,2] or slugs or tag_ids. Only sent fields are updated."
           }
         },
         {
@@ -727,7 +727,7 @@
             "body": {
               "mode": "raw",
               "options": { "raw": { "language": "json" } },
-              "raw": "{\n  \"category_id\": 1,\n  \"status\": \"draft\",\n  \"featured_image\": \"{{featured_image_path}}\",\n\n  \"title_ar\": \"عنوان الخبر بالعربية\",\n  \"subtitle_ar\": \"عنوان فرعي\",\n  \"slug_ar\": \"news-ar-1\",\n  \"excerpt_ar\": \"ملخص الخبر بالعربية.\",\n  \"content_ar\": \"محتوى الخبر الكامل بالعربية...\",\n  \"seo_title_ar\": \"SEO عربي\",\n  \"seo_description_ar\": \"وصف SEO بالعربية\",\n\n  \"title_en\": \"English news headline\",\n  \"subtitle_en\": \"English subtitle\",\n  \"slug_en\": \"news-en-1\",\n  \"excerpt_en\": \"English excerpt.\",\n  \"content_en\": \"Full English news content...\",\n  \"seo_title_en\": \"English SEO title\",\n  \"seo_description_en\": \"English SEO description\",\n\n  \"read_time\": 5,\n  \"is_breaking\": false,\n  \"is_premium\": false\n}"
+              "raw": "{\n  \"category_id\": 1,\n  \"status\": \"draft\",\n  \"featured_image\": \"{{featured_image_path}}\",\n  \"tags\": [1, 2],\n\n  \"title_ar\": \"عنوان الخبر بالعربية\",\n  \"subtitle_ar\": \"عنوان فرعي\",\n  \"slug_ar\": \"news-ar-1\",\n  \"excerpt_ar\": \"ملخص الخبر بالعربية.\",\n  \"content_ar\": \"محتوى الخبر الكامل بالعربية...\",\n  \"seo_title_ar\": \"SEO عربي\",\n  \"seo_description_ar\": \"وصف SEO بالعربية\",\n\n  \"title_en\": \"English news headline\",\n  \"subtitle_en\": \"English subtitle\",\n  \"slug_en\": \"news-en-1\",\n  \"excerpt_en\": \"English excerpt.\",\n  \"content_en\": \"Full English news content...\",\n  \"seo_title_en\": \"English SEO title\",\n  \"seo_description_en\": \"English SEO description\",\n\n  \"read_time\": 5,\n  \"is_breaking\": false,\n  \"is_premium\": false\n}"
             },
             "description": "Step 2: Send featured_image as string path from upload response (e.g. uploads/news/uuid.webp). Run Upload News Image first."
           }
@@ -744,9 +744,9 @@
             "body": {
               "mode": "raw",
               "options": { "raw": { "language": "json" } },
-              "raw": "{\n  \"title_ar\": \"عنوان محدّث\",\n  \"content_ar\": \"محتوى محدّث...\",\n  \"title_en\": \"Updated headline\",\n  \"content_en\": \"Updated content...\",\n  \"featured_image\": \"{{featured_image_path}}\",\n  \"status\": \"published\"\n}"
+              "raw": "{\n  \"title_ar\": \"عنوان محدّث\",\n  \"subtitle_ar\": \"عنوان فرعي محدّث\",\n  \"content_ar\": \"محتوى محدّث كامل...\",\n  \"excerpt_ar\": \"ملخص محدّث\",\n  \"seo_title_ar\": \"SEO محدّث\",\n  \"title_en\": \"Updated headline\",\n  \"subtitle_en\": \"Updated subtitle\",\n  \"content_en\": \"Updated full content...\",\n  \"excerpt_en\": \"Updated excerpt\",\n  \"tags\": [1, 2],\n  \"featured_image\": \"{{featured_image_path}}\",\n  \"read_time\": 8,\n  \"is_breaking\": true,\n  \"status\": \"published\"\n}"
             },
-            "description": "featured_image is a string path from POST /uploads/images (type: news). Omit field to keep existing image."
+            "description": "Update any combination of fields. content accepts plain text or TipTap JSON object. tags: array of ids, slugs, or [{id:1}]. Also accepts tag_ids."
           }
         },
         {

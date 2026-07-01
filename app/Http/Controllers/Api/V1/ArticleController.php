@@ -9,6 +9,7 @@ use App\Models\Tag;
 use App\Services\Articles\ArticleFeaturedImageDownloadService;
 use App\Services\Articles\ArticlePdfService;
 use App\Traits\AppliesTranslatableLocale;
+use App\Traits\NormalizesTranslatableApiInput;
 use App\Traits\MarksSavedArticles;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,6 +18,7 @@ use Throwable;
 class ArticleController extends Controller
 {
     use AppliesTranslatableLocale;
+    use NormalizesTranslatableApiInput;
     use MarksSavedArticles;
     public function index(Request $request): JsonResponse
     {
@@ -173,6 +175,8 @@ class ArticleController extends Controller
                 return $this->error(null, 'You are not authorized to publish articles.', 403);
             }
 
+            $this->prepareTranslatableRequest($request);
+
             $data = $request->validate([
                 'primary_category_id'    => 'required|exists:categories,id',
                 'title_en'               => 'nullable|string|max:500',
@@ -181,15 +185,15 @@ class ArticleController extends Controller
                 'subtitle_ar'            => 'nullable|string|max:500',
                 'slug_en'                => 'nullable|string|max:500|unique:article_translations,slug,NULL,id,locale,en',
                 'slug_ar'                => 'nullable|string|max:500|unique:article_translations,slug,NULL,id,locale,ar',
-                'content_en'             => 'nullable|string',
-                'content_ar'             => 'nullable|string',
-                'excerpt_en'             => 'nullable|string|max:1000',
-                'excerpt_ar'             => 'nullable|string|max:1000',
+                'content_en'             => $this->translatableRichTextRules(),
+                'content_ar'             => $this->translatableRichTextRules(),
+                'excerpt_en'             => $this->translatableRichTextRules(),
+                'excerpt_ar'             => $this->translatableRichTextRules(),
                 'title'                  => 'nullable|string|max:500',
                 'subtitle'               => 'nullable|string|max:500',
                 'slug'                   => 'nullable|string|max:500',
-                'content'                => 'nullable|string',
-                'excerpt'                => 'nullable|string|max:1000',
+                'content'                => $this->translatableRichTextRules(),
+                'excerpt'                => $this->translatableRichTextRules(),
                 'writer_notes'           => 'nullable|string|max:500',
                 'featured_image'         => 'nullable|string',
                 'video_embed'            => 'nullable|string',
@@ -205,7 +209,7 @@ class ArticleController extends Controller
                 'seo_description'        => 'nullable|string|max:400',
                 'status'                 => 'nullable|in:draft,pending',
                 'tags'                   => 'nullable|array',
-                'tags.*'                 => 'exists:tags,id',
+                'tags.*'                 => 'integer|exists:tags,id',
                 'secondary_categories'   => 'nullable|array',
                 'secondary_categories.*' => 'exists:categories,id',
             ]);
@@ -226,7 +230,7 @@ class ArticleController extends Controller
 
             $this->fillArticleTranslations($article, $data);
 
-            if (! empty($data['tags'])) {
+            if (array_key_exists('tags', $data)) {
                 $article->tags()->sync($data['tags']);
             }
             if (! empty($data['secondary_categories'])) {
@@ -262,6 +266,8 @@ class ArticleController extends Controller
                 return $this->error(null, 'You are not authorized to edit this article.', 403);
             }
 
+            $this->prepareTranslatableRequest($request);
+
             $data = $request->validate([
                 'primary_category_id'    => 'sometimes|exists:categories,id',
                 'title_en'               => 'nullable|string|max:500',
@@ -270,15 +276,15 @@ class ArticleController extends Controller
                 'subtitle_ar'            => 'nullable|string|max:500',
                 'slug_en'                => 'nullable|string|max:500',
                 'slug_ar'                => 'nullable|string|max:500',
-                'content_en'             => 'nullable|string',
-                'content_ar'             => 'nullable|string',
-                'excerpt_en'             => 'nullable|string|max:1000',
-                'excerpt_ar'             => 'nullable|string|max:1000',
+                'content_en'             => $this->translatableRichTextRules(),
+                'content_ar'             => $this->translatableRichTextRules(),
+                'excerpt_en'             => $this->translatableRichTextRules(),
+                'excerpt_ar'             => $this->translatableRichTextRules(),
                 'title'                  => 'nullable|string|max:500',
                 'subtitle'               => 'nullable|string|max:500',
                 'slug'                   => 'nullable|string|max:500',
-                'content'                => 'nullable|string',
-                'excerpt'                => 'nullable|string|max:1000',
+                'content'                => $this->translatableRichTextRules(),
+                'excerpt'                => $this->translatableRichTextRules(),
                 'writer_notes'           => 'nullable|string|max:500',
                 'featured_image'         => 'nullable|string',
                 'video_embed'            => 'nullable|string',
@@ -294,7 +300,7 @@ class ArticleController extends Controller
                 'seo_description'        => 'nullable|string|max:400',
                 'status'                 => 'nullable|in:draft,pending,published,archived',
                 'tags'                   => 'nullable|array',
-                'tags.*'                 => 'exists:tags,id',
+                'tags.*'                 => 'integer|exists:tags,id',
                 'secondary_categories'   => 'nullable|array',
                 'secondary_categories.*' => 'exists:categories,id',
             ]);
@@ -540,30 +546,20 @@ class ArticleController extends Controller
 
     private function fillArticleTranslations(Article $article, array $data): void
     {
+        $hasChanges = false;
+
         foreach ($article->translatedAttributeNames() as $field) {
             foreach (['en', 'ar'] as $locale) {
                 $key = "{$field}_{$locale}";
                 if (array_key_exists($key, $data)) {
                     $article->setAttribute($key, $data[$key]);
+                    $hasChanges = true;
                 }
             }
         }
 
-        $article->save();
-    }
-
-    private function mapLegacyTranslationInput(array &$data): void
-    {
-        if (! isset($data['locale'])) {
-            return;
-        }
-
-        $locale = $data['locale'];
-
-        foreach (['title', 'subtitle', 'slug', 'content', 'excerpt', 'seo_title', 'seo_description'] as $field) {
-            if (array_key_exists($field, $data) && ! array_key_exists("{$field}_{$locale}", $data)) {
-                $data["{$field}_{$locale}"] = $data[$field];
-            }
+        if ($hasChanges) {
+            $this->persistModelTranslations($article);
         }
     }
 }

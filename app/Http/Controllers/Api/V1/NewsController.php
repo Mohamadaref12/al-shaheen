@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\News\NewsPdfService;
 use App\Services\News\NewsWorkspaceService;
 use App\Traits\AppliesTranslatableLocale;
+use App\Traits\NormalizesTranslatableApiInput;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -18,6 +19,7 @@ use Throwable;
 class NewsController extends Controller
 {
     use AppliesTranslatableLocale;
+    use NormalizesTranslatableApiInput;
 
     public function index(Request $request): JsonResponse
     {
@@ -26,7 +28,7 @@ class NewsController extends Controller
 
             $query = News::published()
                 ->withTranslation($locale)
-                ->with(['author:id,name', 'category:id,name,slug']);
+                ->with(['author:id,name', 'category:id,name,slug', 'tags:id,name,slug']);
 
             if ($request->filled('category')) {
                 $query->where('category_id', $request->input('category'));
@@ -78,7 +80,7 @@ class NewsController extends Controller
 
             $news = News::published()
                 ->withTranslation($locale)
-                ->with(['author:id,name', 'category:id,name,slug', 'translations'])
+                ->with(['author:id,name', 'category:id,name,slug', 'tags:id,name,slug', 'translations'])
                 ->where('id', $newsId)
                 ->first();
 
@@ -120,14 +122,15 @@ class NewsController extends Controller
             $limit = min((int) $request->input('limit', 6), 12);
 
             $siblingCategoryIds = $this->siblingCategoryIds($news->category_id);
-            $hasCriteria = $news->category_id || $siblingCategoryIds->isNotEmpty() || $news->is_breaking;
+            $tagIds = $news->tags()->pluck('tags.id');
+            $hasCriteria = $news->category_id || $siblingCategoryIds->isNotEmpty() || $news->is_breaking || $tagIds->isNotEmpty();
 
             $related = News::published()
                 ->withTranslation($locale)
-                ->with(['author:id,name', 'category:id,name,slug'])
+                ->with(['author:id,name', 'category:id,name,slug', 'tags:id,name,slug'])
                 ->where('id', '!=', $news->id)
-                ->when($hasCriteria, function ($query) use ($news, $siblingCategoryIds) {
-                    $query->where(function ($inner) use ($news, $siblingCategoryIds) {
+                ->when($hasCriteria, function ($query) use ($news, $siblingCategoryIds, $tagIds) {
+                    $query->where(function ($inner) use ($news, $siblingCategoryIds, $tagIds) {
                         if ($news->category_id) {
                             $inner->where('category_id', $news->category_id);
                         }
@@ -138,6 +141,10 @@ class NewsController extends Controller
 
                         if ($news->is_breaking) {
                             $inner->orWhere('is_breaking', true);
+                        }
+
+                        if ($tagIds->isNotEmpty()) {
+                            $inner->orWhereHas('tags', fn ($q) => $q->whereIn('tags.id', $tagIds));
                         }
                     });
                 })
@@ -317,6 +324,8 @@ class NewsController extends Controller
                 return $this->error(null, 'You are not authorized to manage news.', 403);
             }
 
+            $this->prepareTranslatableRequest($request);
+
             $data = $request->validate([
                 'category_id'        => 'nullable|exists:categories,id',
                 'title_en'           => 'nullable|string|max:500',
@@ -325,15 +334,15 @@ class NewsController extends Controller
                 'subtitle_ar'        => 'nullable|string|max:500',
                 'slug_en'            => 'nullable|string|max:500|unique:news_translations,slug,NULL,id,locale,en',
                 'slug_ar'            => 'nullable|string|max:500|unique:news_translations,slug,NULL,id,locale,ar',
-                'content_en'         => 'nullable|string',
-                'content_ar'         => 'nullable|string',
-                'excerpt_en'         => 'nullable|string|max:1000',
-                'excerpt_ar'         => 'nullable|string|max:1000',
+                'content_en'         => $this->translatableRichTextRules(),
+                'content_ar'         => $this->translatableRichTextRules(),
+                'excerpt_en'         => $this->translatableRichTextRules(),
+                'excerpt_ar'         => $this->translatableRichTextRules(),
                 'title'              => 'nullable|string|max:500',
                 'subtitle'           => 'nullable|string|max:500',
                 'slug'               => 'nullable|string|max:500',
-                'content'            => 'nullable|string',
-                'excerpt'            => 'nullable|string|max:1000',
+                'content'            => $this->translatableRichTextRules(),
+                'excerpt'            => $this->translatableRichTextRules(),
                 'featured_image'     => $this->featuredImageRules(),
                 'video_embed'        => 'nullable|string',
                 'locale'             => 'nullable|in:ar,en',
@@ -348,6 +357,8 @@ class NewsController extends Controller
                 'seo_description'    => 'nullable|string|max:400',
                 'status'             => 'nullable|in:draft,under_review,published,archived',
                 'published_at'       => 'nullable|date',
+                'tags'               => 'nullable|array',
+                'tags.*'             => 'integer|exists:tags,id',
             ]);
 
             $this->mapLegacyTranslationInput($data);
@@ -364,8 +375,12 @@ class NewsController extends Controller
 
             $this->fillNewsTranslations($news, $data);
 
+            if (array_key_exists('tags', $data)) {
+                $news->tags()->sync($data['tags']);
+            }
+
             return $this->success(
-                new NewsSummaryResource($news->load(['author', 'category', 'translations'])),
+                new NewsSummaryResource($news->load(['author', 'category', 'tags', 'translations'])),
                 'News created successfully.',
                 201
             );
@@ -390,6 +405,8 @@ class NewsController extends Controller
                 return $this->error(null, 'You are not authorized to edit this news item.', 403);
             }
 
+            $this->prepareTranslatableRequest($request);
+
             $data = $request->validate([
                 'category_id'        => 'sometimes|nullable|exists:categories,id',
                 'title_en'           => 'nullable|string|max:500',
@@ -398,15 +415,15 @@ class NewsController extends Controller
                 'subtitle_ar'        => 'nullable|string|max:500',
                 'slug_en'            => 'nullable|string|max:500',
                 'slug_ar'            => 'nullable|string|max:500',
-                'content_en'         => 'nullable|string',
-                'content_ar'         => 'nullable|string',
-                'excerpt_en'         => 'nullable|string|max:1000',
-                'excerpt_ar'         => 'nullable|string|max:1000',
+                'content_en'         => $this->translatableRichTextRules(),
+                'content_ar'         => $this->translatableRichTextRules(),
+                'excerpt_en'         => $this->translatableRichTextRules(),
+                'excerpt_ar'         => $this->translatableRichTextRules(),
                 'title'              => 'nullable|string|max:500',
                 'subtitle'           => 'nullable|string|max:500',
                 'slug'               => 'nullable|string|max:500',
-                'content'            => 'nullable|string',
-                'excerpt'            => 'nullable|string|max:1000',
+                'content'            => $this->translatableRichTextRules(),
+                'excerpt'            => $this->translatableRichTextRules(),
                 'featured_image'     => $this->featuredImageRules(),
                 'video_embed'        => 'nullable|string',
                 'locale'             => 'nullable|in:ar,en',
@@ -421,6 +438,8 @@ class NewsController extends Controller
                 'seo_description'    => 'nullable|string|max:400',
                 'status'             => 'nullable|in:draft,under_review,published,archived',
                 'published_at'       => 'nullable|date',
+                'tags'               => 'nullable|array',
+                'tags.*'             => 'integer|exists:tags,id',
             ]);
 
             $this->mapLegacyTranslationInput($data);
@@ -438,8 +457,12 @@ class NewsController extends Controller
             $news->fill($this->extractNewsBaseAttributes($data))->save();
             $this->fillNewsTranslations($news, $data);
 
+            if (array_key_exists('tags', $data)) {
+                $news->tags()->sync($data['tags']);
+            }
+
             return $this->success(
-                new NewsSummaryResource($news->load(['author', 'category', 'translations'])),
+                new NewsSummaryResource($news->load(['author', 'category', 'tags', 'translations'])),
                 'News updated successfully.'
             );
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -487,30 +510,20 @@ class NewsController extends Controller
 
     private function fillNewsTranslations(News $news, array $data): void
     {
+        $hasChanges = false;
+
         foreach ($news->translatedAttributeNames() as $field) {
             foreach (['en', 'ar'] as $locale) {
                 $key = "{$field}_{$locale}";
                 if (array_key_exists($key, $data)) {
                     $news->setAttribute($key, $data[$key]);
+                    $hasChanges = true;
                 }
             }
         }
 
-        $news->save();
-    }
-
-    private function mapLegacyTranslationInput(array &$data): void
-    {
-        if (! isset($data['locale'])) {
-            return;
-        }
-
-        $locale = $data['locale'];
-
-        foreach (['title', 'subtitle', 'slug', 'content', 'excerpt', 'seo_title', 'seo_description'] as $field) {
-            if (array_key_exists($field, $data) && ! array_key_exists("{$field}_{$locale}", $data)) {
-                $data["{$field}_{$locale}"] = $data[$field];
-            }
+        if ($hasChanges) {
+            $this->persistModelTranslations($news);
         }
     }
 
