@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\NewsSummaryResource;
+use App\Models\Category;
 use App\Models\News;
 use App\Models\User;
 use App\Services\News\NewsPdfService;
@@ -99,6 +100,100 @@ class NewsController extends Controller
             ], 'News retrieved successfully.');
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to retrieve news.');
+        }
+    }
+
+    public function related(Request $request, int $newsId): JsonResponse
+    {
+        try {
+            $request->validate([
+                'locale' => 'nullable|in:ar,en',
+                'limit'  => 'nullable|integer|min:1|max:12',
+            ]);
+
+            $news = News::published()->find($newsId);
+
+            if (! $news) {
+                return $this->error(null, 'News not found.', 404);
+            }
+
+            $locale = $this->resolveApiLocale($request);
+            $limit = min((int) $request->input('limit', 6), 12);
+
+            $siblingCategoryIds = $this->siblingCategoryIds($news->category_id);
+            $hasCriteria = $news->category_id || $siblingCategoryIds->isNotEmpty() || $news->is_breaking;
+
+            $related = News::published()
+                ->withTranslation($locale)
+                ->with(['author:id,name', 'category:id,name,slug'])
+                ->where('id', '!=', $news->id)
+                ->when($hasCriteria, function ($query) use ($news, $siblingCategoryIds) {
+                    $query->where(function ($inner) use ($news, $siblingCategoryIds) {
+                        if ($news->category_id) {
+                            $inner->where('category_id', $news->category_id);
+                        }
+
+                        if ($siblingCategoryIds->isNotEmpty()) {
+                            $inner->orWhereIn('category_id', $siblingCategoryIds);
+                        }
+
+                        if ($news->is_breaking) {
+                            $inner->orWhere('is_breaking', true);
+                        }
+                    });
+                })
+                ->orderByDesc('published_at')
+                ->limit($limit)
+                ->get();
+
+            return $this->success(
+                NewsSummaryResource::collection($related)->resolve(),
+                'Related news retrieved successfully.'
+            );
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->error($e->errors(), 'Validation failed.', 422);
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'Failed to retrieve related news.');
+        }
+    }
+
+    public function trendingTopics(int $newsId): JsonResponse
+    {
+        try {
+            $news = News::published()->find($newsId);
+
+            if (! $news) {
+                return $this->error(null, 'News not found.', 404);
+            }
+
+            $category = $news->category_id
+                ? Category::query()->find($news->category_id)
+                : null;
+
+            $topics = Category::query()
+                ->select(['categories.id', 'categories.name', 'categories.slug'])
+                ->selectRaw('COALESCE(SUM(news.views_count), 0) as total_views')
+                ->selectRaw('COUNT(DISTINCT news.id) as news_count')
+                ->join('news', 'categories.id', '=', 'news.category_id')
+                ->where('news.status', 'published')
+                ->when($category, function ($query) use ($category) {
+                    if ($category->parent_id) {
+                        $query->where('categories.parent_id', $category->parent_id);
+                    } else {
+                        $query->where(function ($inner) use ($category) {
+                            $inner->where('categories.parent_id', $category->id)
+                                ->orWhere('categories.id', $category->id);
+                        });
+                    }
+                })
+                ->groupBy('categories.id', 'categories.name', 'categories.slug')
+                ->orderByDesc('total_views')
+                ->limit(10)
+                ->get();
+
+            return $this->success($topics, 'Trending topics retrieved successfully.');
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'Failed to retrieve trending topics.');
         }
     }
 
@@ -420,9 +515,6 @@ class NewsController extends Controller
         }
     }
 
-    /**
-     * @return array<int, mixed>
-     */
     private function featuredImageRules(): array
     {
         return [
@@ -446,6 +538,30 @@ class NewsController extends Controller
                 }
             },
         ];
+    }
+
+    private function siblingCategoryIds(?int $categoryId): \Illuminate\Support\Collection
+    {
+        if (! $categoryId) {
+            return collect();
+        }
+
+        $category = Category::query()->find($categoryId);
+
+        if (! $category) {
+            return collect();
+        }
+
+        if ($category->parent_id) {
+            return Category::query()
+                ->where('parent_id', $category->parent_id)
+                ->where('id', '!=', $categoryId)
+                ->pluck('id');
+        }
+
+        return Category::query()
+            ->where('parent_id', $categoryId)
+            ->pluck('id');
     }
 
     private function resolvePublishedAt(string $status, ?string $publishedAt, ?News $existing = null): ?\Illuminate\Support\Carbon

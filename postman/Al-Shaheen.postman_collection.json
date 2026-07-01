@@ -657,6 +657,34 @@
           }
         },
         {
+          "name": "Related News",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/news/{{news_id}}/related?locale=ar&limit=6",
+              "host": ["{{base_url}}"],
+              "path": ["news", "{{news_id}}", "related"],
+              "query": [
+                { "key": "locale", "value": "ar", "description": "ar | en" },
+                { "key": "limit", "value": "6", "description": "1–12, default 6" }
+              ]
+            },
+            "description": "Related published news: same category, sibling categories, and breaking items when applicable."
+          }
+        },
+        {
+          "name": "Trending Topics",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/news/{{news_id}}/trending-topics",
+            "description": "Trending news categories by views (topics). Scoped to the news item category family when available."
+          }
+        },
+        {
           "name": "Upload News Image",
           "event": [
             {

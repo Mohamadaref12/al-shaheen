@@ -17,5 +17,7 @@ Route::prefix('news')->group(function () {
     });
 
     Route::get('/{newsId}/pdf', [NewsController::class, 'downloadPdf']);
+    Route::get('/{newsId}/related', [NewsController::class, 'related']);
+    Route::get('/{newsId}/trending-topics', [NewsController::class, 'trendingTopics']);
     Route::get('/{newsId}', [NewsController::class, 'show']);
 });
