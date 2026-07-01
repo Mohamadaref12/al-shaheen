@@ -19,6 +19,9 @@ Route::prefix('training')->group(function () {
     Route::get('lessons/{lessonId}', [TrainingCourseController::class, 'showLesson']);
 
     Route::middleware('auth:sanctum')->group(function () {
+        Route::get('my-courses', [TrainingController::class, 'myCourses']);
+        Route::post('courses/{courseId}/enroll', [TrainingController::class, 'enroll']);
+        Route::get('courses/{courseId}/my-progress', [TrainingController::class, 'myProgress']);
         Route::post('courses/{courseId}/progress/{lessonId}', [TrainingController::class, 'markProgress']);
     });
 });

@@ -126,6 +126,11 @@ class User extends Authenticatable
         return $this->hasMany(UserCourseProgress::class);
     }
 
+    public function courseEnrollments(): HasMany
+    {
+        return $this->hasMany(CourseEnrollment::class);
+    }
+
     public function savedArticles(): BelongsToMany
     {
         return $this->belongsToMany(Article::class, 'saved_articles')->withPivot('created_at');

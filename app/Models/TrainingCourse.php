@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\TrainingLesson;
 use App\Models\UserCourseProgress;
+use App\Models\CourseEnrollment;
 
 class TrainingCourse extends Model
 {
@@ -68,5 +69,10 @@ class TrainingCourse extends Model
     public function userProgress(): HasMany
     {
         return $this->hasMany(UserCourseProgress::class, 'course_id');
+    }
+
+    public function enrollments(): HasMany
+    {
+        return $this->hasMany(CourseEnrollment::class, 'course_id');
     }
 }
