@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\News\Pages;
 
+use App\Filament\Actions\DownloadNewsPdfAction;
 use App\Filament\Concerns\FillsTranslatableFormData;
 use App\Filament\Concerns\SavesTranslatableFormData;
 use App\Filament\Resources\News\NewsResource;
@@ -18,6 +19,7 @@ class EditNews extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            DownloadNewsPdfAction::make(),
             DeleteAction::make(),
         ];
     }

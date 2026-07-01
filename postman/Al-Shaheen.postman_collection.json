@@ -405,7 +405,15 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/articles/{{article_id}}"
+            "url": {
+              "raw": "{{base_url}}/articles/{{article_id}}?locale=ar",
+              "host": ["{{base_url}}"],
+              "path": ["articles", "{{article_id}}"],
+              "query": [
+                { "key": "locale", "value": "ar", "description": "ar | en — returns title, content, slug for the requested locale" }
+              ]
+            },
+            "description": "Returns article detail in one locale. Use ?locale=ar or ?locale=en."
           }
         },
         {
@@ -421,7 +429,8 @@
               "query": [
                 { "key": "locale", "value": "ar", "description": "ar | en" }
               ]
-            }
+            },
+            "description": "Download PDF for a published article. locale: ar | en (default ar)."
           }
         },
         {
@@ -452,29 +461,54 @@
           }
         },
         {
-          "name": "Create Article",
+          "name": "Create Article (Bilingual)",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Accept", "value": "application/json" }],
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
             "url": "{{base_url}}/articles",
             "body": {
               "mode": "raw",
               "options": { "raw": { "language": "json" } },
-              "raw": "{\n  \"primary_category_id\": 1,\n  \"title\": \"مقالة تجريبية\",\n  \"slug\": \"trial-article-001\",\n  \"content\": \"محتوى المقالة كاملاً هنا...\",\n  \"excerpt\": \"ملخص قصير للمقالة\",\n  \"locale\": \"ar\",\n  \"is_breaking\": false,\n  \"is_premium\": false,\n  \"status\": \"draft\",\n  \"tags\": [],\n  \"secondary_categories\": []\n}"
-            }
+              "raw": "{\n  \"primary_category_id\": 1,\n  \"status\": \"draft\",\n\n  \"title_ar\": \"كيف يعيد الصحافة المستقلة تشكيل الخطاب العام\",\n  \"subtitle_ar\": \"نظرة على استقلالية التحرير في العصر الرقمي\",\n  \"slug_ar\": \"independent-journalism-ar\",\n  \"excerpt_ar\": \"ملخص المقال باللغة العربية.\",\n  \"content_ar\": \"المحتوى الكامل للمقال بالعربية. يمكن أن يكون نصاً طويلاً أو JSON من TipTap.\",\n  \"seo_title_ar\": \"الصحافة المستقلة\",\n  \"seo_description_ar\": \"وصف SEO بالعربية للمقال.\",\n\n  \"title_en\": \"How Independent Journalism Is Reshaping Public Discourse\",\n  \"subtitle_en\": \"A closer look at editorial independence in the digital age\",\n  \"slug_en\": \"independent-journalism-en\",\n  \"excerpt_en\": \"English excerpt for the article.\",\n  \"content_en\": \"Full article content in English. Can be plain text or TipTap JSON.\",\n  \"seo_title_en\": \"Independent Journalism\",\n  \"seo_description_en\": \"English SEO description for the article.\",\n\n  \"read_time\": 8,\n  \"is_breaking\": false,\n  \"is_premium\": false,\n  \"featured_image\": null,\n  \"writer_notes\": \"Internal notes for editors\",\n  \"tags\": [1, 2],\n  \"secondary_categories\": []\n}"
+            },
+            "description": "Requires auth (writer, editor, or admin). Send Arabic and English fields in the same request using *_ar and *_en suffixes. status: draft | pending."
           }
         },
         {
-          "name": "Update Article",
+          "name": "Create Article (Single Locale Legacy)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/articles",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"primary_category_id\": 1,\n  \"locale\": \"ar\",\n  \"title\": \"مقالة تجريبية\",\n  \"slug\": \"trial-article-ar\",\n  \"content\": \"محتوى المقالة بالعربية...\",\n  \"excerpt\": \"ملخص قصير\",\n  \"status\": \"draft\",\n  \"is_breaking\": false,\n  \"is_premium\": false,\n  \"tags\": [],\n  \"secondary_categories\": []\n}"
+            },
+            "description": "Legacy format: send title/content with locale (ar|en). Mapped automatically to title_ar or title_en."
+          }
+        },
+        {
+          "name": "Update Article (Bilingual)",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Accept", "value": "application/json" }],
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
             "url": "{{base_url}}/articles/{{article_id}}",
             "body": {
               "mode": "raw",
               "options": { "raw": { "language": "json" } },
-              "raw": "{\n  \"title\": \"عنوان محدّث\",\n  \"status\": \"pending\"\n}"
-            }
+              "raw": "{\n  \"title_ar\": \"عنوان عربي محدّث\",\n  \"content_ar\": \"محتوى عربي محدّث...\",\n  \"title_en\": \"Updated English title\",\n  \"content_en\": \"Updated English content...\",\n  \"status\": \"pending\"\n}"
+            },
+            "description": "Update one or both locales. Only sent fields are updated. status: draft | pending | published | archived (owner or editor)."
           }
         },
         {
@@ -519,8 +553,75 @@
             "auth": { "type": "noauth" },
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/news/{{news_id}}?locale=ar",
+              "host": ["{{base_url}}"],
+              "path": ["news", "{{news_id}}"],
+              "query": [
+                { "key": "locale", "value": "ar", "description": "ar | en" }
+              ]
+            },
+            "description": "Increments views_count. Response includes content for the requested locale."
+          }
+        },
+        {
+          "name": "Download News PDF",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/pdf" }],
+            "url": {
+              "raw": "{{base_url}}/news/{{news_id}}/pdf?locale=ar",
+              "host": ["{{base_url}}"],
+              "path": ["news", "{{news_id}}", "pdf"],
+              "query": [
+                { "key": "locale", "value": "ar", "description": "ar | en" }
+              ]
+            },
+            "description": "Published news only. Returns PDF in the requested language."
+          }
+        },
+        {
+          "name": "Create News (Bilingual)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/news",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"category_id\": 1,\n  \"status\": \"draft\",\n\n  \"title_ar\": \"عنوان الخبر بالعربية\",\n  \"subtitle_ar\": \"عنوان فرعي\",\n  \"slug_ar\": \"news-ar-1\",\n  \"excerpt_ar\": \"ملخص الخبر بالعربية.\",\n  \"content_ar\": \"محتوى الخبر الكامل بالعربية...\",\n  \"seo_title_ar\": \"SEO عربي\",\n  \"seo_description_ar\": \"وصف SEO بالعربية\",\n\n  \"title_en\": \"English news headline\",\n  \"subtitle_en\": \"English subtitle\",\n  \"slug_en\": \"news-en-1\",\n  \"excerpt_en\": \"English excerpt.\",\n  \"content_en\": \"Full English news content...\",\n  \"seo_title_en\": \"English SEO title\",\n  \"seo_description_en\": \"English SEO description\",\n\n  \"read_time\": 5,\n  \"is_breaking\": false,\n  \"is_premium\": false\n}"
+            },
+            "description": "Requires writer, contributor, editor, or admin. Writers/contributors may only set status to draft or under_review."
+          }
+        },
+        {
+          "name": "Update News (Bilingual)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
             "url": "{{base_url}}/news/{{news_id}}",
-            "description": "Increments views_count. Response includes featured_image_url."
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"title_ar\": \"عنوان محدّث\",\n  \"content_ar\": \"محتوى محدّث...\",\n  \"title_en\": \"Updated headline\",\n  \"content_en\": \"Updated content...\",\n  \"status\": \"published\"\n}"
+            },
+            "description": "Requires ownership (writer/contributor) or editor/admin. Writers/contributors cannot publish directly."
+          }
+        },
+        {
+          "name": "Delete News",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/news/{{news_id}}",
+            "description": "Admin can delete any item. Writers/contributors can delete their own news only."
           }
         }
       ]
@@ -1169,6 +1270,29 @@
             "header": [{ "key": "Accept", "value": "application/json" }],
             "url": "{{base_url}}/ads/{{ad_id}}/click",
             "description": "Call when the user clicks the ad link."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Contact",
+      "item": [
+        {
+          "name": "Send Contact Message",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/contact",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"name\": \"أحمد محمد\",\n  \"company\": \"شركة الشاهين\",\n  \"phone\": \"+966501234567\",\n  \"email\": \"ahmed@example.com\",\n  \"subject\": \"استفسار عن الاشتراك\",\n  \"message\": \"مرحباً، أود معرفة المزيد عن باقات الاشتراك المتاحة.\"\n}"
+            },
+            "description": "Public contact form. No auth required. Optional Bearer token links message to logged-in user."
           }
         }
       ]

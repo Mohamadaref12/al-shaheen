@@ -7,6 +7,7 @@ use App\Filament\Widgets\ContentStatsOverview;
 use App\Filament\Widgets\EditorialQueueWidget;
 use App\Filament\Widgets\PendingCommentsWidget;
 use App\Filament\Widgets\RecentArticlesWidget;
+use App\Filament\Widgets\UnreadContactMessagesWidget;
 use Filament\Pages\Dashboard as BaseDashboard;
 
 class Dashboard extends BaseDashboard
@@ -19,6 +20,7 @@ class Dashboard extends BaseDashboard
             EditorialQueueWidget::class,
             RecentArticlesWidget::class,
             PendingCommentsWidget::class,
+            UnreadContactMessagesWidget::class,
         ];
     }
 

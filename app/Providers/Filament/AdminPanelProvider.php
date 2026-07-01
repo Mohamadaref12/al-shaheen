@@ -9,6 +9,7 @@ use App\Filament\Widgets\ContentStatsOverview;
 use App\Filament\Widgets\EditorialQueueWidget;
 use App\Filament\Widgets\PendingCommentsWidget;
 use App\Filament\Widgets\RecentArticlesWidget;
+use App\Filament\Widgets\UnreadContactMessagesWidget;
 use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -60,6 +61,7 @@ class AdminPanelProvider extends PanelProvider
                 EditorialQueueWidget::class,
                 RecentArticlesWidget::class,
                 PendingCommentsWidget::class,
+                UnreadContactMessagesWidget::class,
             ])
             ->navigationGroups([
                 'Users',

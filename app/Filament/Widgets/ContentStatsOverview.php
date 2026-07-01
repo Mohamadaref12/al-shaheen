@@ -4,9 +4,11 @@ namespace App\Filament\Widgets;
 
 use App\Filament\Resources\Articles\ArticleResource;
 use App\Filament\Resources\Comments\CommentResource;
+use App\Filament\Resources\ContactMessages\ContactMessageResource;
 use App\Filament\Resources\Writers\WriterResource;
 use App\Models\Article;
 use App\Models\Comment;
+use App\Models\ContactMessage;
 use App\Models\Subscription;
 use App\Models\Writer;
 use Filament\Support\Icons\Heroicon;
@@ -33,6 +35,8 @@ class ContentStatsOverview extends StatsOverviewWidget
             ->count();
 
         $pendingCommentsCount = Comment::query()->where('status', 'pending')->count();
+
+        $unreadContactCount = ContactMessage::query()->unread()->count();
 
         $totalViews = (int) Article::query()->where('status', 'published')->sum('views_count');
 
@@ -66,6 +70,13 @@ class ContentStatsOverview extends StatsOverviewWidget
                 ->icon(Heroicon::OutlinedChatBubbleLeftRight)
                 ->color($pendingCommentsCount > 0 ? 'warning' : 'gray')
                 ->url(CommentResource::getUrl('index')),
+
+            Stat::make('Unread Contact', Number::format($unreadContactCount))
+                ->description('Contact form messages')
+                ->descriptionIcon(Heroicon::OutlinedEnvelope)
+                ->icon(Heroicon::OutlinedChatBubbleBottomCenterText)
+                ->color($unreadContactCount > 0 ? 'warning' : 'gray')
+                ->url(ContactMessageResource::getUrl('index')),
 
             Stat::make('Article Views', Number::abbreviate($totalViews))
                 ->description('Total on published articles')

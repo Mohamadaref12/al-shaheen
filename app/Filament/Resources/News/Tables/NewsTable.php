@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\News\Tables;
 
+use App\Filament\Actions\DownloadNewsPdfAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -107,6 +108,7 @@ class NewsTable
                     ->label('Premium'),
             ])
             ->recordActions([
+                DownloadNewsPdfAction::make(),
                 EditAction::make(),
             ])
             ->toolbarActions([
