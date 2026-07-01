@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\ArticleSummaryResource;
 use App\Models\Article;
 use App\Models\Tag;
+use App\Services\Articles\ArticleFeaturedImageDownloadService;
 use App\Services\Articles\ArticlePdfService;
 use App\Traits\AppliesTranslatableLocale;
 use App\Traits\MarksSavedArticles;
@@ -133,6 +134,33 @@ class ArticleController extends Controller
             return $this->error($e->errors(), 'Validation failed.', 422);
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to generate article PDF.');
+        }
+    }
+
+    public function downloadFeaturedImage(Request $request, int $articleId)
+    {
+        try {
+            $request->validate([
+                'locale' => 'nullable|in:ar,en',
+            ]);
+
+            $locale = $this->resolveApiLocale($request);
+
+            $article = Article::published()
+                ->withTranslation($locale)
+                ->with(['translations'])
+                ->where('id', $articleId)
+                ->first();
+
+            if (! $article) {
+                return $this->error(null, 'Article not found.', 404);
+            }
+
+            return app(ArticleFeaturedImageDownloadService::class)->download($article, $locale);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->error($e->errors(), 'Validation failed.', 422);
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'Failed to download article image.');
         }
     }
 

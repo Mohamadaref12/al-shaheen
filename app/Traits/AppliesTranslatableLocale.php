@@ -11,7 +11,11 @@ trait AppliesTranslatableLocale
     {
         $locale = $request->input('locale', config('app.locale', 'ar'));
 
-        return in_array($locale, ['ar', 'en'], true) ? $locale : 'ar';
+        $locale = in_array($locale, ['ar', 'en'], true) ? $locale : 'ar';
+
+        app()->setLocale($locale);
+
+        return $locale;
     }
 
     protected function applyTranslationLocale(Builder $query, Request $request): Builder

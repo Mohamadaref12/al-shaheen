@@ -8,6 +8,7 @@ use App\Http\Resources\Api\V1\TrainingLessonResource;
 use App\Models\CourseEnrollment;
 use App\Models\TrainingCourse;
 use App\Models\UserCourseProgress;
+use App\Traits\AppliesTranslatableLocale;
 use App\Traits\QueriesTrainingCourses;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,6 +16,7 @@ use Throwable;
 
 class TrainingController extends Controller
 {
+    use AppliesTranslatableLocale;
     use QueriesTrainingCourses;
 
     public function myCourses(Request $request): JsonResponse
@@ -26,8 +28,9 @@ class TrainingController extends Controller
             ]);
 
             $userId = $request->user()->id;
+            $locale = $this->resolveApiLocale($request);
 
-            $allCourses = $this->buildMyCoursesPayload($userId);
+            $allCourses = $this->buildMyCoursesPayload($userId, $locale);
 
             $perPage = (int) $request->input('per_page', 15);
 
@@ -82,7 +85,7 @@ class TrainingController extends Controller
     public function enroll(Request $request, string $courseId): JsonResponse
     {
         try {
-            $course = $this->findActiveTrainingCourse($courseId);
+            $course = $this->findActiveTrainingCourse($courseId, [], $this->resolveApiLocale($request));
 
             if (! $course) {
                 return $this->error(null, 'Course not found.', 404);
@@ -115,9 +118,11 @@ class TrainingController extends Controller
     public function myProgress(Request $request, string $courseId): JsonResponse
     {
         try {
+            $locale = $this->resolveApiLocale($request);
+
             $course = $this->findActiveTrainingCourse($courseId, [
                 'lessons' => fn ($q) => $q->orderBy('sort_order'),
-            ]);
+            ], $locale);
 
             if (! $course) {
                 return $this->error(null, 'Course not found.', 404);
@@ -135,7 +140,8 @@ class TrainingController extends Controller
     public function markProgress(Request $request, int $courseId, int $lessonId): JsonResponse
     {
         try {
-            $course = $this->findActiveTrainingCourse((string) $courseId);
+            $locale = $this->resolveApiLocale($request);
+            $course = $this->findActiveTrainingCourse((string) $courseId, [], $locale);
 
             if (! $course) {
                 return $this->error(null, 'Course not found.', 404);
@@ -180,7 +186,7 @@ class TrainingController extends Controller
             ]);
 
             $courseProgress = $this->buildCourseProgressPayload($userId, $course);
-            $myCourses = $this->buildMyCoursesPayload($userId);
+            $myCourses = $this->buildMyCoursesPayload($userId, $locale);
 
             return $this->success([
                 'updated_lesson' => [
@@ -242,8 +248,10 @@ class TrainingController extends Controller
         ];
     }
 
-    protected function buildMyCoursesPayload(int $userId): \Illuminate\Support\Collection
+    protected function buildMyCoursesPayload(int $userId, ?string $locale = null): \Illuminate\Support\Collection
     {
+        $locale ??= app()->getLocale();
+
         $completedCounts = UserCourseProgress::query()
             ->where('user_id', $userId)
             ->where('is_completed', true)
@@ -255,7 +263,7 @@ class TrainingController extends Controller
             ->where('user_id', $userId)
             ->whereHas('course', fn ($q) => $q->where('is_active', true))
             ->with(['course' => fn ($q) => $q
-                ->with('category')
+                ->with(['category' => fn ($cq) => $cq->withTranslation($locale)])
                 ->withCount('lessons')
                 ->withSum('lessons as total_duration_minutes', 'duration_minutes')])
             ->latest('enrolled_at')

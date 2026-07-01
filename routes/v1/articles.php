@@ -7,6 +7,8 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('articles')->group(function () {
     Route::get('/',                              [ArticleController::class, 'index']);
     Route::get('/{articleId}/pdf',               [ArticleController::class, 'downloadPdf']);
+    Route::get('/{articleId}/featured-image/download', [ArticleController::class, 'downloadFeaturedImage']);
+    Route::get('/{articleId}/featured-image',    [ArticleController::class, 'downloadFeaturedImage']);
     Route::get('/{articleId}/related',           [ArticleController::class, 'relatedStories']);
     Route::get('/{articleId}/trending-topics',   [ArticleController::class, 'trendingTopics']);
     Route::get('/{articleId}/next-read',         [ArticleController::class, 'nextRead']);

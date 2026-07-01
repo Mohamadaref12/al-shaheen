@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\TrainingCourses\Schemas;
 
+use App\Models\CourseCategory;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
@@ -34,7 +35,11 @@ class TrainingCourseForm
 
                         Select::make('course_category_id')
                             ->label('Category')
-                            ->relationship('category', 'name')
+                            ->relationship(
+                                'category',
+                                modifyQueryUsing: fn ($query) => $query->with('translations')
+                            )
+                            ->getOptionLabelFromRecordUsing(fn (CourseCategory $record): string => $record->display_name)
                             ->searchable()
                             ->preload()
                             ->required(),

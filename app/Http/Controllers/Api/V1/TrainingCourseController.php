@@ -10,6 +10,7 @@ use App\Http\Resources\Api\V1\TrainingLessonDetailResource;
 use App\Http\Resources\Api\V1\TrainingLessonResource;
 use App\Models\CourseCategory;
 use App\Models\TrainingLesson;
+use App\Traits\AppliesTranslatableLocale;
 use App\Traits\QueriesTrainingCourses;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -17,16 +18,21 @@ use Throwable;
 
 class TrainingCourseController extends Controller
 {
+    use AppliesTranslatableLocale;
     use QueriesTrainingCourses;
 
-    public function filters(): JsonResponse
+    public function filters(Request $request): JsonResponse
     {
         try {
-            $categories = CourseCategory::query()
-                ->where('is_active', true)
-                ->withCount(['courses' => fn ($q) => $q->where('is_active', true)])
+            $this->resolveApiLocale($request);
+
+            $categories = $this->applyTranslationLocale(
+                CourseCategory::query()
+                    ->withCount(['courses' => fn ($q) => $q->where('is_active', true)]),
+                $request
+            )
                 ->orderBy('sort_order')
-                ->get(['id', 'name', 'slug', 'icon', 'sort_order']);
+                ->get();
 
             return $this->success([
                 'categories' => CourseCategoryResource::collection($categories),
@@ -52,6 +58,7 @@ class TrainingCourseController extends Controller
     {
         try {
             $request->validate([
+                'locale'   => 'nullable|in:ar,en',
                 'category' => 'nullable|string',
                 'level'    => 'nullable|in:beginner,intermediate,advanced',
                 'premium'  => 'nullable|boolean',
@@ -60,8 +67,10 @@ class TrainingCourseController extends Controller
                 'per_page' => 'nullable|integer|min:1|max:50',
             ]);
 
+            $locale = $this->resolveApiLocale($request);
+
             $query = $this->applyTrainingCourseFilters(
-                $this->trainingCourseBaseQuery(),
+                $this->trainingCourseBaseQuery($locale),
                 $request
             );
 
@@ -84,18 +93,20 @@ class TrainingCourseController extends Controller
         }
     }
 
-    public function show(string $course): JsonResponse
+    public function show(Request $request, string $course): JsonResponse
     {
         try {
+            $locale = $this->resolveApiLocale($request);
+
             $record = $this->findActiveTrainingCourse($course, [
                 'lessons' => fn ($q) => $q->orderBy('sort_order'),
-            ]);
+            ], $locale);
 
             if (! $record) {
                 return $this->error(null, 'Course not found.', 404);
             }
 
-            $record->setRelation('relatedCourses', $this->relatedCoursesFor($record));
+            $record->setRelation('relatedCourses', $this->relatedCoursesFor($record, 3, $locale));
 
             return $this->success(
                 new TrainingCourseDetailResource($record),
@@ -106,10 +117,11 @@ class TrainingCourseController extends Controller
         }
     }
 
-    public function lessons(string $course): JsonResponse
+    public function lessons(Request $request, string $course): JsonResponse
     {
         try {
-            $record = $this->findActiveTrainingCourse($course);
+            $locale = $this->resolveApiLocale($request);
+            $record = $this->findActiveTrainingCourse($course, [], $locale);
 
             if (! $record) {
                 return $this->error(null, 'Course not found.', 404);
@@ -125,7 +137,7 @@ class TrainingCourseController extends Controller
                 ],
                 'lessons' => TrainingLessonResource::collection($lessons),
                 'meta'    => [
-                    'lessons_count'         => $lessons->count(),
+                    'lessons_count'          => $lessons->count(),
                     'total_duration_minutes' => (int) $lessons->sum('duration_minutes'),
                 ],
             ], 'Course lessons retrieved successfully.');
@@ -138,17 +150,19 @@ class TrainingCourseController extends Controller
     {
         try {
             $request->validate([
-                'limit' => 'nullable|integer|min:1|max:12',
+                'locale' => 'nullable|in:ar,en',
+                'limit'  => 'nullable|integer|min:1|max:12',
             ]);
 
-            $record = $this->findActiveTrainingCourse($course);
+            $locale = $this->resolveApiLocale($request);
+            $record = $this->findActiveTrainingCourse($course, [], $locale);
 
             if (! $record) {
                 return $this->error(null, 'Course not found.', 404);
             }
 
             $limit = min((int) $request->input('limit', 3), 12);
-            $related = $this->relatedCoursesFor($record, $limit);
+            $related = $this->relatedCoursesFor($record, $limit, $locale);
 
             return $this->success(
                 TrainingCourseResource::collection($related),
@@ -161,12 +175,14 @@ class TrainingCourseController extends Controller
         }
     }
 
-    public function showLesson(int $lessonId): JsonResponse
+    public function showLesson(Request $request, int $lessonId): JsonResponse
     {
         try {
+            $locale = $this->resolveApiLocale($request);
+
             $lesson = TrainingLesson::query()
                 ->with(['course' => fn ($q) => $q
-                    ->with('category')
+                    ->with(['category' => fn ($cq) => $cq->withTranslation($locale)])
                     ->withCount('lessons')
                     ->where('is_active', true)])
                 ->whereHas('course', fn ($q) => $q->where('is_active', true))

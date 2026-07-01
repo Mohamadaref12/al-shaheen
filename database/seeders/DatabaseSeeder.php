@@ -32,6 +32,7 @@ class DatabaseSeeder extends Seeder
             'ads',
             'training_lessons',
             'training_courses',
+            'course_category_translations',
             'course_categories',
             'articles',
             'reports',

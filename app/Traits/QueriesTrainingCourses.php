@@ -8,10 +8,12 @@ use Illuminate\Database\Eloquent\Builder;
 
 trait QueriesTrainingCourses
 {
-    protected function trainingCourseBaseQuery(): Builder
+    protected function trainingCourseBaseQuery(?string $locale = null): Builder
     {
+        $locale ??= app()->getLocale();
+
         return TrainingCourse::query()
-            ->with('category')
+            ->with(['category' => fn ($q) => $q->withTranslation($locale)])
             ->withCount('lessons')
             ->withSum('lessons as total_duration_minutes', 'duration_minutes')
             ->where('is_active', true);
@@ -21,9 +23,21 @@ trait QueriesTrainingCourses
     {
         if ($request->filled('category')) {
             $category = $request->input('category');
-            $query->whereHas('category', fn ($q) => $q
-                ->where('slug', $category)
-                ->orWhere('id', $category));
+            $locale = $request->input('locale', config('app.locale', 'ar'));
+
+            $query->whereHas('category', function (Builder $categoryQuery) use ($category, $locale) {
+                if (is_numeric($category)) {
+                    $categoryQuery->where('id', $category);
+
+                    return;
+                }
+
+                $categoryQuery->where(fn (Builder $inner) => $inner
+                    ->whereHas('translations', fn (Builder $t) => $t
+                        ->where('locale', $locale)
+                        ->where('slug', $category))
+                    ->orWhereHas('translations', fn (Builder $t) => $t->where('slug', $category)));
+            });
         }
 
         if ($request->filled('level')) {
@@ -53,10 +67,14 @@ trait QueriesTrainingCourses
         return $query;
     }
 
-    protected function findActiveTrainingCourse(string $identifier, array $with = []): ?TrainingCourse
+    protected function findActiveTrainingCourse(string $identifier, array $with = [], ?string $locale = null): ?TrainingCourse
     {
+        $locale ??= app()->getLocale();
+
         return TrainingCourse::query()
-            ->with(array_merge(['category'], $with))
+            ->with(array_merge([
+                'category' => fn ($q) => $q->withTranslation($locale),
+            ], $with))
             ->withCount('lessons')
             ->withSum('lessons as total_duration_minutes', 'duration_minutes')
             ->where('is_active', true)
@@ -66,19 +84,22 @@ trait QueriesTrainingCourses
             ->first();
     }
 
-    protected function findActiveCourseCategory(string $identifier): ?CourseCategory
+    protected function findActiveCourseCategory(string $identifier, ?string $locale = null): ?CourseCategory
     {
+        $locale ??= app()->getLocale();
+
         return CourseCategory::query()
+            ->withTranslation($locale)
             ->where('is_active', true)
-            ->where(fn ($q) => $q
+            ->where(fn (Builder $q) => $q
                 ->where('id', $identifier)
-                ->orWhere('slug', $identifier))
+                ->orWhereHas('translations', fn (Builder $t) => $t->where('slug', $identifier)))
             ->first();
     }
 
-    protected function relatedCoursesFor(TrainingCourse $course, int $limit = 3): \Illuminate\Database\Eloquent\Collection
+    protected function relatedCoursesFor(TrainingCourse $course, int $limit = 3, ?string $locale = null): \Illuminate\Database\Eloquent\Collection
     {
-        return $this->trainingCourseBaseQuery()
+        return $this->trainingCourseBaseQuery($locale)
             ->where('id', '!=', $course->id)
             ->when(
                 $course->course_category_id,

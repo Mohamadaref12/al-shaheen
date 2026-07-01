@@ -434,6 +434,23 @@
           }
         },
         {
+          "name": "Download Article Featured Image",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "image/*" }],
+            "url": {
+              "raw": "{{base_url}}/articles/{{article_id}}/featured-image/download?locale=ar",
+              "host": ["{{base_url}}"],
+              "path": ["articles", "{{article_id}}", "featured-image", "download"],
+              "query": [
+                { "key": "locale", "value": "ar", "description": "ar | en — used for download filename" }
+              ]
+            },
+            "description": "Downloads the article featured image with Al Shaheen watermark applied. Published articles only."
+          }
+        },
+        {
           "name": "Related Stories",
           "request": {
             "auth": { "type": "noauth" },

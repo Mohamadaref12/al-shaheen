@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\CourseCategory;
+use App\Models\CourseCategoryTranslation;
 use App\Models\TrainingCourse;
 use App\Models\TrainingLesson;
 use App\Models\User;
@@ -14,7 +15,9 @@ class TrainingSeeder extends Seeder
 {
     public function run(): void
     {
-        $categoryMap = CourseCategory::pluck('id', 'slug');
+        $categoryMap = CourseCategoryTranslation::query()
+            ->where('locale', 'en')
+            ->pluck('course_category_id', 'slug');
 
         $courses = [
             [

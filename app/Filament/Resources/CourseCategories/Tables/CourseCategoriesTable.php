@@ -9,19 +9,29 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class CourseCategoriesTable
 {
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->with('translations'))
             ->columns([
-                TextColumn::make('name')
-                    ->searchable()
-                    ->sortable(),
+                TextColumn::make('display_name')
+                    ->label('Name')
+                    ->searchable(query: function (Builder $query, string $search): void {
+                        $query->whereHas('translations', fn (Builder $q) => $q
+                            ->where('name', 'like', "%{$search}%"));
+                    }),
 
-                TextColumn::make('slug')
-                    ->searchable(),
+                TextColumn::make('slug_en')
+                    ->label('Slug (EN)')
+                    ->toggleable(),
+
+                TextColumn::make('slug_ar')
+                    ->label('Slug (AR)')
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('icon')
                     ->placeholder('—'),

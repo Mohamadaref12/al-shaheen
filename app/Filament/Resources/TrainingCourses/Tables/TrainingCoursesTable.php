@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\TrainingCourses\Tables;
 
+use App\Models\CourseCategory;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -22,10 +23,10 @@ class TrainingCoursesTable
                     ->sortable()
                     ->limit(60),
 
-                TextColumn::make('category.name')
+                TextColumn::make('category.display_name')
                     ->label('Category')
                     ->badge()
-                    ->sortable(),
+                    ->sortable(false),
 
                 TextColumn::make('level')
                     ->badge()
@@ -61,7 +62,11 @@ class TrainingCoursesTable
             ->filters([
                 SelectFilter::make('course_category_id')
                     ->label('Category')
-                    ->relationship('category', 'name'),
+                    ->relationship(
+                        'category',
+                        modifyQueryUsing: fn ($query) => $query->with('translations')
+                    )
+                    ->getOptionLabelFromRecordUsing(fn (CourseCategory $record): string => $record->display_name),
 
                 SelectFilter::make('level')
                     ->options([

@@ -6,6 +6,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Validation\Rule;
 
 class CourseCategoryForm
 {
@@ -13,18 +14,9 @@ class CourseCategoryForm
     {
         return $schema
             ->components([
-                Section::make('Category Details')
+                Section::make('Settings')
                     ->columns(2)
                     ->schema([
-                        TextInput::make('name')
-                            ->required()
-                            ->maxLength(255),
-
-                        TextInput::make('slug')
-                            ->required()
-                            ->unique(ignoreRecord: true)
-                            ->maxLength(255),
-
                         TextInput::make('icon')
                             ->label('Icon Key')
                             ->helperText('Icon identifier used by the frontend (e.g. pencil, camera, globe).')
@@ -38,6 +30,34 @@ class CourseCategoryForm
                             ->label('Active')
                             ->default(true),
                     ]),
+
+                Section::make('English Content')
+                    ->schema(self::translationFields('en')),
+
+                Section::make('Arabic Content')
+                    ->schema(self::translationFields('ar')),
             ])->columns(1);
+    }
+
+    private static function translationFields(string $locale): array
+    {
+        $label = strtoupper($locale);
+
+        return [
+            TextInput::make("name_{$locale}")
+                ->label("Name ({$label})")
+                ->required()
+                ->maxLength(255)
+                ->columnSpanFull(),
+
+            TextInput::make("slug_{$locale}")
+                ->label("Slug ({$label})")
+                ->required()
+                ->maxLength(255)
+                ->rule(fn ($record) => Rule::unique('course_category_translations', 'slug')
+                    ->where('locale', $locale)
+                    ->ignore($record?->translate($locale, false)?->id))
+                ->columnSpanFull(),
+        ];
     }
 }

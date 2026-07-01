@@ -13,6 +13,8 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class CourseCategoryResource extends Resource
 {
@@ -28,9 +30,21 @@ class CourseCategoryResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Categories';
 
-    protected static ?string $recordTitleAttribute = 'name';
+    protected static ?string $recordTitleAttribute = 'display_name';
 
     protected static ?int $navigationSort = 1;
+
+    public static function getRecordTitle(?Model $record): string | \Illuminate\Contracts\Support\Htmlable | null
+    {
+        return $record instanceof CourseCategory
+            ? $record->display_name
+            : parent::getRecordTitle($record);
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with('translations');
+    }
 
     public static function form(Schema $schema): Schema
     {

@@ -5,21 +5,27 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\CourseCategoryDetailResource;
 use App\Http\Resources\Api\V1\CourseCategoryResource;
-use App\Models\CourseCategory;
+use App\Traits\AppliesTranslatableLocale;
 use App\Traits\QueriesTrainingCourses;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Throwable;
 
 class CourseCategoryController extends Controller
 {
+    use AppliesTranslatableLocale;
     use QueriesTrainingCourses;
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
-            $categories = CourseCategory::query()
-                ->where('is_active', true)
-                ->withCount(['courses' => fn ($q) => $q->where('is_active', true)])
+            $this->resolveApiLocale($request);
+
+            $categories = $this->applyTranslationLocale(
+                \App\Models\CourseCategory::query()
+                    ->withCount(['courses' => fn ($q) => $q->where('is_active', true)]),
+                $request
+            )
                 ->orderBy('sort_order')
                 ->get();
 
@@ -32,10 +38,11 @@ class CourseCategoryController extends Controller
         }
     }
 
-    public function show(string $category): JsonResponse
+    public function show(Request $request, string $category): JsonResponse
     {
         try {
-            $record = $this->findActiveCourseCategory($category);
+            $locale = $this->resolveApiLocale($request);
+            $record = $this->findActiveCourseCategory($category, $locale);
 
             if (! $record) {
                 return $this->error(null, 'Course category not found.', 404);
@@ -44,7 +51,7 @@ class CourseCategoryController extends Controller
             $record->loadCount(['courses' => fn ($q) => $q->where('is_active', true)]);
             $record->load([
                 'courses' => fn ($q) => $q
-                    ->with('category')
+                    ->with(['category' => fn ($cq) => $cq->withTranslation($locale)])
                     ->withCount('lessons')
                     ->withSum('lessons as total_duration_minutes', 'duration_minutes')
                     ->where('is_active', true)
