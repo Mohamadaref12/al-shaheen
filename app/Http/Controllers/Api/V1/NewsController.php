@@ -7,9 +7,12 @@ use App\Http\Resources\Api\V1\NewsSummaryResource;
 use App\Models\News;
 use App\Models\User;
 use App\Services\News\NewsPdfService;
+use App\Services\News\NewsWorkspaceService;
 use App\Traits\AppliesTranslatableLocale;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Throwable;
 
 class NewsController extends Controller
@@ -130,6 +133,87 @@ class NewsController extends Controller
         }
     }
 
+    public function myDrafts(Request $request): JsonResponse
+    {
+        try {
+            $user = $request->user();
+
+            if (! $this->userCanManageNews($user)) {
+                return $this->error(null, 'You are not authorized to manage news.', 403);
+            }
+
+            $request->validate([
+                'all' => 'nullable|boolean',
+            ]);
+
+            return app(NewsWorkspaceService::class)->draftsResponse($request, $user);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->error($e->errors(), 'Validation failed.', 422);
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'Failed to retrieve news drafts.');
+        }
+    }
+
+    public function myNews(Request $request): JsonResponse
+    {
+        try {
+            $user = $request->user();
+
+            if (! $this->userCanManageNews($user)) {
+                return $this->error(null, 'You are not authorized to manage news.', 403);
+            }
+
+            $request->validate([
+                'status'   => 'nullable|in:draft,under_review,published,archived',
+                'category' => 'nullable|integer|exists:categories,id',
+                'search'   => 'nullable|string|max:200',
+                'sort'     => 'nullable|in:latest,oldest,views',
+                'per_page' => 'nullable|integer|min:1|max:50',
+            ]);
+
+            $result = app(NewsWorkspaceService::class)->paginatedList($request, $user);
+
+            return $this->pagedSuccess(
+                $result['items'],
+                [
+                    ...$result['meta'],
+                    'summary' => $result['summary'],
+                ],
+                'My news retrieved successfully.'
+            );
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->error($e->errors(), 'Validation failed.', 422);
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'Failed to retrieve my news.');
+        }
+    }
+
+    public function preview(Request $request, int $newsId): JsonResponse
+    {
+        try {
+            $user = $request->user();
+
+            if (! $this->userCanManageNews($user)) {
+                return $this->error(null, 'You are not authorized to manage news.', 403);
+            }
+
+            $response = app(NewsWorkspaceService::class)->previewResponse($user, $newsId);
+
+            if ($response->getStatusCode() === 404) {
+                return $this->error(null, 'News not found.', 404);
+            }
+
+            return $response;
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'Failed to retrieve news preview.');
+        }
+    }
+
+    public function showWorkspace(Request $request, int $newsId): JsonResponse
+    {
+        return $this->preview($request, $newsId);
+    }
+
     public function store(Request $request): JsonResponse
     {
         try {
@@ -156,7 +240,7 @@ class NewsController extends Controller
                 'slug'               => 'nullable|string|max:500',
                 'content'            => 'nullable|string',
                 'excerpt'            => 'nullable|string|max:1000',
-                'featured_image'     => 'nullable|string',
+                'featured_image'     => $this->featuredImageRules(),
                 'video_embed'        => 'nullable|string',
                 'locale'             => 'nullable|in:ar,en',
                 'read_time'          => 'nullable|integer|min:1',
@@ -229,7 +313,7 @@ class NewsController extends Controller
                 'slug'               => 'nullable|string|max:500',
                 'content'            => 'nullable|string',
                 'excerpt'            => 'nullable|string|max:1000',
-                'featured_image'     => 'nullable|string',
+                'featured_image'     => $this->featuredImageRules(),
                 'video_embed'        => 'nullable|string',
                 'locale'             => 'nullable|in:ar,en',
                 'read_time'          => 'nullable|integer|min:1',
@@ -334,6 +418,34 @@ class NewsController extends Controller
                 $data["{$field}_{$locale}"] = $data[$field];
             }
         }
+    }
+
+    /**
+     * @return array<int, mixed>
+     */
+    private function featuredImageRules(): array
+    {
+        return [
+            'nullable',
+            'string',
+            'max:500',
+            Rule::notRegex('/\.\./'),
+            function (string $attribute, mixed $value, \Closure $fail): void {
+                if (blank($value)) {
+                    return;
+                }
+
+                if (! is_string($value) || ! str_starts_with($value, 'uploads/')) {
+                    $fail('The featured image path must start with uploads/ (upload the image first).');
+
+                    return;
+                }
+
+                if (! Storage::disk('images')->exists($value)) {
+                    $fail('The featured image was not found. Upload it first via POST /uploads/images.');
+                }
+            },
+        ];
     }
 
     private function resolvePublishedAt(string $status, ?string $publishedAt, ?News $existing = null): ?\Illuminate\Support\Carbon

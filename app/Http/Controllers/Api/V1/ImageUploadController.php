@@ -21,6 +21,7 @@ class ImageUploadController extends Controller
             [$directory, $maxWidth] = match ($type) {
                 'profile'   => ['uploads/profiles', 800],
                 'featured'  => ['uploads/featured', 1920],
+                'news'      => ['uploads/news', 1920],
                 'portfolio' => ['uploads/portfolio', 2048],
                 'general'   => ['uploads/general', 1920],
             };

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Models\Category;
+use App\Services\News\NewsWorkspaceService;
 use App\Traits\AppliesTranslatableLocale;
 use Carbon\Carbon;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -125,6 +126,82 @@ class WriterDashboardController extends Controller
             ], 'Writer drafts retrieved successfully.');
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to retrieve writer drafts.');
+        }
+    }
+
+    public function news(Request $request): JsonResponse
+    {
+        try {
+            $user = $request->user();
+
+            if (! $this->userCanManageNewsWorkspace($user)) {
+                return $this->error(null, 'You are not authorized to manage news.', 403);
+            }
+
+            $request->validate([
+                'status'   => 'nullable|in:draft,under_review,published,archived',
+                'category' => 'nullable|integer|exists:categories,id',
+                'search'   => 'nullable|string|max:200',
+                'sort'     => 'nullable|in:latest,oldest,views',
+                'per_page' => 'nullable|integer|min:1|max:50',
+            ]);
+
+            $result = app(NewsWorkspaceService::class)->paginatedList($request, $user);
+
+            return $this->pagedSuccess(
+                $result['items'],
+                [
+                    ...$result['meta'],
+                    'summary' => $result['summary'],
+                ],
+                'My news retrieved successfully.'
+            );
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->error($e->errors(), 'Validation failed.', 422);
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'Failed to retrieve my news.');
+        }
+    }
+
+    public function newsDrafts(Request $request): JsonResponse
+    {
+        try {
+            $user = $request->user();
+
+            if (! $this->userCanManageNewsWorkspace($user)) {
+                return $this->error(null, 'You are not authorized to manage news.', 403);
+            }
+
+            $request->validate([
+                'all' => 'nullable|boolean',
+            ]);
+
+            return app(NewsWorkspaceService::class)->draftsResponse($request, $user);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->error($e->errors(), 'Validation failed.', 422);
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'Failed to retrieve news drafts.');
+        }
+    }
+
+    public function newsPreview(Request $request, int $newsId): JsonResponse
+    {
+        try {
+            $user = $request->user();
+
+            if (! $this->userCanManageNewsWorkspace($user)) {
+                return $this->error(null, 'You are not authorized to manage news.', 403);
+            }
+
+            $response = app(NewsWorkspaceService::class)->previewResponse($user, $newsId);
+
+            if ($response->getStatusCode() === 404) {
+                return $this->error(null, 'News not found.', 404);
+            }
+
+            return $response;
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'Failed to retrieve news preview.');
         }
     }
 
@@ -414,6 +491,14 @@ class WriterDashboardController extends Controller
         }
 
         return $user;
+    }
+
+    private function userCanManageNewsWorkspace($user): bool
+    {
+        return $user->writer()->exists()
+            || $user->contributor()->exists()
+            || $user->editor()->exists()
+            || $user->admin()->exists();
     }
 
     private function writerArticlesQuery(int $authorId)

@@ -17,7 +17,7 @@ class UploadImageRequest extends FormRequest
     {
         return [
             'image' => ['required', 'image', 'mimes:jpeg,jpg,png,webp', 'max:5120'],
-            'type'  => ['required', 'in:profile,featured,portfolio,general'],
+            'type'  => ['required', 'in:profile,featured,news,portfolio,general'],
         ];
     }
 
@@ -29,7 +29,7 @@ class UploadImageRequest extends FormRequest
             'image.mimes'    => 'Image must be a JPEG, PNG, or WebP file.',
             'image.max'      => 'Image must not exceed 5MB.',
             'type.required'  => 'Image type is required.',
-            'type.in'        => 'Image type must be profile, featured, portfolio, or general.',
+            'type.in'        => 'Image type must be profile, featured, news, portfolio, or general.',
         ];
     }
 

@@ -13,8 +13,11 @@ Route::prefix('writers')->group(function () {
         Route::post('/{writerId}/follow',              [FollowController::class, 'toggle']);
         Route::get('/me/overview',                     [WriterDashboardController::class, 'overview']);
         Route::get('/me/articles',                     [WriterDashboardController::class, 'articles']);
+        Route::get('/me/news',                         [WriterDashboardController::class, 'news']);
         Route::get('/me/articles/{articleId}/preview', [WriterDashboardController::class, 'preview']);
         Route::get('/me/drafts',                       [WriterDashboardController::class, 'drafts']);
+        Route::get('/me/news/drafts',                  [WriterDashboardController::class, 'newsDrafts']);
+        Route::get('/me/news/{newsId}/preview',       [WriterDashboardController::class, 'newsPreview']);
         Route::get('/me/analytics',                    [WriterDashboardController::class, 'analytics']);
         Route::put('/profile',                         [WriterController::class, 'updateProfile']);
     });
