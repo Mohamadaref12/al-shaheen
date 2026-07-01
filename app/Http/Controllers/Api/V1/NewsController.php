@@ -13,7 +13,6 @@ use App\Traits\AppliesTranslatableLocale;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 use Throwable;
 
 class NewsController extends Controller
@@ -521,7 +520,7 @@ class NewsController extends Controller
             'nullable',
             'string',
             'max:500',
-            Rule::notRegex('/\.\./'),
+            'not_regex:/\.\./',
             function (string $attribute, mixed $value, \Closure $fail): void {
                 if (blank($value)) {
                     return;
