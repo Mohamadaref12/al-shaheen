@@ -70,7 +70,9 @@ class GenerateArticleTranslationAction
                 'suggestion'     => $record,
                 'source_locale'  => $sourceLocale,
                 'target_locale'  => $targetLocale,
-                'apply_hint'     => 'Copy fields from suggestions (e.g. title_en, content_en) into PUT /articles/{id}. Nothing is auto-applied.',
+                'apply_hint'     => $article
+                    ? 'Copy fields from suggestions (e.g. title_en, content_en) into PUT /articles/{id}. Nothing is auto-applied.'
+                    : 'Copy fields from suggestions into the create form, then POST /articles with both locales. Nothing is auto-applied.',
             ];
         } catch (Throwable $e) {
             report($e);

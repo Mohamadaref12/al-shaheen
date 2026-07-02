@@ -25,7 +25,9 @@ class ArticleAiSuggestionResource extends JsonResource
             'status'            => $this->status,
             'created_at'        => $this->created_at?->toIso8601String(),
             'apply_hint'        => $this->kind === 'translation'
-                ? 'Review suggestions and apply via PUT /articles/{id} with title_{locale}, content_{locale}, etc. Nothing is auto-applied.'
+                ? ($this->article_id
+                    ? 'Review suggestions and apply via PUT /articles/{id} with title_{locale}, content_{locale}, etc. Nothing is auto-applied.'
+                    : 'Review suggestions, fill the create form (AR + EN), then POST /articles. Nothing is auto-applied.')
                 : 'Review suggestions and apply manually via article update.',
         ];
     }

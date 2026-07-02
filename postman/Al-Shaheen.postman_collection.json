@@ -493,7 +493,65 @@
           }
         },
         {
+          "name": "AI Status (Articles)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/articles/ai/status",
+            "description": "Check if GPT translation is available. Requires OpenAI key in Admin → AI Settings."
+          }
+        },
+        {
+          "name": "① Translate Before Create — Article (GPT)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "const s = res.data?.suggestion?.suggestions;",
+                  "if (s) {",
+                  "  pm.environment.set('last_translation_suggestions', JSON.stringify(s));",
+                  "  console.log('Suggestions saved to last_translation_suggestions env var');",
+                  "  console.log('title_en:', s.title_en);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/articles/ai/translate",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"source_locale\": \"ar\",\n  \"target_locale\": \"en\",\n  \"title_ar\": \"عنوان المقال بالعربية\",\n  \"subtitle_ar\": \"عنوان فرعي\",\n  \"content_ar\": \"محتوى المقال الكامل بالعربية...\",\n  \"excerpt_ar\": \"ملخص قصير\",\n  \"seo_title_ar\": \"SEO عربي\",\n  \"seo_description_ar\": \"وصف SEO\"\n}"
+            },
+            "description": "PRIMARY FLOW — translate BEFORE create (no article_id needed).\n\n1. User fills AR fields in create form\n2. POST this endpoint with form content\n3. Copy data.suggestion.suggestions (title_en, content_en, ...) into form\n4. User reviews → POST /articles to create\n\nNothing is auto-applied. See docs/FRONTEND_AI_TRANSLATION_AR.md"
+          }
+        },
+        {
           "name": "Create Article (Bilingual)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.id) {",
+                  "  pm.environment.set('article_id', res.data.id);",
+                  "  console.log('Saved article_id:', res.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -506,7 +564,89 @@
               "options": { "raw": { "language": "json" } },
               "raw": "{\n  \"primary_category_id\": 1,\n  \"status\": \"draft\",\n\n  \"title_ar\": \"كيف يعيد الصحافة المستقلة تشكيل الخطاب العام\",\n  \"subtitle_ar\": \"نظرة على استقلالية التحرير في العصر الرقمي\",\n  \"slug_ar\": \"independent-journalism-ar\",\n  \"excerpt_ar\": \"ملخص المقال باللغة العربية.\",\n  \"content_ar\": \"المحتوى الكامل للمقال بالعربية. يمكن أن يكون نصاً طويلاً أو JSON من TipTap.\",\n  \"seo_title_ar\": \"الصحافة المستقلة\",\n  \"seo_description_ar\": \"وصف SEO بالعربية للمقال.\",\n\n  \"title_en\": \"How Independent Journalism Is Reshaping Public Discourse\",\n  \"subtitle_en\": \"A closer look at editorial independence in the digital age\",\n  \"slug_en\": \"independent-journalism-en\",\n  \"excerpt_en\": \"English excerpt for the article.\",\n  \"content_en\": \"Full article content in English. Can be plain text or TipTap JSON.\",\n  \"seo_title_en\": \"Independent Journalism\",\n  \"seo_description_en\": \"English SEO description for the article.\",\n\n  \"read_time\": 8,\n  \"is_breaking\": false,\n  \"is_premium\": false,\n  \"featured_image\": null,\n  \"writer_notes\": \"Internal notes for editors\",\n  \"tags\": [1, 2],\n  \"secondary_categories\": []\n}"
             },
-            "description": "Requires auth (writer, editor, or admin). Send Arabic and English fields in the same request using *_ar and *_en suffixes. status: draft | pending."
+            "description": "Step 3 after optional GPT translate. status: draft | pending only (not published). Requires writer/editor/admin."
+          }
+        },
+        {
+          "name": "Save Draft (Article)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/articles/{{article_id}}",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"title_ar\": \"عنوان عربي\",\n  \"content_ar\": \"محتوى...\",\n  \"title_en\": \"English title\",\n  \"content_en\": \"English content...\",\n  \"status\": \"draft\"\n}"
+            },
+            "description": "Save without submitting. Response: is_in_drafts: true. Item stays in GET /writers/me/drafts."
+          }
+        },
+        {
+          "name": "Continue — Submit for Review (Article)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "const d = res.data;",
+                  "pm.test('status is pending', () => pm.expect(d.status).to.eql('pending'));",
+                  "pm.test('removed from drafts', () => pm.expect(d.is_in_drafts).to.eql(false));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/articles/{{article_id}}",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"title_ar\": \"عنوان عربي محدّث\",\n  \"subtitle_ar\": \"عنوان فرعي محدّث\",\n  \"content_ar\": \"محتوى عربي محدّث كامل...\",\n  \"excerpt_ar\": \"ملخص محدّث\",\n  \"title_en\": \"Updated English title\",\n  \"subtitle_en\": \"Updated English subtitle\",\n  \"content_en\": \"Updated English full content...\",\n  \"tags\": [1, 2],\n  \"status\": \"pending\"\n}"
+            },
+            "description": "Continue button — sends status: pending (NOT published).\n\nAfter success: is_in_drafts=false → remove from drafts tab.\nPending items: GET /writers/me/articles?status=submitted\n\nSee docs/FRONTEND_DRAFT_STATUS_AR.md"
+          }
+        },
+        {
+          "name": "Update Article (Bilingual)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/articles/{{article_id}}",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"title_ar\": \"عنوان عربي محدّث\",\n  \"subtitle_ar\": \"عنوان فرعي محدّث\",\n  \"content_ar\": \"محتوى عربي محدّث كامل...\",\n  \"excerpt_ar\": \"ملخص محدّث\",\n  \"seo_title_ar\": \"SEO محدّث\",\n  \"title_en\": \"Updated English title\",\n  \"subtitle_en\": \"Updated English subtitle\",\n  \"content_en\": \"Updated English full content...\",\n  \"tags\": [1, 2],\n  \"read_time\": 10,\n  \"is_breaking\": false,\n  \"status\": \"pending\"\n}"
+            },
+            "description": "General update. status: draft | pending only. Read data.status and data.is_in_drafts from response."
+          }
+        },
+        {
+          "name": "② Translate Saved Article (GPT)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/articles/{{article_id}}/ai/translate",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"source_locale\": \"ar\",\n  \"target_locale\": \"en\"\n}"
+            },
+            "description": "Translate AFTER article exists. Uses stored translations if body fields omitted. Apply suggestions via PUT /articles/{id}."
           }
         },
         {
@@ -527,67 +667,7 @@
           }
         },
         {
-          "name": "Update Article (Bilingual)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "url": "{{base_url}}/articles/{{article_id}}",
-            "body": {
-              "mode": "raw",
-              "options": { "raw": { "language": "json" } },
-              "raw": "{\n  \"title_ar\": \"عنوان عربي محدّث\",\n  \"subtitle_ar\": \"عنوان فرعي محدّث\",\n  \"content_ar\": \"محتوى عربي محدّث كامل...\",\n  \"excerpt_ar\": \"ملخص محدّث\",\n  \"seo_title_ar\": \"SEO محدّث\",\n  \"title_en\": \"Updated English title\",\n  \"subtitle_en\": \"Updated English subtitle\",\n  \"content_en\": \"Updated English full content...\",\n  \"tags\": [1, 2],\n  \"read_time\": 10,\n  \"is_breaking\": false,\n  \"status\": \"pending\"\n}"
-            },
-            "description": "Update any combination of fields. status: draft | pending only (no published). content accepts plain text or TipTap JSON. tags: [1,2] or slugs or tag_ids. Only sent fields are updated."
-          }
-        },
-        {
-          "name": "AI Status",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/articles/ai/status",
-            "description": "Check if AI improvement and translation are available (requires API key in Admin → AI Settings)."
-          }
-        },
-        {
-          "name": "Translate Article (GPT)",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "url": "{{base_url}}/articles/{{article_id}}/ai/translate",
-            "body": {
-              "mode": "raw",
-              "options": { "raw": { "language": "json" } },
-              "raw": "{\n  \"source_locale\": \"ar\",\n  \"target_locale\": \"en\"\n}"
-            },
-            "description": "Translates Arabic → English (or vice versa). Auto-detects source if omitted. Returns suggestions (title_en, content_en, etc.) for client review — NOT auto-applied. Apply via PUT /articles/{id}."
-          }
-        },
-        {
-          "name": "Translate Draft (GPT)",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "url": "{{base_url}}/articles/ai/translate",
-            "body": {
-              "mode": "raw",
-              "options": { "raw": { "language": "json" } },
-              "raw": "{\n  \"title_ar\": \"عنوان المقال بالعربية\",\n  \"content_ar\": \"محتوى المقال الكامل بالعربية...\",\n  \"excerpt_ar\": \"ملخص قصير\"\n}"
-            },
-            "description": "Translate draft content without saving article first. Target locale is auto-selected (ar→en, en→ar)."
-          }
-        },
-        {
-          "name": "List AI Suggestions",
+          "name": "List AI Suggestions (Article)",
           "request": {
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
@@ -598,7 +678,8 @@
               "query": [
                 { "key": "kind", "value": "translation", "description": "improvement | translation" }
               ]
-            }
+            },
+            "description": "Past GPT translation/improvement runs for a saved article."
           }
         },
         {
@@ -668,7 +749,24 @@
                 { "key": "all", "value": "false", "disabled": true, "description": "Editors/admins only: list all users drafts" }
               ]
             },
-            "description": "Same shape as GET /writers/me/drafts but for news. Returns summary + drafts list with readiness, word_count, last_edited_label."
+            "description": "Draft news only (status=draft). After Continue (pending), item leaves this list. summary.under_review_count shows pending items elsewhere."
+          }
+        },
+        {
+          "name": "My News — Pending Review",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/news/my-news?status=under_review&per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["news", "my-news"],
+              "query": [
+                { "key": "status", "value": "under_review" },
+                { "key": "per_page", "value": "15" }
+              ]
+            },
+            "description": "News submitted via Continue (status pending). API returns status as pending in items."
           }
         },
         {
@@ -748,28 +846,27 @@
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
             "url": "{{base_url}}/news/ai/status",
-            "description": "Check if GPT translation is available for news (requires OpenAI key in Admin → AI Settings)."
+            "description": "Check if GPT translation is available for news. Requires OpenAI key in Admin → AI Settings."
           }
         },
         {
-          "name": "Translate News (GPT)",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Accept", "value": "application/json" },
-              { "key": "Content-Type", "value": "application/json" }
-            ],
-            "url": "{{base_url}}/news/{{news_id}}/ai/translate",
-            "body": {
-              "mode": "raw",
-              "options": { "raw": { "language": "json" } },
-              "raw": "{\n  \"source_locale\": \"ar\",\n  \"target_locale\": \"en\"\n}"
-            },
-            "description": "Translates Arabic → English (or vice versa). Auto-detects source if omitted. Returns suggestions (title_en, content_en, etc.) for client review — NOT auto-applied. Apply via PUT /news/{id}."
-          }
-        },
-        {
-          "name": "Translate News Draft (GPT)",
+          "name": "① Translate Before Create — News (GPT)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "const s = res.data?.suggestion?.suggestions;",
+                  "if (s) {",
+                  "  pm.environment.set('last_translation_suggestions', JSON.stringify(s));",
+                  "  console.log('Suggestions saved. title_en:', s.title_en);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -780,17 +877,9 @@
             "body": {
               "mode": "raw",
               "options": { "raw": { "language": "json" } },
-              "raw": "{\n  \"title_ar\": \"عنوان الخبر بالعربية\",\n  \"content_ar\": \"محتوى الخبر الكامل بالعربية...\",\n  \"excerpt_ar\": \"ملخص قصير\"\n}"
+              "raw": "{\n  \"source_locale\": \"ar\",\n  \"target_locale\": \"en\",\n  \"title_ar\": \"عنوان الخبر بالعربية\",\n  \"subtitle_ar\": \"عنوان فرعي\",\n  \"content_ar\": \"محتوى الخبر الكامل بالعربية...\",\n  \"excerpt_ar\": \"ملخص قصير\",\n  \"seo_title_ar\": \"SEO عربي\"\n}"
             },
-            "description": "Translate draft news content without saving first. Target locale is auto-selected (ar→en, en→ar)."
-          }
-        },
-        {
-          "name": "List News AI Suggestions",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/news/{{news_id}}/ai/suggestions"
+            "description": "PRIMARY FLOW — translate BEFORE create (no news_id needed).\n\n1. User fills AR fields in create form\n2. POST this endpoint\n3. Copy data.suggestion.suggestions into form\n4. POST /news to create\n\nSee docs/FRONTEND_AI_TRANSLATION_AR.md"
           }
         },
         {
@@ -826,6 +915,21 @@
         },
         {
           "name": "Create News (Bilingual)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.id) {",
+                  "  pm.environment.set('news_id', res.data.id);",
+                  "  console.log('Saved news_id:', res.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
@@ -838,7 +942,55 @@
               "options": { "raw": { "language": "json" } },
               "raw": "{\n  \"category_id\": 1,\n  \"status\": \"draft\",\n  \"featured_image\": \"{{featured_image_path}}\",\n  \"tags\": [1, 2],\n\n  \"title_ar\": \"عنوان الخبر بالعربية\",\n  \"subtitle_ar\": \"عنوان فرعي\",\n  \"slug_ar\": \"news-ar-1\",\n  \"excerpt_ar\": \"ملخص الخبر بالعربية.\",\n  \"content_ar\": \"محتوى الخبر الكامل بالعربية...\",\n  \"seo_title_ar\": \"SEO عربي\",\n  \"seo_description_ar\": \"وصف SEO بالعربية\",\n\n  \"title_en\": \"English news headline\",\n  \"subtitle_en\": \"English subtitle\",\n  \"slug_en\": \"news-en-1\",\n  \"excerpt_en\": \"English excerpt.\",\n  \"content_en\": \"Full English news content...\",\n  \"seo_title_en\": \"English SEO title\",\n  \"seo_description_en\": \"English SEO description\",\n\n  \"read_time\": 5,\n  \"is_breaking\": false,\n  \"is_premium\": false\n}"
             },
-            "description": "Step 2: Send featured_image as string path from upload response (e.g. uploads/news/uuid.webp). Run Upload News Image first."
+            "description": "Step 3: after optional GPT translate + image upload. status: draft | pending only. Saves news_id to environment."
+          }
+        },
+        {
+          "name": "Save Draft (News)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/news/{{news_id}}",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"title_ar\": \"عنوان الخبر\",\n  \"content_ar\": \"محتوى...\",\n  \"title_en\": \"English headline\",\n  \"content_en\": \"English content...\",\n  \"status\": \"draft\"\n}"
+            },
+            "description": "Save without submitting. is_in_drafts: true — stays in GET /news/my-drafts."
+          }
+        },
+        {
+          "name": "Continue — Submit for Review (News)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "const d = res.data;",
+                  "pm.test('status is pending', () => pm.expect(d.status).to.eql('pending'));",
+                  "pm.test('removed from drafts', () => pm.expect(d.is_in_drafts).to.eql(false));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/news/{{news_id}}",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"title_ar\": \"عنوان محدّث\",\n  \"content_ar\": \"محتوى محدّث...\",\n  \"title_en\": \"Updated headline\",\n  \"content_en\": \"Updated content...\",\n  \"tags\": [1, 2],\n  \"status\": \"pending\"\n}"
+            },
+            "description": "Continue — status: pending (NOT published). is_in_drafts=false after success. Pending list: GET /news/my-news?status=under_review"
           }
         },
         {
@@ -855,7 +1007,33 @@
               "options": { "raw": { "language": "json" } },
               "raw": "{\n  \"title_ar\": \"عنوان محدّث\",\n  \"subtitle_ar\": \"عنوان فرعي محدّث\",\n  \"content_ar\": \"محتوى محدّث كامل...\",\n  \"excerpt_ar\": \"ملخص محدّث\",\n  \"seo_title_ar\": \"SEO محدّث\",\n  \"title_en\": \"Updated headline\",\n  \"subtitle_en\": \"Updated subtitle\",\n  \"content_en\": \"Updated full content...\",\n  \"excerpt_en\": \"Updated excerpt\",\n  \"tags\": [1, 2],\n  \"featured_image\": \"{{featured_image_path}}\",\n  \"read_time\": 8,\n  \"is_breaking\": true,\n  \"status\": \"pending\"\n}"
             },
-            "description": "Update any combination of fields. status: draft | pending only (no published). content accepts plain text or TipTap JSON object. tags: array of ids, slugs, or [{id:1}]. Also accepts tag_ids."
+            "description": "General update. status: draft | pending only. Read data.status and data.is_in_drafts from response."
+          }
+        },
+        {
+          "name": "② Translate Saved News (GPT)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/news/{{news_id}}/ai/translate",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"source_locale\": \"ar\",\n  \"target_locale\": \"en\"\n}"
+            },
+            "description": "Translate AFTER news exists. Apply suggestions via PUT /news/{id}."
+          }
+        },
+        {
+          "name": "List AI Suggestions (News)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/news/{{news_id}}/ai/suggestions",
+            "description": "Past GPT translations for saved news item."
           }
         },
         {
@@ -1706,7 +1884,25 @@
           "request": {
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/writers/me/drafts"
+            "url": "{{base_url}}/writers/me/drafts",
+            "description": "Article drafts only (draft + ready). After Continue (pending), items leave this list. Use My Articles — Pending Review for submitted items."
+          }
+        },
+        {
+          "name": "My Articles — Pending Review",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/writers/me/articles?status=submitted&per_page=15",
+              "host": ["{{base_url}}"],
+              "path": ["writers", "me", "articles"],
+              "query": [
+                { "key": "status", "value": "submitted" },
+                { "key": "per_page", "value": "15" }
+              ]
+            },
+            "description": "Articles after Continue (status pending in API). Not in my-drafts."
           }
         },
         {

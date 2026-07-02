@@ -248,27 +248,25 @@ Authorization: Bearer {token}
 
 ## 7. ترجمة GPT (مقالات + أخبار)
 
-الترجمة **لا تُطبَّق تلقائياً** — الفرونت يعرض الاقتراحات ثم يطبّقها عبر `PUT`.
+> **دليل مفصّل:** `docs/FRONTEND_AI_TRANSLATION_AR.md`
 
-### مقالات
+### قبل Create (فورم جديد — بدون id)
 
 | Method | Endpoint |
 |--------|----------|
-| `GET` | `/articles/ai/status` |
-| `POST` | `/articles/ai/translate` (مسودة بدون حفظ) |
+| `POST` | `/articles/ai/translate` |
+| `POST` | `/news/ai/translate` |
+
+يرسل محتوى الفورم (`title_ar`, `content_ar`, …) ويرجع `suggestions` — الفرونت يملأ الحقول ثم `POST /articles` أو `POST /news`.
+
+### بعد Create (محفوظ مسبقاً)
+
+| Method | Endpoint |
+|--------|----------|
 | `POST` | `/articles/{id}/ai/translate` |
-| `GET` | `/articles/{id}/ai/suggestions?kind=translation` |
-
-### أخبار
-
-| Method | Endpoint |
-|--------|----------|
-| `GET` | `/news/ai/status` |
-| `POST` | `/news/ai/translate` (مسودة بدون حفظ) |
 | `POST` | `/news/{id}/ai/translate` |
-| `GET` | `/news/{id}/ai/suggestions` |
 
-بعد الترجمة، انسخ من `suggestions` (مثل `title_en`, `content_en`) إلى body الـ `PUT` مع `status: "draft"` أو `"pending"` حسب الحاجة.
+ثم تطبيق يدوي عبر `PUT` مع `status: "draft"` أو `"pending"`.
 
 ---
 
