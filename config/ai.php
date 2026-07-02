@@ -7,7 +7,8 @@ return [
     | AI Article Improvement
     |--------------------------------------------------------------------------
     |
-    | Disabled by default. Set AI_ENABLED=true and OPENAI_API_KEY when ready.
+    | Disabled by default. Enable from Admin → AI Settings or set AI_ENABLED=true.
+    | OPENAI_API_KEY in .env is used as fallback when dashboard key is empty.
     | Suggestions are stored separately — never auto-applied to articles.
     |
     */

@@ -10,8 +10,11 @@ class ArticleAiSuggestion extends Model
     protected $fillable = [
         'article_id',
         'user_id',
+        'kind',
         'focus',
         'locale',
+        'source_locale',
+        'target_locale',
         'original_snapshot',
         'suggestions',
         'notes',

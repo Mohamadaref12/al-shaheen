@@ -72,6 +72,7 @@ class AdminPanelProvider extends PanelProvider
                 'Monetization',
                 'Subscriptions',
                 'Training',
+                'Settings',
             ])
             ->middleware([
                 EncryptCookies::class,

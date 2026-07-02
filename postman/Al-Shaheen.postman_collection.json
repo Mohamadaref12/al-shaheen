@@ -544,6 +544,64 @@
           }
         },
         {
+          "name": "AI Status",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/articles/ai/status",
+            "description": "Check if AI improvement and translation are available (requires API key in Admin → AI Settings)."
+          }
+        },
+        {
+          "name": "Translate Article (GPT)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/articles/{{article_id}}/ai/translate",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"source_locale\": \"ar\",\n  \"target_locale\": \"en\"\n}"
+            },
+            "description": "Translates Arabic → English (or vice versa). Auto-detects source if omitted. Returns suggestions (title_en, content_en, etc.) for client review — NOT auto-applied. Apply via PUT /articles/{id}."
+          }
+        },
+        {
+          "name": "Translate Draft (GPT)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/articles/ai/translate",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"title_ar\": \"عنوان المقال بالعربية\",\n  \"content_ar\": \"محتوى المقال الكامل بالعربية...\",\n  \"excerpt_ar\": \"ملخص قصير\"\n}"
+            },
+            "description": "Translate draft content without saving article first. Target locale is auto-selected (ar→en, en→ar)."
+          }
+        },
+        {
+          "name": "List AI Suggestions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/articles/{{article_id}}/ai/suggestions?kind=translation",
+              "host": ["{{base_url}}"],
+              "path": ["articles", "{{article_id}}", "ai", "suggestions"],
+              "query": [
+                { "key": "kind", "value": "translation", "description": "improvement | translation" }
+              ]
+            }
+          }
+        },
+        {
           "name": "Delete Article",
           "request": {
             "method": "DELETE",

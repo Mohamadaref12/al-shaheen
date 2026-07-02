@@ -6,10 +6,14 @@ use App\Contracts\ArticleImprovementService;
 use App\Models\Article;
 use App\Models\ArticleAiSuggestion;
 use App\Models\User;
+use App\Support\AiSettings;
+use App\Traits\BuildsArticleAiSnapshot;
 use Throwable;
 
 class GenerateArticleSuggestionsAction
 {
+    use BuildsArticleAiSnapshot;
+
     public function __construct(
         protected ArticleImprovementService $improvementService
     ) {}
@@ -23,14 +27,14 @@ class GenerateArticleSuggestionsAction
         if (! $this->improvementService->isAvailable()) {
             return [
                 'available'  => false,
-                'message'    => 'AI article improvement is not enabled yet.',
+                'message'    => 'AI article improvement is not enabled. Add your OpenAI API key in Admin → AI Settings.',
                 'suggestion' => null,
             ];
         }
 
-        $snapshot = $this->buildSnapshot($input, $article);
+        $snapshot = $this->buildImprovementSnapshot($input, $article);
         $focus    = (string) ($input['focus'] ?? 'all');
-        $locale   = (string) ($input['locale'] ?? $snapshot['locale'] ?? 'ar');
+        $locale   = (string) ($snapshot['locale'] ?? 'ar');
 
         try {
             $result = $this->improvementService->improve($snapshot, $focus);
@@ -38,8 +42,11 @@ class GenerateArticleSuggestionsAction
             $record = ArticleAiSuggestion::create([
                 'article_id'        => $article?->id,
                 'user_id'           => $user->id,
+                'kind'              => 'improvement',
                 'focus'             => $focus,
                 'locale'            => $locale,
+                'source_locale'     => $locale,
+                'target_locale'     => $locale,
                 'original_snapshot' => $snapshot,
                 'suggestions'       => $result['suggestions'],
                 'notes'             => $result['notes'],
@@ -60,13 +67,16 @@ class GenerateArticleSuggestionsAction
                 ArticleAiSuggestion::create([
                     'article_id'        => $article?->id,
                     'user_id'           => $user->id,
+                    'kind'              => 'improvement',
                     'focus'             => $focus,
                     'locale'            => $locale,
+                    'source_locale'     => $locale,
+                    'target_locale'     => $locale,
                     'original_snapshot' => $snapshot,
                     'suggestions'       => [],
                     'notes'             => [],
                     'provider'          => config('ai.provider'),
-                    'model'             => config('ai.openai.model'),
+                    'model'             => AiSettings::model(),
                     'status'            => 'failed',
                 ]);
             }
@@ -78,33 +88,5 @@ class GenerateArticleSuggestionsAction
                 'error'      => config('app.debug') ? $e->getMessage() : null,
             ];
         }
-    }
-
-    /**
-     * @param  array<string, mixed>  $input
-     * @return array<string, mixed>
-     */
-    protected function buildSnapshot(array $input, ?Article $article = null): array
-    {
-        $fields = ['title', 'subtitle', 'content', 'excerpt', 'seo_title', 'seo_description', 'locale'];
-
-        $snapshot = [
-            'locale' => $input['locale'] ?? $article?->locale ?? 'ar',
-        ];
-
-        foreach ($fields as $field) {
-            if ($field === 'locale') {
-                continue;
-            }
-
-            $snapshot[$field] = array_key_exists($field, $input)
-                ? $input[$field]
-                : $article?->{$field};
-        }
-
-        return array_filter(
-            $snapshot,
-            fn ($value) => $value !== null && $value !== ''
-        );
     }
 }

@@ -12,8 +12,11 @@ class ArticleAiSuggestionResource extends JsonResource
         return [
             'id'                => $this->id,
             'article_id'        => $this->article_id,
+            'kind'              => $this->kind ?? 'improvement',
             'focus'             => $this->focus,
             'locale'            => $this->locale,
+            'source_locale'     => $this->source_locale,
+            'target_locale'     => $this->target_locale,
             'original_snapshot' => $this->original_snapshot,
             'suggestions'       => $this->suggestions,
             'notes'             => $this->notes ?? [],
@@ -21,6 +24,9 @@ class ArticleAiSuggestionResource extends JsonResource
             'model'             => $this->model,
             'status'            => $this->status,
             'created_at'        => $this->created_at?->toIso8601String(),
+            'apply_hint'        => $this->kind === 'translation'
+                ? 'Review suggestions and apply via PUT /articles/{id} with title_{locale}, content_{locale}, etc. Nothing is auto-applied.'
+                : 'Review suggestions and apply manually via article update.',
         ];
     }
 }

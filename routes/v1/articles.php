@@ -17,7 +17,9 @@ Route::prefix('articles')->group(function () {
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('ai/status',                    [ArticleAiSuggestionController::class, 'status']);
         Route::post('ai/suggest',                  [ArticleAiSuggestionController::class, 'suggestFromDraft']);
+        Route::post('ai/translate',                [ArticleAiSuggestionController::class, 'translateFromDraft']);
         Route::post('{articleId}/ai/suggest',      [ArticleAiSuggestionController::class, 'suggestForArticle']);
+        Route::post('{articleId}/ai/translate',    [ArticleAiSuggestionController::class, 'translateForArticle']);
         Route::get('{articleId}/ai/suggestions',   [ArticleAiSuggestionController::class, 'index']);
         Route::post('/',               [ArticleController::class, 'store']);
         Route::put('/{articleId}',     [ArticleController::class, 'update']);

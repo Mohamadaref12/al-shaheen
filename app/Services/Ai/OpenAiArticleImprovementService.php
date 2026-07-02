@@ -3,60 +3,36 @@
 namespace App\Services\Ai;
 
 use App\Contracts\ArticleImprovementService;
-use Illuminate\Support\Facades\Http;
-use RuntimeException;
+use App\Services\Ai\Concerns\InteractsWithOpenAi;
+use App\Support\AiSettings;
 
 class OpenAiArticleImprovementService implements ArticleImprovementService
 {
+    use InteractsWithOpenAi;
+
     public function isAvailable(): bool
     {
-        return config('ai.enabled') && filled(config('ai.openai.api_key'));
+        return $this->isConfigured();
     }
 
     public function improve(array $snapshot, string $focus = 'all'): array
     {
-        $response = Http::baseUrl(rtrim((string) config('ai.openai.base_url'), '/'))
-            ->withToken((string) config('ai.openai.api_key'))
-            ->timeout((int) config('ai.openai.timeout', 60))
-            ->post('/chat/completions', [
-                'model'           => config('ai.openai.model', 'gpt-4o-mini'),
-                'response_format' => ['type' => 'json_object'],
-                'messages'        => [
-                    [
-                        'role'    => 'system',
-                        'content' => $this->systemPrompt($focus),
-                    ],
-                    [
-                        'role'    => 'user',
-                        'content' => json_encode($snapshot, JSON_UNESCAPED_UNICODE),
-                    ],
-                ],
-                'temperature' => 0.4,
-            ]);
-
-        if (! $response->successful()) {
-            throw new RuntimeException(
-                'OpenAI request failed: ' . ($response->json('error.message') ?? $response->body())
-            );
-        }
-
-        $content = $response->json('choices.0.message.content');
-
-        if (! is_string($content) || $content === '') {
-            throw new RuntimeException('OpenAI returned an empty response.');
-        }
-
-        $parsed = json_decode($content, true);
-
-        if (! is_array($parsed)) {
-            throw new RuntimeException('OpenAI returned invalid JSON.');
-        }
+        $parsed = $this->chatJson([
+            [
+                'role'    => 'system',
+                'content' => $this->systemPrompt($focus),
+            ],
+            [
+                'role'    => 'user',
+                'content' => json_encode($snapshot, JSON_UNESCAPED_UNICODE),
+            ],
+        ], temperature: 0.4);
 
         return [
             'suggestions' => $parsed['suggestions'] ?? [],
             'notes'       => $parsed['notes'] ?? [],
             'provider'    => 'openai',
-            'model'       => (string) config('ai.openai.model', 'gpt-4o-mini'),
+            'model'       => AiSettings::model(),
         ];
     }
 

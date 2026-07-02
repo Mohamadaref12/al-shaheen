@@ -14,10 +14,12 @@ class ImageWatermarkService
             throw new RuntimeException('Source image not found.');
         }
 
-        $watermarkPath = config('brand.watermark_path');
+        $watermarkPath = $this->resolveWatermarkPath();
 
         if (! is_string($watermarkPath) || ! file_exists($watermarkPath)) {
-            throw new RuntimeException('Watermark image is not configured or missing.');
+            throw new RuntimeException(
+                'Watermark image is not configured or missing. Upload public/brand/al-shaheen-watermark.png to the server or set BRAND_WATERMARK_PATH in .env'
+            );
         }
 
         if (extension_loaded('imagick')) {
@@ -59,13 +61,14 @@ class ImageWatermarkService
         $watermark = new \Imagick($watermarkPath);
         $watermark->setImageFormat('png');
         $watermark->setImageColorspace(\Imagick::COLORSPACE_SRGB);
+        $watermark->setImageAlphaChannel(\Imagick::ALPHACHANNEL_ACTIVATE);
 
         $this->removeLightBackground($watermark);
 
         $targetWidth = max(80, (int) round($image->getImageWidth() * (float) config('brand.width_ratio', 0.22)));
         $watermark->scaleImage($targetWidth, 0);
 
-        $opacity = (float) config('brand.opacity', 0.55);
+        $opacity = max(0.1, min(1.0, (float) config('brand.opacity', 0.55)));
         $watermark->evaluateImage(\Imagick::EVALUATE_MULTIPLY, $opacity, \Imagick::CHANNEL_ALPHA);
 
         [$x, $y] = $this->resolvePosition(
@@ -75,7 +78,7 @@ class ImageWatermarkService
             $watermark->getImageHeight()
         );
 
-        $image->compositeImage($watermark, \Imagick::COMPOSITE_DISSOLVE, $x, $y);
+        $image->compositeImage($watermark, \Imagick::COMPOSITE_OVER, $x, $y);
 
         $format = strtolower($image->getImageFormat() ?: 'jpeg');
         if (! in_array($format, ['jpeg', 'jpg', 'png', 'webp'], true)) {
@@ -218,8 +221,11 @@ class ImageWatermarkService
     private function removeLightBackground(\Imagick $image): void
     {
         $image->setImageAlphaChannel(\Imagick::ALPHACHANNEL_ACTIVATE);
-        $image->transparentPaintImage('#f8f8f5', 0, 12000, false);
-        $image->transparentPaintImage('#ffffff', 0, 12000, false);
+
+        $fuzz = \Imagick::getQuantum() * 0.12;
+
+        $image->transparentPaintImage('#f8f8f5', 0, $fuzz, false);
+        $image->transparentPaintImage('#ffffff', 0, $fuzz, false);
     }
 
     private function removeLightBackgroundGd(\GdImage $image): void
@@ -289,12 +295,32 @@ class ImageWatermarkService
         };
     }
 
+    private function resolveWatermarkPath(): ?string
+    {
+        $candidates = array_filter(array_unique(array_merge(
+            [config('brand.watermark_path')],
+            config('brand.watermark_fallbacks', [])
+        )));
+
+        foreach ($candidates as $path) {
+            if (is_string($path) && is_file($path)) {
+                return $path;
+            }
+        }
+
+        return null;
+    }
+
     private function tempPath(string $prefix, string $extension): string
     {
         $directory = storage_path('app/temp/watermarks');
 
         if (! is_dir($directory)) {
             mkdir($directory, 0755, true);
+        }
+
+        if (! is_writable($directory)) {
+            throw new RuntimeException("Watermark temp directory is not writable: {$directory}");
         }
 
         return $directory . '/' . $prefix . '-' . Str::uuid() . '.' . ltrim($extension, '.');
