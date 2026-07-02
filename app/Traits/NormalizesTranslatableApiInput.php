@@ -5,6 +5,8 @@ namespace App\Traits;
 use App\Models\Tag;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 trait NormalizesTranslatableApiInput
 {
@@ -147,9 +149,61 @@ trait NormalizesTranslatableApiInput
 
         foreach ($model->translations as $translation) {
             if (! $translation->exists || $translation->isDirty()) {
+                $this->ensureTranslationRequiredFields($translation, $model);
                 $translation->setAttribute($model->getForeignKey(), $model->getKey());
                 $translation->save();
             }
         }
+    }
+
+    protected function ensureTranslationRequiredFields(Model $translation, Model $parent): void
+    {
+        $locale = (string) ($translation->locale ?? config('app.locale', 'ar'));
+        $parentKey = $parent->getKey();
+        $type = Str::singular($parent->getTable());
+
+        if (blank($translation->title)) {
+            if (filled($translation->slug)) {
+                $translation->title = Str::limit((string) $translation->slug, 500, '');
+            } elseif (filled($translation->excerpt)) {
+                $translation->title = Str::limit(strip_tags((string) $translation->excerpt), 500, '');
+            } else {
+                $translation->title = Str::limit("{$type}-{$parentKey}-{$locale}", 500, '');
+            }
+        }
+
+        if (blank($translation->slug)) {
+            $base = (string) $translation->title;
+            $translation->slug = $this->uniqueTranslationSlug(
+                $translation->getTable(),
+                $locale,
+                $base,
+                $translation->exists ? $translation->getKey() : null
+            );
+        }
+    }
+
+    protected function uniqueTranslationSlug(
+        string $table,
+        string $locale,
+        string $base,
+        ?int $ignoreId = null
+    ): string {
+        $slug = Str::slug(Str::ascii($base)) ?: 'item';
+        $slug = Str::limit($slug, 480, '');
+        $candidate = $slug;
+        $suffix = 1;
+
+        while (
+            DB::table($table)
+                ->where('locale', $locale)
+                ->where('slug', $candidate)
+                ->when($ignoreId, fn ($query) => $query->where('id', '!=', $ignoreId))
+                ->exists()
+        ) {
+            $candidate = Str::limit($slug, 470, '') . '-' . $suffix++;
+        }
+
+        return $candidate;
     }
 }
