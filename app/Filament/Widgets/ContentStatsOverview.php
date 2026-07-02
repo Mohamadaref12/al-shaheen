@@ -5,12 +5,11 @@ namespace App\Filament\Widgets;
 use App\Filament\Resources\Articles\ArticleResource;
 use App\Filament\Resources\Comments\CommentResource;
 use App\Filament\Resources\ContactMessages\ContactMessageResource;
-use App\Filament\Resources\Writers\WriterResource;
+use App\Filament\Resources\News\NewsResource;
 use App\Models\Article;
 use App\Models\Comment;
 use App\Models\ContactMessage;
-use App\Models\Subscription;
-use App\Models\Writer;
+use App\Models\News;
 use Filament\Support\Icons\Heroicon;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
@@ -20,83 +19,76 @@ class ContentStatsOverview extends StatsOverviewWidget
 {
     protected static bool $isLazy = false;
 
-    protected static ?int $sort = 1;
+    protected static ?int $sort = 2;
 
     protected ?string $pollingInterval = null;
 
-    protected ?string $heading = 'Newsroom Overview';
+    protected ?string $heading = 'At a glance';
+
+    protected ?string $description = 'Key metrics across articles, news, and community';
+
+    protected int|string|array $columnSpan = 'full';
+
+    protected function getColumns(): int|array
+    {
+        return [
+            'default' => 1,
+            'sm'      => 2,
+            'lg'      => 3,
+            'xl'      => 4,
+        ];
+    }
 
     protected function getStats(): array
     {
-        $publishedCount = Article::query()->where('status', 'published')->count();
+        $publishedArticles = Article::query()->where('status', 'published')->count();
+        $publishedNews = News::query()->where('status', 'published')->count();
 
-        $editorialQueueCount = Article::query()
+        $articleQueueCount = Article::query()
             ->whereIn('status', ['submitted', 'under_review', 'review', 'ready', 'scheduled'])
             ->count();
 
+        $newsQueueCount = News::query()->where('status', 'under_review')->count();
+
         $pendingCommentsCount = Comment::query()->where('status', 'pending')->count();
-
         $unreadContactCount = ContactMessage::query()->unread()->count();
+        $needsAttention = $pendingCommentsCount + $unreadContactCount;
 
-        $totalViews = (int) Article::query()->where('status', 'published')->sum('views_count');
-
-        $pendingWriterApps = Writer::query()
-            ->whereIn('application_status', ['submitted', 'under_review'])
-            ->count();
-
-        $activeSubscriptions = Subscription::query()->where('status', 'active')->count();
+        $totalViews = (int) Article::query()->where('status', 'published')->sum('views_count')
+            + (int) News::query()->where('status', 'published')->sum('views_count');
 
         $publishedTrend = $this->dailyPublishedCounts(7);
 
         return [
-            Stat::make('Published Articles', Number::format($publishedCount))
-                ->description('Live on the platform')
+            Stat::make('Published', Number::format($publishedArticles + $publishedNews))
+                ->description($publishedArticles.' articles · '.$publishedNews.' news')
                 ->descriptionIcon(Heroicon::OutlinedCheckCircle)
                 ->icon(Heroicon::OutlinedNewspaper)
                 ->color('success')
                 ->chart($publishedTrend)
                 ->url(ArticleResource::getUrl('index')),
 
-            Stat::make('Editorial Queue', Number::format($editorialQueueCount))
-                ->description('Awaiting review or scheduling')
+            Stat::make('Editorial Queue', Number::format($articleQueueCount + $newsQueueCount))
+                ->description($articleQueueCount.' articles · '.$newsQueueCount.' news')
                 ->descriptionIcon(Heroicon::OutlinedClock)
                 ->icon(Heroicon::OutlinedInboxStack)
-                ->color($editorialQueueCount > 0 ? 'warning' : 'gray')
+                ->color(($articleQueueCount + $newsQueueCount) > 0 ? 'warning' : 'gray')
                 ->url(ArticleResource::getUrl('index')),
 
-            Stat::make('Pending Comments', Number::format($pendingCommentsCount))
-                ->description('Need moderation')
-                ->descriptionIcon(Heroicon::OutlinedChatBubbleLeftEllipsis)
+            Stat::make('Needs Attention', Number::format($needsAttention))
+                ->description($pendingCommentsCount.' comments · '.$unreadContactCount.' messages')
+                ->descriptionIcon(Heroicon::OutlinedBellAlert)
                 ->icon(Heroicon::OutlinedChatBubbleLeftRight)
-                ->color($pendingCommentsCount > 0 ? 'warning' : 'gray')
+                ->color($needsAttention > 0 ? 'danger' : 'gray')
                 ->url(CommentResource::getUrl('index')),
 
-            Stat::make('Unread Contact', Number::format($unreadContactCount))
-                ->description('Contact form messages')
-                ->descriptionIcon(Heroicon::OutlinedEnvelope)
-                ->icon(Heroicon::OutlinedChatBubbleBottomCenterText)
-                ->color($unreadContactCount > 0 ? 'warning' : 'gray')
-                ->url(ContactMessageResource::getUrl('index')),
-
-            Stat::make('Article Views', Number::abbreviate($totalViews))
-                ->description('Total on published articles')
+            Stat::make('Total Views', Number::abbreviate($totalViews))
+                ->description('Across published content')
                 ->descriptionIcon(Heroicon::OutlinedEye)
                 ->icon(Heroicon::OutlinedChartBar)
                 ->color('primary')
-                ->chart($publishedTrend),
-
-            Stat::make('Writer Applications', Number::format($pendingWriterApps))
-                ->description('Submitted or under review')
-                ->descriptionIcon(Heroicon::OutlinedUserPlus)
-                ->icon(Heroicon::OutlinedIdentification)
-                ->color($pendingWriterApps > 0 ? 'info' : 'gray')
-                ->url(WriterResource::getUrl('index')),
-
-            Stat::make('Active Subscriptions', Number::format($activeSubscriptions))
-                ->description('Paying subscribers')
-                ->descriptionIcon(Heroicon::OutlinedCreditCard)
-                ->icon(Heroicon::OutlinedBanknotes)
-                ->color('success'),
+                ->chart($publishedTrend)
+                ->url(NewsResource::getUrl('index')),
         ];
     }
 
@@ -108,10 +100,16 @@ class ContentStatsOverview extends StatsOverviewWidget
         $counts = [];
 
         for ($i = $days - 1; $i >= 0; $i--) {
+            $date = now()->subDays($i)->toDateString();
+
             $counts[] = Article::query()
                 ->where('status', 'published')
-                ->whereDate('published_at', now()->subDays($i))
-                ->count();
+                ->whereDate('published_at', $date)
+                ->count()
+                + News::query()
+                    ->where('status', 'published')
+                    ->whereDate('published_at', $date)
+                    ->count();
         }
 
         return $counts;

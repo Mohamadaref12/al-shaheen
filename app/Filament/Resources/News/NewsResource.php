@@ -23,6 +23,8 @@ class NewsResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'Content';
 
+    protected static ?int $navigationSort = 2;
+
     protected static ?string $navigationLabel = 'News';
 
     protected static ?string $modelLabel = 'News Item';

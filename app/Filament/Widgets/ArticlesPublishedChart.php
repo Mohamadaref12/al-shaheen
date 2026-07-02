@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Article;
+use App\Models\News;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Carbon;
 
@@ -10,15 +11,13 @@ class ArticlesPublishedChart extends ChartWidget
 {
     protected static bool $isLazy = false;
 
-    protected static ?int $sort = 2;
-
-    protected ?string $pollingInterval = null;
+    protected static ?int $sort = 3;
 
     protected int|string|array $columnSpan = 'full';
 
-    protected ?string $heading = 'Publishing Activity';
+    protected ?string $heading = 'Publishing activity';
 
-    protected ?string $description = 'Articles published over time';
+    protected ?string $description = 'Articles and news published over time';
 
     protected ?string $maxHeight = '280px';
 
@@ -106,7 +105,11 @@ class ArticlesPublishedChart extends ChartWidget
         return Article::query()
             ->where('status', 'published')
             ->whereBetween('published_at', [$start, $end])
-            ->count();
+            ->count()
+            + News::query()
+                ->where('status', 'published')
+                ->whereBetween('published_at', [$start, $end])
+                ->count();
     }
 
     /**
@@ -119,7 +122,7 @@ class ArticlesPublishedChart extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Published articles',
+                    'label' => 'Published items',
                     'data' => $data,
                     'borderColor' => '#28414e',
                     'backgroundColor' => 'rgba(40, 65, 78, 0.12)',

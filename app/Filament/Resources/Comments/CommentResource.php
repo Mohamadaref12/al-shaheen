@@ -22,6 +22,8 @@ class CommentResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'Content';
 
+    protected static ?int $navigationSort = 5;
+
     protected static ?string $navigationLabel = 'Comments';
 
     protected static ?string $modelLabel = 'Comment';

@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Actions\GenerateNewsSuggestionsAction;
 use App\Actions\GenerateNewsTranslationAction;
+use App\Contracts\NewsImprovementService;
 use App\Contracts\NewsTranslationService;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\NewsAiSuggestionResource;
@@ -17,14 +19,51 @@ class NewsAiSuggestionController extends Controller
 {
     use NormalizesTranslatableApiInput;
 
-    public function status(NewsTranslationService $translationService): JsonResponse
-    {
+    public function status(
+        NewsImprovementService $improvementService,
+        NewsTranslationService $translationService
+    ): JsonResponse {
         return $this->success([
-            'available'             => $translationService->isAvailable(),
+            'available'             => $improvementService->isAvailable(),
             'translation_available' => $translationService->isAvailable(),
             'provider'              => config('ai.provider'),
-            'enabled'               => $translationService->isAvailable(),
+            'enabled'               => $improvementService->isAvailable() || $translationService->isAvailable(),
         ], 'AI status retrieved successfully.');
+    }
+
+    public function suggestFromDraft(Request $request, GenerateNewsSuggestionsAction $action): JsonResponse
+    {
+        try {
+            return $this->generateImprovement($request, $action);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->error($e->errors(), 'Validation failed.', 422);
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'Failed to generate AI suggestions.');
+        }
+    }
+
+    public function suggestForNews(
+        Request $request,
+        int $newsId,
+        GenerateNewsSuggestionsAction $action
+    ): JsonResponse {
+        try {
+            $news = News::query()->with('translations')->find($newsId);
+
+            if (! $news) {
+                return $this->error(null, 'News not found.', 404);
+            }
+
+            if (! $this->canManageNews($request, $news)) {
+                return $this->error(null, 'You are not authorized to improve this news item.', 403);
+            }
+
+            return $this->generateImprovement($request, $action, $news);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->error($e->errors(), 'Validation failed.', 422);
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'Failed to generate AI suggestions.');
+        }
     }
 
     public function translateFromDraft(Request $request, GenerateNewsTranslationAction $action): JsonResponse
@@ -77,12 +116,13 @@ class NewsAiSuggestionController extends Controller
 
             $request->validate([
                 'per_page' => 'nullable|integer|min:1|max:20',
+                'kind'     => 'nullable|in:improvement,translation',
             ]);
 
             $paginator = NewsAiSuggestion::query()
                 ->where('news_id', $newsId)
                 ->where('status', 'completed')
-                ->where('kind', 'translation')
+                ->when($request->filled('kind'), fn ($query) => $query->where('kind', $request->input('kind')))
                 ->orderByDesc('id')
                 ->paginate((int) $request->input('per_page', 10));
 
@@ -101,6 +141,27 @@ class NewsAiSuggestionController extends Controller
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to retrieve AI suggestions.');
         }
+    }
+
+    protected function generateImprovement(
+        Request $request,
+        GenerateNewsSuggestionsAction $action,
+        ?News $news = null
+    ): JsonResponse {
+        $user = $request->user();
+
+        if (! $this->userCanUseNewsAi($user)) {
+            return $this->error(null, 'You are not authorized to use AI suggestions.', 403);
+        }
+
+        $this->prepareTranslatableRequest($request);
+
+        $data = $request->validate($this->improvementValidationRules($news !== null));
+        $this->mapLegacyTranslationInput($data);
+
+        $result = $action->execute($user, $data, $news);
+
+        return $this->aiResponse($result);
     }
 
     protected function generateTranslation(
@@ -148,6 +209,14 @@ class NewsAiSuggestionController extends Controller
             $result['message'],
             $result['available'] && $result['suggestion'] ? 201 : 200
         );
+    }
+
+    protected function improvementValidationRules(bool $newsExists): array
+    {
+        return array_merge($this->sharedContentValidationRules($newsExists), [
+            'focus'  => 'nullable|in:all,grammar,seo,clarity,headline',
+            'locale' => 'nullable|in:ar,en',
+        ]);
     }
 
     protected function translationValidationRules(bool $newsExists): array

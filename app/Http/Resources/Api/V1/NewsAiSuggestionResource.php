@@ -24,9 +24,11 @@ class NewsAiSuggestionResource extends JsonResource
             'model'             => $this->model,
             'status'            => $this->status,
             'created_at'        => $this->created_at?->toIso8601String(),
-            'apply_hint'        => $this->news_id
-                ? 'Review suggestions and apply via PUT /news/{id} with title_{locale}, content_{locale}, etc. Nothing is auto-applied.'
-                : 'Review suggestions, fill the create form (AR + EN), then POST /news. Nothing is auto-applied.',
+            'apply_hint'        => $this->kind === 'translation'
+                ? ($this->news_id
+                    ? 'Review suggestions and apply via PUT /news/{id} with title_{locale}, content_{locale}, etc. Nothing is auto-applied.'
+                    : 'Review suggestions, fill the create form (AR + EN), then POST /news. Nothing is auto-applied.')
+                : 'Review suggestions and apply manually via news create or update.',
         ];
     }
 }

@@ -24,6 +24,8 @@ class ArticleResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'Content';
 
+    protected static ?int $navigationSort = 1;
+
     protected static ?string $navigationLabel = 'Articles';
 
     protected static ?string $modelLabel = 'Article';

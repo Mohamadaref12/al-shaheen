@@ -15,9 +15,9 @@ class RecentArticlesWidget extends TableWidget
 {
     protected static bool $isLazy = false;
 
-    protected static ?int $sort = 4;
+    protected static ?int $sort = 7;
 
-    protected int|string|array $columnSpan = 1;
+    protected int|string|array $columnSpan = 'full';
 
     public function table(Table $table): Table
     {

@@ -4,12 +4,15 @@ namespace App\Providers;
 
 use App\Contracts\ArticleImprovementService;
 use App\Contracts\ArticleTranslationService;
+use App\Contracts\NewsImprovementService;
 use App\Contracts\NewsTranslationService;
 use App\Services\Ai\NullArticleImprovementService;
 use App\Services\Ai\NullArticleTranslationService;
+use App\Services\Ai\NullNewsImprovementService;
 use App\Services\Ai\NullNewsTranslationService;
 use App\Services\Ai\OpenAiArticleImprovementService;
 use App\Services\Ai\OpenAiArticleTranslationService;
+use App\Services\Ai\OpenAiNewsImprovementService;
 use App\Services\Ai\OpenAiNewsTranslationService;
 use App\Support\AiSettings;
 use Illuminate\Support\ServiceProvider;
@@ -43,6 +46,14 @@ class AppServiceProvider extends ServiceProvider
             }
 
             return new NullNewsTranslationService;
+        });
+
+        $this->app->bind(NewsImprovementService::class, function (): NewsImprovementService {
+            if (AiSettings::isConfigured()) {
+                return new OpenAiNewsImprovementService;
+            }
+
+            return new NullNewsImprovementService;
         });
     }
 

@@ -15,9 +15,9 @@ class UnreadContactMessagesWidget extends TableWidget
 {
     protected static bool $isLazy = false;
 
-    protected static ?int $sort = 6;
+    protected static ?int $sort = 9;
 
-    protected int|string|array $columnSpan = 'full';
+    protected int|string|array $columnSpan = 1;
 
     public function table(Table $table): Table
     {

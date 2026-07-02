@@ -10,6 +10,34 @@ trait BuildsNewsAiSnapshot
      * @param  array<string, mixed>  $input
      * @return array<string, mixed>
      */
+    protected function buildImprovementSnapshot(array $input, ?News $news = null): array
+    {
+        $locale = (string) ($input['locale'] ?? $this->detectPrimaryLocale($input, $news) ?? 'ar');
+
+        $snapshot = ['locale' => $locale];
+
+        foreach (['title', 'subtitle', 'content', 'excerpt', 'seo_title', 'seo_description'] as $field) {
+            $localizedKey = "{$field}_{$locale}";
+
+            if (array_key_exists($localizedKey, $input)) {
+                $snapshot[$field] = $input[$localizedKey];
+            } elseif (array_key_exists($field, $input)) {
+                $snapshot[$field] = $input[$field];
+            } elseif ($news) {
+                $snapshot[$field] = $news->translate($locale, false)?->{$field};
+            }
+        }
+
+        return array_filter(
+            $snapshot,
+            fn ($value) => $value !== null && $value !== ''
+        );
+    }
+
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, mixed>
+     */
     protected function buildTranslationSnapshot(array $input, ?News $news = null): array
     {
         $sourceLocale = $this->resolveSourceLocale($input, $news);

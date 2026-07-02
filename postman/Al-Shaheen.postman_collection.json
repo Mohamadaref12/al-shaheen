@@ -846,7 +846,24 @@
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
             "url": "{{base_url}}/news/ai/status",
-            "description": "Check if GPT translation is available for news. Requires OpenAI key in Admin → AI Settings."
+            "description": "Check if GPT improvement and translation are available for news. Requires OpenAI key in Admin → AI Settings."
+          }
+        },
+        {
+          "name": "Suggest Before Create — News (GPT)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/news/ai/suggest",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"locale\": \"ar\",\n  \"focus\": \"all\",\n  \"title_ar\": \"عنوان الخبر بالعربية\",\n  \"subtitle_ar\": \"عنوان فرعي\",\n  \"content_ar\": \"محتوى الخبر الكامل بالعربية...\",\n  \"excerpt_ar\": \"ملخص قصير\",\n  \"seo_title_ar\": \"SEO عربي\"\n}"
+            },
+            "description": "Improve content BEFORE create (no news_id needed).\n\n1. User fills AR fields in create form\n2. POST this endpoint\n3. Copy data.suggestion.suggestions into form\n4. POST /news to create\n\nfocus: all | grammar | seo | clarity | headline"
           }
         },
         {
@@ -1028,12 +1045,36 @@
           }
         },
         {
+          "name": "Suggest Saved News (GPT)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/news/{{news_id}}/ai/suggest",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"locale\": \"ar\",\n  \"focus\": \"all\"\n}"
+            },
+            "description": "Improve AFTER news exists. Uses stored content if body fields omitted. Apply suggestions via PUT /news/{id}."
+          }
+        },
+        {
           "name": "List AI Suggestions (News)",
           "request": {
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/news/{{news_id}}/ai/suggestions",
-            "description": "Past GPT translations for saved news item."
+            "url": {
+              "raw": "{{base_url}}/news/{{news_id}}/ai/suggestions?kind=translation",
+              "host": ["{{base_url}}"],
+              "path": ["news", "{{news_id}}", "ai", "suggestions"],
+              "query": [
+                { "key": "kind", "value": "translation", "description": "improvement | translation (optional)" }
+              ]
+            },
+            "description": "Past GPT improvements and translations for saved news item. Filter with ?kind=improvement or ?kind=translation"
           }
         },
         {
@@ -1634,41 +1675,6 @@
             "header": [{ "key": "Accept", "value": "application/json" }],
             "url": "{{base_url}}/training/courses/{{course_id}}/my-progress",
             "description": "Returns enrollment status, completion summary, and per-lesson progress."
-          }
-        }
-      ]
-    },
-    {
-      "name": "Subscriptions",
-      "item": [
-        {
-          "name": "List Packages",
-          "request": {
-            "auth": { "type": "noauth" },
-            "method": "GET",
-            "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/packages"
-          }
-        },
-        {
-          "name": "My Subscriptions",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/subscriptions"
-          }
-        },
-        {
-          "name": "Subscribe",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Accept", "value": "application/json" }],
-            "url": "{{base_url}}/subscriptions",
-            "body": {
-              "mode": "raw",
-              "options": { "raw": { "language": "json" } },
-              "raw": "{\n  \"package_id\": 1,\n  \"plan\": \"monthly\"\n}"
-            }
           }
         }
       ]

@@ -6,8 +6,11 @@ use App\Filament\Pages\Dashboard;
 use App\Filament\Resources\CourseCategories\CourseCategoryResource;
 use App\Filament\Widgets\ArticlesPublishedChart;
 use App\Filament\Widgets\ContentStatsOverview;
+use App\Filament\Widgets\DashboardHeaderWidget;
 use App\Filament\Widgets\EditorialQueueWidget;
+use App\Filament\Widgets\NewsEditorialQueueWidget;
 use App\Filament\Widgets\PendingCommentsWidget;
+use App\Filament\Widgets\QuickActionsWidget;
 use App\Filament\Widgets\RecentArticlesWidget;
 use App\Filament\Widgets\UnreadContactMessagesWidget;
 use Filament\Enums\ThemeMode;
@@ -35,16 +38,24 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->brandName('Al Shaheen')
             ->brandLogo(asset('al-shaheen.png'))
-            ->brandLogoHeight('2.75rem')
+            ->brandLogoHeight('2.5rem')
+            ->sidebarCollapsibleOnDesktop()
+            ->sidebarWidth('17.5rem')
+            ->collapsedSidebarWidth('5rem')
             ->defaultThemeMode(ThemeMode::Light)
             ->colors([
                 'primary' => Color::hex('#28414e'),
-                'gray' => Color::Stone,
+                'gray'    => Color::Stone,
+                'danger'  => Color::Rose,
+                'warning' => Color::Amber,
+                'success' => Color::Emerald,
+                'info'    => Color::Sky,
             ])
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
-                fn (): string => '<link rel="stylesheet" href="'.asset('css/filament-admin-theme.css').'">',
+                fn (): string => '<link rel="stylesheet" href="'.asset('css/filament-admin-theme.css').'?v=3">',
             )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->resources([
@@ -56,22 +67,24 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
+                DashboardHeaderWidget::class,
+                QuickActionsWidget::class,
                 ContentStatsOverview::class,
                 ArticlesPublishedChart::class,
                 EditorialQueueWidget::class,
+                NewsEditorialQueueWidget::class,
                 RecentArticlesWidget::class,
                 PendingCommentsWidget::class,
                 UnreadContactMessagesWidget::class,
             ])
             ->navigationGroups([
-                'Users',
                 'Content',
+                'Users',
                 'Catalog',
+                'Training',
                 'Marketing',
                 'Events',
                 'Monetization',
-                'Subscriptions',
-                'Training',
                 'Settings',
             ])
             ->middleware([
