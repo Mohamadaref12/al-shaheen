@@ -31,4 +31,11 @@ return [
     'padding' => 24,
 
     'position' => 'bottom-right',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Image driver: gd (recommended), imagick, or auto
+    |--------------------------------------------------------------------------
+    */
+    'watermark_driver' => env('BRAND_WATERMARK_DRIVER', 'gd'),
 ];

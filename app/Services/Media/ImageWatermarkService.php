@@ -22,7 +22,7 @@ class ImageWatermarkService
             );
         }
 
-        if (extension_loaded('imagick')) {
+        if (extension_loaded('imagick') && $this->shouldUseImagick()) {
             return $this->applyWithImagick($sourcePath, $watermarkPath);
         }
 
@@ -30,7 +30,20 @@ class ImageWatermarkService
             return $this->applyWithGd($sourcePath, $watermarkPath);
         }
 
-        throw new RuntimeException('No supported PHP image extension found. Install Imagick or GD.');
+        if (extension_loaded('imagick')) {
+            return $this->applyWithImagick($sourcePath, $watermarkPath);
+        }
+
+        throw new RuntimeException('No supported PHP image extension found. Install GD or Imagick.');
+    }
+
+    private function shouldUseImagick(): bool
+    {
+        return match (config('brand.watermark_driver', 'gd')) {
+            'imagick' => true,
+            'gd'      => false,
+            default   => false,
+        };
     }
 
     public function applyFromUrl(string $url): string
@@ -57,18 +70,20 @@ class ImageWatermarkService
     {
         $image = new \Imagick($sourcePath);
         $image->setImageColorspace(\Imagick::COLORSPACE_SRGB);
+        $image->autoOrient();
 
         $watermark = new \Imagick($watermarkPath);
         $watermark->setImageFormat('png');
         $watermark->setImageColorspace(\Imagick::COLORSPACE_SRGB);
+        $watermark->setImageBackgroundColor(new \ImagickPixel('transparent'));
         $watermark->setImageAlphaChannel(\Imagick::ALPHACHANNEL_ACTIVATE);
 
         $this->removeLightBackground($watermark);
 
-        $targetWidth = max(80, (int) round($image->getImageWidth() * (float) config('brand.width_ratio', 0.22)));
-        $watermark->scaleImage($targetWidth, 0);
+        $targetWidth = max(120, (int) round($image->getImageWidth() * (float) config('brand.width_ratio', 0.22)));
+        $watermark->resizeImage($targetWidth, 0, \Imagick::FILTER_LANCZOS, 1);
 
-        $opacity = max(0.1, min(1.0, (float) config('brand.opacity', 0.55)));
+        $opacity = max(0.25, min(1.0, (float) config('brand.opacity', 0.55)));
         $watermark->evaluateImage(\Imagick::EVALUATE_MULTIPLY, $opacity, \Imagick::CHANNEL_ALPHA);
 
         [$x, $y] = $this->resolvePosition(
@@ -83,6 +98,11 @@ class ImageWatermarkService
         $format = strtolower($image->getImageFormat() ?: 'jpeg');
         if (! in_array($format, ['jpeg', 'jpg', 'png', 'webp'], true)) {
             $format = 'jpeg';
+        }
+
+        if (in_array($format, ['jpeg', 'jpg'], true)) {
+            $image->setImageBackgroundColor(new \ImagickPixel('white'));
+            $image = $image->mergeImageLayers(\Imagick::LAYERMETHOD_FLATTEN);
         }
 
         $output = $this->tempPath('watermarked', $format === 'jpg' ? 'jpeg' : $format);
@@ -142,7 +162,7 @@ class ImageWatermarkService
 
         $this->removeLightBackgroundGd($original);
 
-        $targetWidth = max(80, (int) round($sourceWidth * (float) config('brand.width_ratio', 0.22)));
+        $targetWidth = max(120, (int) round($sourceWidth * (float) config('brand.width_ratio', 0.22)));
         $originalWidth = imagesx($original);
         $originalHeight = imagesy($original);
         $targetHeight = (int) round($originalHeight * ($targetWidth / $originalWidth));

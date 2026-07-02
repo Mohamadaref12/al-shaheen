@@ -462,7 +462,7 @@
                 { "key": "locale", "value": "ar", "description": "ar | en — used for download filename" }
               ]
             },
-            "description": "Downloads the article featured image with Al Shaheen watermark applied. Published articles only."
+            "description": "Downloads the article featured image WITH Al Shaheen watermark. Do NOT use featured_image_url for download — that is the raw image without watermark. Use featured_image_download_url from article API response."
           }
         },
         {

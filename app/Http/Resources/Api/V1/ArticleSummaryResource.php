@@ -23,6 +23,8 @@ class ArticleSummaryResource extends JsonResource
             'excerpt'            => $translation?->excerpt,
             'featured_image'     => $this->featured_image,
             'featured_image_url' => $this->imageUrl($this->featured_image),
+            'featured_image_watermarked_url' => $this->watermarkedImageUrl($request, $locale, inline: true),
+            'featured_image_download_url'    => $this->watermarkedImageUrl($request, $locale, inline: false),
             'locale'             => $locale,
             'read_time'          => $this->read_time,
             'is_breaking'        => (bool) $this->is_breaking,
@@ -52,5 +54,20 @@ class ArticleSummaryResource extends JsonResource
         $locale = $request->input('locale', config('app.locale', 'ar'));
 
         return in_array($locale, ['ar', 'en'], true) ? $locale : 'ar';
+    }
+
+    private function watermarkedImageUrl(Request $request, string $locale, bool $inline): ?string
+    {
+        if (blank($this->featured_image)) {
+            return null;
+        }
+
+        $base = rtrim((string) config('app.url'), '/');
+        $query = http_build_query(array_filter([
+            'locale' => $locale,
+            'inline' => $inline ? '1' : null,
+        ]));
+
+        return "{$base}/api/v1/articles/{$this->id}/featured-image/download?{$query}";
     }
 }

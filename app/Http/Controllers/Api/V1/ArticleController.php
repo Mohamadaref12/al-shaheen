@@ -144,6 +144,7 @@ class ArticleController extends Controller
         try {
             $request->validate([
                 'locale' => 'nullable|in:ar,en',
+                'inline' => 'nullable|boolean',
             ]);
 
             $locale = $this->resolveApiLocale($request);
@@ -158,7 +159,11 @@ class ArticleController extends Controller
                 return $this->error(null, 'Article not found.', 404);
             }
 
-            return app(ArticleFeaturedImageDownloadService::class)->download($article, $locale);
+            return app(ArticleFeaturedImageDownloadService::class)->download(
+                $article,
+                $locale,
+                $request->boolean('inline')
+            );
         } catch (\Illuminate\Validation\ValidationException $e) {
             return $this->error($e->errors(), 'Validation failed.', 422);
         } catch (Throwable $e) {
