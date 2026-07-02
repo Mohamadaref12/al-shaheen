@@ -303,7 +303,7 @@ class ArticleController extends Controller
                 'seo_description_ar'     => 'nullable|string|max:400',
                 'seo_title'              => 'nullable|string|max:200',
                 'seo_description'        => 'nullable|string|max:400',
-                'status'                 => 'nullable|in:draft,pending,published,archived',
+                'status'                 => 'nullable|in:draft,pending',
                 'tags'                   => 'nullable|array',
                 'tags.*'                 => 'integer|exists:tags,id',
                 'secondary_categories'   => 'nullable|array',

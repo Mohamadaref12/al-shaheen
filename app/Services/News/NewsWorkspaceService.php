@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 
 class NewsWorkspaceService
 {
-    public const WORKSPACE_DRAFT_STATUSES = ['draft', 'under_review'];
+    public const WORKSPACE_DRAFT_STATUSES = ['draft'];
 
     public const STATUS_LABELS = [
         'draft'        => 'Draft',
@@ -18,6 +18,22 @@ class NewsWorkspaceService
         'published'    => 'Published',
         'archived'     => 'Archived',
     ];
+
+    public const API_STATUS_LABELS = [
+        'draft'     => 'Draft',
+        'pending'   => 'In Review',
+        'published' => 'Published',
+        'archived'  => 'Archived',
+    ];
+
+    public static function apiStatus(?string $status): ?string
+    {
+        if ($status === null) {
+            return null;
+        }
+
+        return $status === 'under_review' ? 'pending' : $status;
+    }
 
     public function draftsResponse(Request $request, User $user, bool $allowAllForEditors = true): JsonResponse
     {
@@ -34,14 +50,23 @@ class NewsWorkspaceService
         $rows = $drafts->map(fn (News $news) => $this->formatDraftRow($news));
         $readinessValues = $rows->pluck('readiness')->filter();
 
+        $authorScope = (! $allowAllForEditors || ! $this->userIsNewsEditor($user) || ! $request->boolean('all'))
+            ? fn ($query) => $query->where('author_id', $user->id)
+            : fn ($query) => $query;
+
+        $underReviewCount = $authorScope(News::query())
+            ->where('status', 'under_review')
+            ->count();
+
         return response()->json([
             'success' => true,
             'status'  => 'success',
             'message' => 'News drafts retrieved successfully.',
             'data'    => [
                 'summary' => [
-                    'total_drafts'     => $drafts->count(),
-                    'ready_to_publish' => $drafts->where('status', 'under_review')->count(),
+                    'total_drafts'       => $drafts->count(),
+                    'under_review_count' => $underReviewCount,
+                    'ready_to_publish'   => $underReviewCount,
                     'avg_completion'   => $readinessValues->isNotEmpty()
                         ? (int) round($readinessValues->avg())
                         : 0,
@@ -100,8 +125,9 @@ class NewsWorkspaceService
             'id'                 => $news->id,
             'title'              => $news->display_title,
             'slug'               => $news->slug,
-            'status'             => $news->status,
-            'status_label'       => self::STATUS_LABELS[$news->status] ?? $news->status,
+            'status'             => self::apiStatus($news->status),
+            'status_label'       => self::API_STATUS_LABELS[self::apiStatus($news->status)] ?? $news->status,
+            'is_in_drafts'       => in_array($news->status, self::WORKSPACE_DRAFT_STATUSES, true),
             'category'           => $news->category,
             'featured_image_url' => $news->featured_image_url,
             'is_breaking'        => (bool) $news->is_breaking,
@@ -127,6 +153,7 @@ class NewsWorkspaceService
             'total_news'            => $totalNews,
             'published_count'       => (int) (clone $published)->count(),
             'draft_count'           => (int) (clone $news)->whereIn('status', self::WORKSPACE_DRAFT_STATUSES)->count(),
+            'under_review_count'    => (int) (clone $news)->where('status', 'under_review')->count(),
             'total_views'           => $totalViews,
             'total_views_formatted' => $this->formatCompactNumber($totalViews),
         ];
@@ -163,8 +190,9 @@ class NewsWorkspaceService
                 'read_time'          => $news->read_time,
                 'is_breaking'        => (bool) $news->is_breaking,
                 'is_premium'         => (bool) $news->is_premium,
-                'status'             => $news->status,
-                'status_label'       => self::STATUS_LABELS[$news->status] ?? $news->status,
+                'status'             => self::apiStatus($news->status),
+                'status_label'       => self::API_STATUS_LABELS[self::apiStatus($news->status)] ?? $news->status,
+                'is_in_drafts'       => in_array($news->status, self::WORKSPACE_DRAFT_STATUSES, true),
                 'published_at'       => $news->published_at?->toIso8601String(),
                 'published_label'    => $this->formatPublishedLabel($news),
                 'is_preview'         => $news->status !== 'published',
@@ -193,8 +221,9 @@ class NewsWorkspaceService
             'id'                => $news->id,
             'title'             => $news->display_title,
             'slug'              => $news->slug,
-            'status'            => $news->status,
-            'status_label'      => self::STATUS_LABELS[$news->status] ?? $news->status,
+            'status'            => self::apiStatus($news->status),
+            'status_label'      => self::API_STATUS_LABELS[self::apiStatus($news->status)] ?? $news->status,
+            'is_in_drafts'      => in_array($news->status, self::WORKSPACE_DRAFT_STATUSES, true),
             'category'          => $news->category,
             'last_edited_at'    => $news->updated_at?->toIso8601String(),
             'last_edited_label' => $this->formatLastEditedLabel($news->updated_at),

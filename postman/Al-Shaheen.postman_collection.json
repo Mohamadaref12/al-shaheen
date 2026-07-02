@@ -540,7 +540,7 @@
               "options": { "raw": { "language": "json" } },
               "raw": "{\n  \"title_ar\": \"عنوان عربي محدّث\",\n  \"subtitle_ar\": \"عنوان فرعي محدّث\",\n  \"content_ar\": \"محتوى عربي محدّث كامل...\",\n  \"excerpt_ar\": \"ملخص محدّث\",\n  \"seo_title_ar\": \"SEO محدّث\",\n  \"title_en\": \"Updated English title\",\n  \"subtitle_en\": \"Updated English subtitle\",\n  \"content_en\": \"Updated English full content...\",\n  \"tags\": [1, 2],\n  \"read_time\": 10,\n  \"is_breaking\": false,\n  \"status\": \"pending\"\n}"
             },
-            "description": "Update any combination of fields. content accepts plain text or TipTap JSON. tags: [1,2] or slugs or tag_ids. Only sent fields are updated."
+            "description": "Update any combination of fields. status: draft | pending only (no published). content accepts plain text or TipTap JSON. tags: [1,2] or slugs or tag_ids. Only sent fields are updated."
           }
         },
         {
@@ -743,6 +743,57 @@
           }
         },
         {
+          "name": "AI Status (News)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/news/ai/status",
+            "description": "Check if GPT translation is available for news (requires OpenAI key in Admin → AI Settings)."
+          }
+        },
+        {
+          "name": "Translate News (GPT)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/news/{{news_id}}/ai/translate",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"source_locale\": \"ar\",\n  \"target_locale\": \"en\"\n}"
+            },
+            "description": "Translates Arabic → English (or vice versa). Auto-detects source if omitted. Returns suggestions (title_en, content_en, etc.) for client review — NOT auto-applied. Apply via PUT /news/{id}."
+          }
+        },
+        {
+          "name": "Translate News Draft (GPT)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "url": "{{base_url}}/news/ai/translate",
+            "body": {
+              "mode": "raw",
+              "options": { "raw": { "language": "json" } },
+              "raw": "{\n  \"title_ar\": \"عنوان الخبر بالعربية\",\n  \"content_ar\": \"محتوى الخبر الكامل بالعربية...\",\n  \"excerpt_ar\": \"ملخص قصير\"\n}"
+            },
+            "description": "Translate draft news content without saving first. Target locale is auto-selected (ar→en, en→ar)."
+          }
+        },
+        {
+          "name": "List News AI Suggestions",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base_url}}/news/{{news_id}}/ai/suggestions"
+          }
+        },
+        {
           "name": "Upload News Image",
           "event": [
             {
@@ -802,9 +853,9 @@
             "body": {
               "mode": "raw",
               "options": { "raw": { "language": "json" } },
-              "raw": "{\n  \"title_ar\": \"عنوان محدّث\",\n  \"subtitle_ar\": \"عنوان فرعي محدّث\",\n  \"content_ar\": \"محتوى محدّث كامل...\",\n  \"excerpt_ar\": \"ملخص محدّث\",\n  \"seo_title_ar\": \"SEO محدّث\",\n  \"title_en\": \"Updated headline\",\n  \"subtitle_en\": \"Updated subtitle\",\n  \"content_en\": \"Updated full content...\",\n  \"excerpt_en\": \"Updated excerpt\",\n  \"tags\": [1, 2],\n  \"featured_image\": \"{{featured_image_path}}\",\n  \"read_time\": 8,\n  \"is_breaking\": true,\n  \"status\": \"published\"\n}"
+              "raw": "{\n  \"title_ar\": \"عنوان محدّث\",\n  \"subtitle_ar\": \"عنوان فرعي محدّث\",\n  \"content_ar\": \"محتوى محدّث كامل...\",\n  \"excerpt_ar\": \"ملخص محدّث\",\n  \"seo_title_ar\": \"SEO محدّث\",\n  \"title_en\": \"Updated headline\",\n  \"subtitle_en\": \"Updated subtitle\",\n  \"content_en\": \"Updated full content...\",\n  \"excerpt_en\": \"Updated excerpt\",\n  \"tags\": [1, 2],\n  \"featured_image\": \"{{featured_image_path}}\",\n  \"read_time\": 8,\n  \"is_breaking\": true,\n  \"status\": \"pending\"\n}"
             },
-            "description": "Update any combination of fields. content accepts plain text or TipTap JSON object. tags: array of ids, slugs, or [{id:1}]. Also accepts tag_ids."
+            "description": "Update any combination of fields. status: draft | pending only (no published). content accepts plain text or TipTap JSON object. tags: array of ids, slugs, or [{id:1}]. Also accepts tag_ids."
           }
         },
         {

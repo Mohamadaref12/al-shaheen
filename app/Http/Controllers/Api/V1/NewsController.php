@@ -14,6 +14,7 @@ use App\Traits\NormalizesTranslatableApiInput;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Throwable;
 
 class NewsController extends Controller
@@ -355,13 +356,17 @@ class NewsController extends Controller
                 'seo_description_ar' => 'nullable|string|max:400',
                 'seo_title'          => 'nullable|string|max:200',
                 'seo_description'    => 'nullable|string|max:400',
-                'status'             => 'nullable|in:draft,under_review,published,archived',
-                'published_at'       => 'nullable|date',
+                'status'             => 'nullable|in:draft,pending',
+                'published_at'       => 'prohibited',
                 'tags'               => 'nullable|array',
                 'tags.*'             => 'integer|exists:tags,id',
             ]);
 
             $this->mapLegacyTranslationInput($data);
+
+            if (isset($data['status'])) {
+                $data['status'] = $this->normalizeNewsStatusInput($data['status']);
+            }
 
             $status = $this->resolveNewsStatusForUser($user, $data['status'] ?? 'draft');
             unset($data['status']);
@@ -436,8 +441,8 @@ class NewsController extends Controller
                 'seo_description_ar' => 'nullable|string|max:400',
                 'seo_title'          => 'nullable|string|max:200',
                 'seo_description'    => 'nullable|string|max:400',
-                'status'             => 'nullable|in:draft,under_review,published,archived',
-                'published_at'       => 'nullable|date',
+                'status'             => 'nullable|in:draft,pending',
+                'published_at'       => 'prohibited',
                 'tags'               => 'nullable|array',
                 'tags.*'             => 'integer|exists:tags,id',
             ]);
@@ -445,6 +450,7 @@ class NewsController extends Controller
             $this->mapLegacyTranslationInput($data);
 
             if (array_key_exists('status', $data)) {
+                $data['status'] = $this->normalizeNewsStatusInput($data['status']);
                 $status = $this->resolveNewsStatusForUser($user, $data['status'], $news);
                 $data['published_at'] = $this->resolvePublishedAt(
                     $status,
@@ -622,16 +628,19 @@ class NewsController extends Controller
             && ($user->writer()->exists() || $user->contributor()->exists());
     }
 
+    private function normalizeNewsStatusInput(string $status): string
+    {
+        return $status === 'pending' ? 'under_review' : $status;
+    }
+
     private function resolveNewsStatusForUser(User $user, string $status, ?News $existing = null): string
     {
-        if ($this->userIsNewsEditor($user)) {
-            return $status;
-        }
+        $status = $this->normalizeNewsStatusInput($status);
 
         if (! in_array($status, ['draft', 'under_review'], true)) {
-            return $existing?->status && in_array($existing->status, ['draft', 'under_review'], true)
-                ? $existing->status
-                : 'draft';
+            throw ValidationException::withMessages([
+                'status' => ['Only draft or pending are allowed when saving news. Use the editor workflow to publish.'],
+            ]);
         }
 
         return $status;

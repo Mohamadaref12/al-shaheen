@@ -14,6 +14,14 @@ class ArticleSummaryResource extends JsonResource
     {
         $locale = $this->requestedLocale($request);
         $translation = $this->translate($locale, false) ?? $this->translate($locale);
+        $apiStatus = $this->status;
+        $statusLabels = [
+            'draft'     => 'Draft',
+            'pending'   => 'In Review',
+            'published' => 'Published',
+            'archived'  => 'Archived',
+            'ready'     => 'Ready',
+        ];
 
         return [
             'id'                 => $this->id,
@@ -25,6 +33,9 @@ class ArticleSummaryResource extends JsonResource
             'featured_image_url' => $this->imageUrl($this->featured_image),
             'featured_image_watermarked_url' => $this->watermarkedImageUrl($request, $locale, inline: true),
             'featured_image_download_url'    => $this->watermarkedImageUrl($request, $locale, inline: false),
+            'status'             => $apiStatus,
+            'status_label'       => $statusLabels[$apiStatus] ?? $apiStatus,
+            'is_in_drafts'       => in_array($apiStatus, ['draft', 'ready'], true),
             'locale'             => $locale,
             'read_time'          => $this->read_time,
             'is_breaking'        => (bool) $this->is_breaking,

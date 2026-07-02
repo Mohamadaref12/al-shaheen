@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Api\V1;
 
 use App\Http\Resources\Api\V1\Concerns\ResolvesImageUrls;
+use App\Services\News\NewsWorkspaceService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -14,6 +15,7 @@ class NewsSummaryResource extends JsonResource
     {
         $locale = $this->requestedLocale($request);
         $translation = $this->translate($locale, false) ?? $this->translate($locale);
+        $apiStatus = NewsWorkspaceService::apiStatus($this->status);
 
         return [
             'id'                 => $this->id,
@@ -23,6 +25,9 @@ class NewsSummaryResource extends JsonResource
             'excerpt'            => $translation?->excerpt,
             'featured_image'     => $this->featured_image,
             'featured_image_url' => $this->imageUrl($this->featured_image),
+            'status'             => $apiStatus,
+            'status_label'       => NewsWorkspaceService::API_STATUS_LABELS[$apiStatus] ?? $apiStatus,
+            'is_in_drafts'       => in_array($this->status, NewsWorkspaceService::WORKSPACE_DRAFT_STATUSES, true),
             'locale'             => $locale,
             'read_time'          => $this->read_time,
             'is_breaking'        => (bool) $this->is_breaking,
