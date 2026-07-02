@@ -114,9 +114,15 @@ class WriterDashboardController extends Controller
 
             $readinessValues = $rows->pluck('readiness')->filter();
 
+            $pendingCount = Article::query()
+                ->where('author_id', $authorId)
+                ->where('status', 'submitted')
+                ->count();
+
             return $this->success([
                 'summary' => [
-                    'total_drafts' => $drafts->count(),
+                    'total_drafts'     => $drafts->count(),
+                    'pending_count'    => $pendingCount,
                     'ready_to_publish' => $drafts->where('status', 'ready')->count(),
                     'avg_completion' => $readinessValues->isNotEmpty()
                         ? (int) round($readinessValues->avg())

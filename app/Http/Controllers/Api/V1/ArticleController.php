@@ -324,8 +324,10 @@ class ArticleController extends Controller
                 $article->secondaryCategories()->sync($data['secondary_categories']);
             }
 
+            $article = $this->formatArticleForApi($article->load(['primaryCategory', 'tags']));
+
             return $this->success(
-                $this->formatArticleForApi($article->load(['primaryCategory', 'tags'])),
+                (new ArticleSummaryResource($article))->toArray($request),
                 'Article updated successfully.'
             );
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -546,6 +548,8 @@ class ArticleController extends Controller
             'read_time',
             'is_breaking',
             'is_premium',
+            'status',
+            'submitted_at',
         ])->all();
     }
 
