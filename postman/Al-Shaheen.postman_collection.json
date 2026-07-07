@@ -384,6 +384,24 @@
               ]
             }
           }
+        },
+        {
+          "name": "Opinion Widget",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/home/opinion?locale=ar&limit=3",
+              "host": ["{{base_url}}"],
+              "path": ["home", "opinion"],
+              "query": [
+                { "key": "locale", "value": "ar", "description": "ar | en" },
+                { "key": "limit", "value": "3", "description": "عدد الآراء في الويدجت (أقصى 20)" }
+              ]
+            },
+            "description": "ويدجت Opinion في الصفحة الرئيسية. يرجع headline, author_name, published_at_human, featured_image_url."
+          }
         }
       ]
     },
@@ -1527,6 +1545,63 @@
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
             "url": "{{base_url}}/reports/{{report_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Opinions",
+      "item": [
+        {
+          "name": "List Opinions",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/opinions?per_page=15&sort=latest&locale=ar",
+              "host": ["{{base_url}}"],
+              "path": ["opinions"],
+              "query": [
+                { "key": "per_page", "value": "15" },
+                { "key": "sort", "value": "latest", "description": "latest | views | oldest" },
+                { "key": "locale", "value": "ar", "description": "ar | en" },
+                { "key": "category", "value": "", "disabled": true, "description": "تصفية حسب التصنيف الفرعي (opinion-articles, commentary)" },
+                { "key": "premium", "value": "true", "disabled": true }
+              ]
+            },
+            "description": "قائمة الآراء المنشورة (صفحة VIEW ALL). يرجع headline, author_name, published_at_human."
+          }
+        },
+        {
+          "name": "Show Opinion",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.data && res.data.id) {",
+                  "  pm.environment.set('opinion_id', res.data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": {
+              "raw": "{{base_url}}/opinions/{{opinion_id}}?locale=ar",
+              "host": ["{{base_url}}"],
+              "path": ["opinions", "{{opinion_id}}"],
+              "query": [
+                { "key": "locale", "value": "ar", "description": "ar | en" }
+              ]
+            },
+            "description": "تفاصيل رأي واحد مع المحتوى الكامل (content, seo_title, seo_description)."
           }
         }
       ]

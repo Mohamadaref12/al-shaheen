@@ -10,4 +10,5 @@ Route::prefix('home')->group(function () {
     Route::get('/editor-picks',     [HomeController::class, 'editorPicks']);
     Route::get('/filters',          [HomeController::class, 'filters']);
     Route::get('/writers',          [HomeController::class, 'writers']);
+    Route::get('/opinion',          [HomeController::class, 'opinion']);
 });

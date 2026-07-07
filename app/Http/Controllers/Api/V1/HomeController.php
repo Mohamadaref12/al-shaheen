@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\HighPerformingWriterResource;
+use App\Http\Resources\Api\V1\OpinionSummaryResource;
+use App\Models\Opinion;
 use App\Models\Category;
 use App\Models\Writer;
+use App\Traits\AppliesTranslatableLocale;
 use App\Traits\FetchesPublishedArticles;
 use App\Traits\MarksSavedArticles;
 use Illuminate\Http\JsonResponse;
@@ -14,6 +17,7 @@ use Throwable;
 
 class HomeController extends Controller
 {
+    use AppliesTranslatableLocale;
     use FetchesPublishedArticles;
     use MarksSavedArticles;
     public function breakingNews(Request $request): JsonResponse
@@ -118,6 +122,36 @@ class HomeController extends Controller
             ], 'Home filters retrieved successfully.');
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to retrieve home filters.');
+        }
+    }
+
+    public function opinion(Request $request): JsonResponse
+    {
+        try {
+            $request->validate([
+                'locale' => 'nullable|in:ar,en',
+                'limit'  => 'nullable|integer|min:1|max:20',
+            ]);
+
+            $locale = $this->resolveApiLocale($request);
+            $limit  = min((int) $request->input('limit', 3), 20);
+
+            $opinions = Opinion::published()
+                ->withTranslation($locale)
+                ->with(['author:id,name', 'category:id,name,slug'])
+                ->when($request->filled('locale'), fn ($q) => $q->translatedIn($request->input('locale')))
+                ->orderByDesc('published_at')
+                ->limit($limit)
+                ->get();
+
+            return $this->success(
+                OpinionSummaryResource::collection($opinions)->resolve(),
+                'Opinion widget retrieved successfully.'
+            );
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return $this->error($e->errors(), 'Validation failed.', 422);
+        } catch (Throwable $e) {
+            return $this->handleException($e, 'Failed to retrieve opinion widget.');
         }
     }
 

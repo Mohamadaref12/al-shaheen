@@ -1,8 +1,9 @@
 /* Al Shaheen — Admin Dashboard Theme v2 */
 
 :root {
-    --as-bg: #faf5f0;
-    --as-sand: #ffffff;
+    --as-bg: #f9f4ef;
+    --as-sand: #f9f4ef;
+    --as-surface: #ffffff;
     --as-border: #e2e8f0;
     --as-navy: #28414e;
     --as-charcoal: #1e293b;
@@ -84,18 +85,45 @@
 .fi-wi-stats-overview-stat,
 .fi-wi-widget,
 .fi-ta-ctn {
-    background-color: var(--as-sand) !important;
+    background-color: var(--as-surface) !important;
     border-color: var(--as-border) !important;
 }
 
+.fi-ta-row {
+    background-color: var(--as-surface) !important;
+}
+
+.fi-ta-header-cell {
+    background-color: #fafafa !important;
+}
+
+.fi-ta-row:hover {
+    background-color: #f8f6f3 !important;
+}
+
 .fi-section,
-.fi-wi-widget:not(.fi-wi-stats-overview) {
+.fi-wi-widget:not(.fi-wi-stats-overview):not(:has(.as-quick-actions)):not(:has(.fi-wi-stats-overview-stat)) {
     border: 1px solid var(--as-border) !important;
     border-radius: var(--as-radius) !important;
     box-shadow: var(--as-shadow) !important;
 }
 
+.fi-wi-widget:has(.as-quick-actions),
+.fi-wi-widget:has(.fi-wi-stats-overview-stat),
+.fi-wi-stats-overview,
+.fi-section:has(.fi-wi-stats-overview-stat) {
+    border: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important;
+}
+
+.fi-wi-widget.fi-wi-chart,
+.fi-wi-widget.fi-wi-chart .fi-section {
+    background-color: #ffffff !important;
+}
+
 .fi-wi-stats-overview-stat {
+    background-color: #ffffff !important;
     border: 1px solid var(--as-border) !important;
     border-radius: var(--as-radius-sm) !important;
     box-shadow: var(--as-shadow) !important;
@@ -128,10 +156,6 @@
     font-weight: 600 !important;
     font-size: 0.75rem !important;
     text-transform: uppercase !important;
-}
-
-.fi-ta-row:hover {
-    background-color: #f8fafc !important;
 }
 
 .fi-simple-layout {
@@ -236,7 +260,7 @@
     padding: 1rem;
     border-radius: var(--as-radius-sm);
     border: 1px solid var(--as-border);
-    background: var(--as-sand);
+    background: #ffffff;
     box-shadow: var(--as-shadow);
     text-decoration: none !important;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -286,4 +310,93 @@
     display: flex;
     flex-direction: column;
     gap: 0.15rem;
+}
+
+/* Dashboard table widgets */
+.fi-wi-widget.fi-wi-table,
+.fi-wi-widget.fi-wi-table .fi-section {
+    background-color: #ffffff !important;
+}
+
+.fi-wi-widget.fi-wi-table .fi-ta-ctn {
+    background-color: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.fi-wi-table .fi-ta-content,
+.fi-wi-table .fi-ta-table-ctn,
+.fi-wi-table .fi-ta-content > div {
+    overflow-x: hidden !important;
+}
+
+.fi-wi-table .fi-ta-table {
+    table-layout: fixed;
+    width: 100%;
+}
+
+.fi-wi-table .fi-ta-header-cell {
+    font-size: 0.68rem !important;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--as-body) !important;
+    background: #fafafa !important;
+    border-bottom: 1px solid var(--as-border) !important;
+    padding-block: 0.55rem !important;
+}
+
+.fi-wi-table .fi-ta-cell {
+    padding-block: 0.7rem !important;
+    vertical-align: top;
+}
+
+.fi-wi-table .fi-ta-row {
+    background-color: #ffffff !important;
+    border-bottom: 1px solid #f0ebe4 !important;
+}
+
+.fi-wi-table .fi-ta-row:last-child {
+    border-bottom: none !important;
+}
+
+.fi-wi-table .fi-ta-row:hover {
+    background-color: #faf8f5 !important;
+}
+
+.fi-wi-table .fi-ta-actions {
+    display: none !important;
+}
+
+.fi-wi-table .fi-section-header-heading {
+    font-size: 1rem !important;
+}
+
+.fi-wi-table .fi-section-header-description {
+    color: var(--as-body) !important;
+    font-size: 0.82rem;
+}
+
+.fi-wi-table .fi-ta-empty-state {
+    padding: 2.5rem 1rem !important;
+}
+
+.fi-wi-table .fi-ta-empty-state .fi-section,
+.fi-wi-table .fi-ta-empty-state .fi-ta-ctn {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+.fi-wi-table [dir="auto"] {
+    text-align: start;
+    unicode-bidi: plaintext;
+}
+
+.fi-wi-table .fi-badge {
+    max-width: 100%;
+    white-space: nowrap;
+}
+
+.fi-dashboard-widgets .fi-wi-table {
+    min-height: 100%;
 }

@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             'article_revisions',
             'article_translations',
             'news_translations',
+            'opinion_translations',
             'follows',
             'saved_articles',
             'article_tags',
@@ -38,6 +39,7 @@ class DatabaseSeeder extends Seeder
             'reports',
             'interviews',
             'news',
+            'opinions',
             'media_items',
             'events',
             'writer',
@@ -62,13 +64,14 @@ class DatabaseSeeder extends Seeder
             ReportSeeder::class,            // 6. Reports
             InterviewSeeder::class,         // 7. Interviews
             NewsSeeder::class,              // 8. News
-            MediaItemSeeder::class,         // 9. Media items
-            EventSeeder::class,             // 10. Events
-            MonetizationSeeder::class,      // 11. Ads + packages + subscriptions + newsletter
-            PaymentSeeder::class,           // 12. Payments
-            ContentSubmissionSeeder::class, // 13. Content submissions
-            CourseCategorySeeder::class,    // 14. Course categories
-            TrainingSeeder::class,          // 15. Courses + lessons + user progress
+            OpinionSeeder::class,           // 9. Opinions
+            MediaItemSeeder::class,         // 10. Media items
+            EventSeeder::class,             // 11. Events
+            MonetizationSeeder::class,      // 12. Ads + packages + subscriptions + newsletter
+            PaymentSeeder::class,           // 13. Payments
+            ContentSubmissionSeeder::class, // 14. Content submissions
+            CourseCategorySeeder::class,    // 15. Course categories
+            TrainingSeeder::class,          // 16. Courses + lessons + user progress
         ]);
     }
 }

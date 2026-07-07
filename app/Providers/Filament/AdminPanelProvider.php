@@ -55,7 +55,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
-                fn (): string => '<link rel="stylesheet" href="'.asset('css/filament-admin-theme.css').'?v=3">',
+                fn (): string => '<link rel="stylesheet" href="'.asset('css/filament-admin-theme.css').'?v=10">',
             )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->resources([
