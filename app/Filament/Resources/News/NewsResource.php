@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\News;
 
+use App\Filament\Concerns\SearchesTranslatableTitles;
 use App\Filament\Resources\News\Pages\CreateNews;
 use App\Filament\Resources\News\Pages\EditNews;
 use App\Filament\Resources\News\Pages\ListNews;
@@ -17,6 +18,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class NewsResource extends Resource
 {
+    use SearchesTranslatableTitles;
+
     protected static ?string $model = News::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMegaphone;

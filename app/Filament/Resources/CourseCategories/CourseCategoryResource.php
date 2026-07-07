@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\CourseCategories;
 
+use App\Filament\Concerns\SearchesTranslatableTitles;
 use App\Filament\Resources\CourseCategories\Pages\CreateCourseCategory;
 use App\Filament\Resources\CourseCategories\Pages\EditCourseCategory;
 use App\Filament\Resources\CourseCategories\Pages\ListCourseCategories;
@@ -18,6 +19,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class CourseCategoryResource extends Resource
 {
+    use SearchesTranslatableTitles;
+
     protected static ?string $model = CourseCategory::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSquares2x2;
@@ -44,6 +47,11 @@ class CourseCategoryResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()->with('translations');
+    }
+
+    protected static function getTranslatableSearchColumn(): string
+    {
+        return 'name';
     }
 
     public static function form(Schema $schema): Schema

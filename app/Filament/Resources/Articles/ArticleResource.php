@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Articles;
 
+use App\Filament\Concerns\SearchesTranslatableTitles;
 use App\Filament\Resources\Articles\Pages\CreateArticle;
 use App\Filament\Resources\Articles\Pages\EditArticle;
 use App\Filament\Resources\Articles\Pages\ListArticles;
@@ -18,6 +19,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class ArticleResource extends Resource
 {
+    use SearchesTranslatableTitles;
+
     protected static ?string $model = Article::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedNewspaper;

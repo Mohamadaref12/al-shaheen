@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Opinions;
 
+use App\Filament\Concerns\SearchesTranslatableTitles;
 use App\Filament\Resources\Opinions\Pages\CreateOpinion;
 use App\Filament\Resources\Opinions\Pages\EditOpinion;
 use App\Filament\Resources\Opinions\Pages\ListOpinions;
@@ -17,6 +18,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class OpinionResource extends Resource
 {
+    use SearchesTranslatableTitles;
+
     protected static ?string $model = Opinion::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChatBubbleLeftRight;
