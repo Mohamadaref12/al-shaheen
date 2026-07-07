@@ -20,9 +20,6 @@ class ListContactMessages extends ListRecords
     public function getTabs(): array
     {
         return [
-            'all' => Tab::make('All')
-                ->badge(ContactMessage::query()->count()),
-
             'unread' => Tab::make('Unread')
                 ->badge(ContactMessage::query()->unread()->count())
                 ->badgeColor('warning')
@@ -38,6 +35,14 @@ class ListContactMessages extends ListRecords
                 ->badge(ContactMessage::query()->where('status', 'replied')->count())
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'replied'))
                 ->excludeQueryWhenResolvingRecord(),
+
+            'all' => Tab::make('All')
+                ->badge(ContactMessage::query()->count()),
         ];
+    }
+
+    public function getDefaultActiveTab(): string|int|null
+    {
+        return 'unread';
     }
 }

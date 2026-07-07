@@ -38,7 +38,7 @@
 }
 
 .fi-topbar {
-    background-color: var(--as-sand) !important;
+    background-color: #ffffff !important;
     border-bottom: 1px solid var(--as-border) !important;
     box-shadow: var(--as-shadow) !important;
 }

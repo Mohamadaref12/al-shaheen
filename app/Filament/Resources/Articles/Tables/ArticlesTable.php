@@ -98,7 +98,8 @@ class ArticlesTable
                     ->trueIcon(Heroicon::OutlinedBolt)
                     ->falseIcon(Heroicon::OutlinedMinus)
                     ->trueColor('danger')
-                    ->falseColor('gray'),
+                    ->falseColor('gray')
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('pending_comments_count')
                     ->label('Comments')
@@ -115,7 +116,8 @@ class ArticlesTable
                     ->label('Views')
                     ->icon(Heroicon::OutlinedEye)
                     ->numeric()
-                    ->sortable(),
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('published_at')
                     ->label('Published')

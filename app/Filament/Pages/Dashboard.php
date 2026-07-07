@@ -7,10 +7,7 @@ use App\Filament\Widgets\ContentStatsOverview;
 use App\Filament\Widgets\DashboardHeaderWidget;
 use App\Filament\Widgets\EditorialQueueWidget;
 use App\Filament\Widgets\NewsEditorialQueueWidget;
-use App\Filament\Widgets\PendingCommentsWidget;
 use App\Filament\Widgets\QuickActionsWidget;
-use App\Filament\Widgets\RecentArticlesWidget;
-use App\Filament\Widgets\UnreadContactMessagesWidget;
 use Filament\Pages\Dashboard as BaseDashboard;
 use Illuminate\Contracts\Support\Htmlable;
 
@@ -39,9 +36,6 @@ class Dashboard extends BaseDashboard
             ArticlesPublishedChart::class,
             EditorialQueueWidget::class,
             NewsEditorialQueueWidget::class,
-            RecentArticlesWidget::class,
-            PendingCommentsWidget::class,
-            UnreadContactMessagesWidget::class,
         ];
     }
 

@@ -30,6 +30,18 @@ class CommentResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Comments';
 
+    public static function getNavigationBadge(): ?string
+    {
+        $count = Comment::query()->where('status', 'pending')->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
+
     public static function form(Schema $schema): Schema
     {
         return CommentForm::configure($schema);

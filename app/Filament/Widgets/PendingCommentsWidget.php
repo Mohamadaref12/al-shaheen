@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class PendingCommentsWidget extends TableWidget
 {
+    protected static bool $isDiscovered = false;
+
     use ConfiguresDashboardTable;
 
     protected static bool $isLazy = false;

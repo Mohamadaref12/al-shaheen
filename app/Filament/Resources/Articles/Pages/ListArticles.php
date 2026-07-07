@@ -20,21 +20,25 @@ class ListArticles extends ListRecords
         ];
     }
 
+    public function getDefaultActiveTab(): string|int|null
+    {
+        return 'published';
+    }
+
     public function getTabs(): array
     {
         $pendingStatuses = ['submitted', 'under_review', 'review', 'ready'];
 
         return [
-            'all' => Tab::make('All')
-                ->badge(Article::query()->count()),
-
             'published' => Tab::make('Published')
                 ->badge(Article::query()->where('status', 'published')->count())
+                ->badgeColor('success')
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'published'))
                 ->excludeQueryWhenResolvingRecord(),
 
             'pending' => Tab::make('In Review')
                 ->badge(Article::query()->whereIn('status', $pendingStatuses)->count())
+                ->badgeColor('warning')
                 ->modifyQueryUsing(fn (Builder $query) => $query->whereIn('status', $pendingStatuses))
                 ->excludeQueryWhenResolvingRecord(),
 
@@ -45,6 +49,7 @@ class ListArticles extends ListRecords
 
             'rejected' => Tab::make('Rejected')
                 ->badge(Article::query()->where('status', 'rejected')->count())
+                ->badgeColor('danger')
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'rejected'))
                 ->excludeQueryWhenResolvingRecord(),
 
@@ -52,6 +57,9 @@ class ListArticles extends ListRecords
                 ->badge(Article::query()->where('status', 'archived')->count())
                 ->modifyQueryUsing(fn (Builder $query) => $query->where('status', 'archived'))
                 ->excludeQueryWhenResolvingRecord(),
+
+            'all' => Tab::make('All')
+                ->badge(Article::query()->count()),
         ];
     }
 }

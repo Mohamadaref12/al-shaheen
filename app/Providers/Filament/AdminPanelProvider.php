@@ -9,10 +9,7 @@ use App\Filament\Widgets\ContentStatsOverview;
 use App\Filament\Widgets\DashboardHeaderWidget;
 use App\Filament\Widgets\EditorialQueueWidget;
 use App\Filament\Widgets\NewsEditorialQueueWidget;
-use App\Filament\Widgets\PendingCommentsWidget;
 use App\Filament\Widgets\QuickActionsWidget;
-use App\Filament\Widgets\RecentArticlesWidget;
-use App\Filament\Widgets\UnreadContactMessagesWidget;
 use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -55,7 +52,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
-                fn (): string => '<link rel="stylesheet" href="'.asset('css/filament-admin-theme.css').'?v=10">',
+                fn (): string => '<link rel="stylesheet" href="'.asset('css/filament-admin-theme.css').'?v=11">',
             )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->resources([
@@ -73,9 +70,6 @@ class AdminPanelProvider extends PanelProvider
                 ArticlesPublishedChart::class,
                 EditorialQueueWidget::class,
                 NewsEditorialQueueWidget::class,
-                RecentArticlesWidget::class,
-                PendingCommentsWidget::class,
-                UnreadContactMessagesWidget::class,
             ])
             ->navigationGroups([
                 'Content',
