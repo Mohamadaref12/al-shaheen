@@ -30,7 +30,7 @@ class TransactionalMailer
         LocaleContext::run($locale, function () use ($email, $name, $locale, $key, $replace, $actionUrl, $actionLabel): void {
             $replace = self::withNotes($replace);
 
-            Mail::to($email)->queue(new TransactionalMail(
+            SafeMail::queue($email, new TransactionalMail(
                 recipientName: $name,
                 mailSubject: __("emails.{$key}.subject", $replace),
                 heading: __("emails.{$key}.heading", $replace),

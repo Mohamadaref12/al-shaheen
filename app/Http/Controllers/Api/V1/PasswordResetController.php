@@ -7,10 +7,10 @@ use App\Http\Requests\Api\V1\ForgotPasswordRequest;
 use App\Http\Requests\Api\V1\ResetPasswordRequest;
 use App\Mail\PasswordResetCodeMail;
 use App\Models\User;
+use App\Support\SafeMail;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Throwable;
 
 class PasswordResetController extends Controller
@@ -28,7 +28,7 @@ class PasswordResetController extends Controller
 
             Cache::put($this->cacheKey($email), $code, $expiresAt);
 
-            Mail::to($user->email)->queue(new PasswordResetCodeMail(
+            SafeMail::queue($user->email, new PasswordResetCodeMail(
                 name: $user->name,
                 code: $code,
                 expiresAt: $expiresAt,

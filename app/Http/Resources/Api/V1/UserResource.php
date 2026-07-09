@@ -13,12 +13,16 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class UserResource extends JsonResource
 {
-    public static function authRelations(): array
+    public static function authRelations(?string $locale = null): array
     {
+        $locale ??= app()->getLocale();
+
+        $localizedCategories = fn ($query) => $query->withTranslation($locale);
+
         return [
             'reader',
-            'contributor.categories:id,name,slug',
-            'writer.categories:id,name,slug',
+            'contributor.categories' => $localizedCategories,
+            'writer.categories' => $localizedCategories,
             'editor',
             'admin',
         ];
@@ -77,7 +81,12 @@ class UserResource extends JsonResource
 
     public static function makeLoaded(User $user): array
     {
-        $user->loadMissing(self::authRelations());
+        $locale = in_array($user->locale, ['ar', 'en'], true)
+            ? $user->locale
+            : (string) config('app.locale', 'ar');
+
+        app()->setLocale($locale);
+        $user->loadMissing(self::authRelations($locale));
 
         return (new self($user))->resolve();
     }

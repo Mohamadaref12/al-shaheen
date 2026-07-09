@@ -68,7 +68,7 @@ class CategoryController extends Controller
         }
     }
 
-    public function primaryFilters(Request $request, int $categoryId): JsonResponse
+    public function primaryFilters(Request $request, string|int $categoryId): JsonResponse
     {
         try {
             $category = $this->findPrimaryCategory($request, $categoryId);
@@ -93,7 +93,7 @@ class CategoryController extends Controller
         }
     }
 
-    public function primaryArticles(Request $request, int $categoryId): JsonResponse
+    public function primaryArticles(Request $request, string|int $categoryId): JsonResponse
     {
         try {
             $request->validate($this->categoryListingValidationRules());
@@ -141,7 +141,7 @@ class CategoryController extends Controller
         }
     }
 
-    public function primaryTrending(Request $request, int $categoryId): JsonResponse
+    public function primaryTrending(Request $request, string|int $categoryId): JsonResponse
     {
         try {
             $request->validate([
@@ -187,7 +187,7 @@ class CategoryController extends Controller
         }
     }
 
-    public function primaryEditorPicks(Request $request, int $categoryId): JsonResponse
+    public function primaryEditorPicks(Request $request, string|int $categoryId): JsonResponse
     {
         try {
             $request->validate([
@@ -233,7 +233,7 @@ class CategoryController extends Controller
         }
     }
 
-    public function primaryWriters(Request $request, int $categoryId): JsonResponse
+    public function primaryWriters(Request $request, string|int $categoryId): JsonResponse
     {
         try {
             $request->validate([
@@ -278,7 +278,7 @@ class CategoryController extends Controller
         }
     }
 
-    public function primaryShow(Request $request, int $categoryId): JsonResponse
+    public function primaryShow(Request $request, string|int $categoryId): JsonResponse
     {
         try {
             $locale = $this->resolveApiLocale($request);
@@ -339,7 +339,7 @@ class CategoryController extends Controller
         }
     }
 
-    public function secondaryFilters(Request $request, int $categoryId): JsonResponse
+    public function secondaryFilters(Request $request, string|int $categoryId): JsonResponse
     {
         try {
             $locale = $this->resolveApiLocale($request);
@@ -364,7 +364,7 @@ class CategoryController extends Controller
         }
     }
 
-    public function secondaryArticles(Request $request, int $categoryId): JsonResponse
+    public function secondaryArticles(Request $request, string|int $categoryId): JsonResponse
     {
         try {
             $request->validate(collect($this->categoryListingValidationRules())
@@ -403,7 +403,7 @@ class CategoryController extends Controller
         }
     }
 
-    public function secondaryShow(Request $request, int $categoryId): JsonResponse
+    public function secondaryShow(Request $request, string|int $categoryId): JsonResponse
     {
         try {
             $locale = $this->resolveApiLocale($request);
@@ -443,7 +443,7 @@ class CategoryController extends Controller
         return $this->applyTranslationLocale(Category::query(), $request);
     }
 
-    protected function findPrimaryCategory(Request $request, int $categoryId): ?Category
+    protected function findPrimaryCategory(Request $request, string|int $categoryId): ?Category
     {
         return $this->localizedCategoryQuery($request)
             ->whereNull('parent_id')
@@ -452,7 +452,7 @@ class CategoryController extends Controller
             ->first();
     }
 
-    protected function findSecondaryCategory(Request $request, int $categoryId): ?Category
+    protected function findSecondaryCategory(Request $request, string|int $categoryId): ?Category
     {
         return $this->localizedCategoryQuery($request)
             ->whereNotNull('parent_id')

@@ -79,9 +79,10 @@ class ArticleController extends Controller
         }
     }
 
-    public function show(Request $request, int $articleId): JsonResponse
+    public function show(Request $request, string|int $articleId): JsonResponse
     {
         try {
+            $articleId = $this->resolveRouteId($articleId, 'article_id');
             $locale = $this->resolveApiLocale($request);
 
             $article = Article::withTranslation($locale)
@@ -112,9 +113,10 @@ class ArticleController extends Controller
         }
     }
 
-    public function downloadPdf(Request $request, int $articleId)
+    public function downloadPdf(Request $request, string|int $articleId)
     {
         try {
+            $articleId = $this->resolveRouteId($articleId, 'article_id');
             $request->validate([
                 'locale' => 'nullable|in:ar,en',
             ]);
@@ -123,7 +125,10 @@ class ArticleController extends Controller
 
             $article = Article::published()
                 ->withTranslation($locale)
-                ->with(['author', 'primaryCategory', 'tags', 'translations'])
+                ->with(array_merge(
+                    ['author', 'tags', 'translations'],
+                    $this->localizedCategoryEagerLoads($request, 'primaryCategory')
+                ))
                 ->where('id', $articleId)
                 ->first();
 
@@ -143,9 +148,10 @@ class ArticleController extends Controller
         }
     }
 
-    public function downloadFeaturedImage(Request $request, int $articleId)
+    public function downloadFeaturedImage(Request $request, string|int $articleId)
     {
         try {
+            $articleId = $this->resolveRouteId($articleId, 'article_id');
             $request->validate([
                 'locale' => 'nullable|in:ar,en',
                 'inline' => 'nullable|boolean',
@@ -258,9 +264,10 @@ class ArticleController extends Controller
         }
     }
 
-    public function update(Request $request, int $articleId): JsonResponse
+    public function update(Request $request, string|int $articleId): JsonResponse
     {
         try {
+            $articleId = $this->resolveRouteId($articleId, 'article_id');
             $user    = $request->user();
             $article = Article::find($articleId);
 
@@ -341,9 +348,10 @@ class ArticleController extends Controller
         }
     }
 
-    public function relatedStories(Request $request, int $articleId): JsonResponse
+    public function relatedStories(Request $request, string|int $articleId): JsonResponse
     {
         try {
+            $articleId = $this->resolveRouteId($articleId, 'article_id');
             $article = Article::published()->find($articleId);
 
             if (! $article) {
@@ -386,9 +394,10 @@ class ArticleController extends Controller
         }
     }
 
-    public function trendingTopics(int $articleId): JsonResponse
+    public function trendingTopics(Request $request, string|int $articleId): JsonResponse
     {
         try {
+            $articleId = $this->resolveRouteId($articleId, 'article_id');
             $article = Article::published()->find($articleId);
 
             if (! $article) {
@@ -414,9 +423,10 @@ class ArticleController extends Controller
         }
     }
 
-    public function nextRead(Request $request, int $articleId): JsonResponse
+    public function nextRead(Request $request, string|int $articleId): JsonResponse
     {
         try {
+            $articleId = $this->resolveRouteId($articleId, 'article_id');
             $article = Article::published()->find($articleId);
 
             if (! $article) {
@@ -470,9 +480,10 @@ class ArticleController extends Controller
         }
     }
 
-    public function destroy(Request $request, int $articleId): JsonResponse
+    public function destroy(Request $request, string|int $articleId): JsonResponse
     {
         try {
+            $articleId = $this->resolveRouteId($articleId, 'article_id');
             $user    = $request->user();
             $article = Article::find($articleId);
 

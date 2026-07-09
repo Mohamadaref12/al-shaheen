@@ -173,9 +173,11 @@ class NewsController extends Controller
         }
     }
 
-    public function trendingTopics(int $newsId): JsonResponse
+    public function trendingTopics(Request $request, int $newsId): JsonResponse
     {
         try {
+            $locale = $this->resolveApiLocale($request);
+
             $news = News::published()->find($newsId);
 
             if (! $news) {
@@ -183,11 +185,12 @@ class NewsController extends Controller
             }
 
             $category = $news->category_id
-                ? Category::query()->find($news->category_id)
+                ? Category::query()->withTranslation($locale)->find($news->category_id)
                 : null;
 
             $topics = Category::query()
-                ->select(['categories.id', 'categories.name', 'categories.slug'])
+                ->withTranslation($locale)
+                ->select('categories.id')
                 ->selectRaw('COALESCE(SUM(news.views_count), 0) as total_views')
                 ->selectRaw('COUNT(DISTINCT news.id) as news_count')
                 ->join('news', 'categories.id', '=', 'news.category_id')
@@ -202,10 +205,18 @@ class NewsController extends Controller
                         });
                     }
                 })
-                ->groupBy('categories.id', 'categories.name', 'categories.slug')
+                ->groupBy('categories.id')
                 ->orderByDesc('total_views')
                 ->limit(10)
-                ->get();
+                ->get()
+                ->map(fn (Category $category) => [
+                    'id'          => $category->id,
+                    'name'        => $category->name,
+                    'slug'        => $category->slug,
+                    'locale'      => $locale,
+                    'total_views' => (int) $category->total_views,
+                    'news_count'  => (int) $category->news_count,
+                ]);
 
             return $this->success($topics, 'Trending topics retrieved successfully.');
         } catch (Throwable $e) {

@@ -138,7 +138,10 @@ class SocialController extends Controller
         $paginator = $request->user()
             ->following()
             ->where('application_status', 'approved')
-            ->with(['user:id,name,country', 'categories:id,name,slug'])
+            ->with([
+                'user:id,name,country',
+                ...$this->localizedCategoryEagerLoads($request, 'categories'),
+            ])
             ->withCount('articles')
             ->orderByPivot('created_at', 'desc')
             ->paginate((int) $request->input('per_page', 15));

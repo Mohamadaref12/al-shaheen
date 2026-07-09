@@ -81,7 +81,10 @@ class WriterController extends Controller
                 'page'     => 'nullable|integer|min:1',
             ]);
 
-            $writer = Writer::with(['user:id,name,country', 'categories:id,name,slug'])
+            $writer = Writer::with([
+                'user:id,name,country',
+                ...$this->localizedCategoryEagerLoads($request, 'categories'),
+            ])
                 ->withCount('articles')
                 ->where('id', $writerId)
                 ->where('application_status', 'approved')

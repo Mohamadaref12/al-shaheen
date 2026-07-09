@@ -2,6 +2,8 @@
 
 namespace App\Traits;
 
+use Illuminate\Http\Exceptions\HttpResponseException;
+
 trait HttpResponses
 {
     protected function success($data, $message = null, $code = 200)
@@ -41,6 +43,10 @@ trait HttpResponses
 
     protected function handleException(\Throwable $exception, string $message = 'An error occurred.')
     {
+        if ($exception instanceof HttpResponseException) {
+            throw $exception;
+        }
+
         report($exception);
 
         return $this->error(null, $message, 500);
