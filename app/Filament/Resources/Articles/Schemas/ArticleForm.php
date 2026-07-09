@@ -34,12 +34,14 @@ class ArticleForm
                                             ->label('Author')
                                             ->relationship('author', 'name')
                                             ->searchable()
+                                            ->preload()
                                             ->required(),
 
                                         Select::make('primary_category_id')
                                             ->label('Primary Category')
                                             ->relationship('primaryCategory', 'name')
                                             ->searchable()
+                                            ->preload()
                                             ->required(),
 
                                         Select::make('status')

@@ -5,7 +5,6 @@ namespace App\Support;
 use App\Mail\TransactionalMail;
 use App\Models\User;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Mail;
 
 class TransactionalMailer
@@ -28,7 +27,7 @@ class TransactionalMailer
 
         $locale = in_array($locale, ['ar', 'en'], true) ? $locale : 'en';
 
-        App::usingLocale($locale, function () use ($email, $name, $locale, $key, $replace, $actionUrl, $actionLabel): void {
+        LocaleContext::run($locale, function () use ($email, $name, $locale, $key, $replace, $actionUrl, $actionLabel): void {
             $replace = self::withNotes($replace);
 
             Mail::to($email)->queue(new TransactionalMail(

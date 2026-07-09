@@ -74,21 +74,21 @@ class AdminPanelProvider extends PanelProvider
                 NewsEditorialQueueWidget::class,
             ])
             ->navigationGroups([
-                NavigationGroup::make('Content')
+                'Content' => NavigationGroup::make()
                     ->label(fn (): string => __('filament.navigation.groups.Content')),
-                NavigationGroup::make('Users')
+                'Users' => NavigationGroup::make()
                     ->label(fn (): string => __('filament.navigation.groups.Users')),
-                NavigationGroup::make('Catalog')
+                'Catalog' => NavigationGroup::make()
                     ->label(fn (): string => __('filament.navigation.groups.Catalog')),
-                NavigationGroup::make('Training')
+                'Training' => NavigationGroup::make()
                     ->label(fn (): string => __('filament.navigation.groups.Training')),
-                NavigationGroup::make('Marketing')
+                'Marketing' => NavigationGroup::make()
                     ->label(fn (): string => __('filament.navigation.groups.Marketing')),
-                NavigationGroup::make('Events')
+                'Events' => NavigationGroup::make()
                     ->label(fn (): string => __('filament.navigation.groups.Events')),
-                NavigationGroup::make('Monetization')
+                'Monetization' => NavigationGroup::make()
                     ->label(fn (): string => __('filament.navigation.groups.Monetization')),
-                NavigationGroup::make('Settings')
+                'Settings' => NavigationGroup::make()
                     ->label(fn (): string => __('filament.navigation.groups.Settings')),
             ])
             ->middleware([

@@ -4,6 +4,7 @@ namespace App\Filament\Resources\News\Tables;
 
 use App\Filament\Actions\DownloadNewsPdfAction;
 use App\Filament\Support\ContentStatusActions;
+use App\Filament\Support\LocalizedTitleColumn;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -30,14 +31,7 @@ class NewsTable
                     ->circular()
                     ->imageHeight(44),
 
-                TextColumn::make('title_ar')
-                    ->label('Title (AR)')
-                    ->description(fn ($record): ?string => $record->title_en)
-                    ->searchable(query: fn ($query, string $search) => $query->whereHas(
-                        'translations',
-                        fn ($q) => $q->where('title', 'like', "%{$search}%")
-                    ))
-                    ->limit(50),
+                LocalizedTitleColumn::make(limit: 50),
 
                 TextColumn::make('author.name')
                     ->label('Author')

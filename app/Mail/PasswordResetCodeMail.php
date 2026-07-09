@@ -8,7 +8,7 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\App;
+use Illuminate\Support\Carbon;
 
 class PasswordResetCodeMail extends Mailable implements ShouldQueue
 {
@@ -17,20 +17,20 @@ class PasswordResetCodeMail extends Mailable implements ShouldQueue
     public function __construct(
         public readonly string $name,
         public readonly string $code,
-        public readonly \Illuminate\Support\Carbon $expiresAt,
-        public readonly string $locale = 'ar',
-    ) {}
+        public readonly Carbon $expiresAt,
+        string $locale = 'ar',
+    ) {
+        $this->locale($locale);
+    }
 
     public function envelope(): Envelope
     {
-        return App::usingLocale($this->locale, fn () => new Envelope(
-            subject: __('emails.reader.password_reset.subject'),
-        ));
+        return new Envelope(subject: __('emails.reader.password_reset.subject'));
     }
 
     public function content(): Content
     {
-        return App::usingLocale($this->locale, fn () => new Content(
+        return new Content(
             view: 'emails.password-reset-code',
             with: [
                 'greeting' => __('emails.greeting', ['name' => $this->name]),
@@ -42,6 +42,6 @@ class PasswordResetCodeMail extends Mailable implements ShouldQueue
                 'locale'   => $this->locale,
                 'subject'  => __('emails.reader.password_reset.subject'),
             ],
-        ));
+        );
     }
 }

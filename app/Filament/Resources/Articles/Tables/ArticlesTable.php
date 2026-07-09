@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Articles\Tables;
 use App\Filament\Actions\DownloadArticlePdfAction;
 use App\Filament\Resources\Articles\ArticleResource;
 use App\Filament\Support\ContentStatusActions;
+use App\Filament\Support\LocalizedTitleColumn;
 use App\Models\Article;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -40,17 +41,10 @@ class ArticlesTable
                     ->disk('images')
                     ->circular()
                     ->imageHeight(44)
-                    ->defaultImageUrl(fn (Article $record): string => 'https://ui-avatars.com/api/?name=' . urlencode(Str::limit($record->title_ar ?: $record->title_en ?: 'A', 1, '')) . '&background=28414e&color=fff&size=88'),
+                    ->defaultImageUrl(fn (Article $record): string => 'https://ui-avatars.com/api/?name=' . urlencode(Str::limit($record->display_title ?: 'A', 1, '')) . '&background=28414e&color=fff&size=88'),
 
-                TextColumn::make('title_ar')
-                    ->label('Title (AR)')
-                    ->description(fn (Article $record): ?string => $record->title_en)
-                    ->weight(FontWeight::SemiBold)
-                    ->searchable(query: fn (Builder $query, string $search): Builder => $query->whereHas(
-                        'translations',
-                        fn (Builder $q) => $q->where('title', 'like', "%{$search}%")
-                    ))
-                    ->limit(45),
+                LocalizedTitleColumn::make(limit: 45)
+                    ->weight(FontWeight::SemiBold),
 
                 TextColumn::make('author.name')
                     ->label('Author')

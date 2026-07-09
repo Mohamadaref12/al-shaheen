@@ -18,10 +18,12 @@ class TransactionalMail extends Mailable implements ShouldQueue
         public readonly string $mailSubject,
         public readonly string $heading,
         public readonly string $body,
-        public readonly string $locale = 'en',
+        string $locale = 'en',
         public readonly ?string $actionLabel = null,
         public readonly ?string $actionUrl = null,
-    ) {}
+    ) {
+        $this->locale($locale);
+    }
 
     public function envelope(): Envelope
     {

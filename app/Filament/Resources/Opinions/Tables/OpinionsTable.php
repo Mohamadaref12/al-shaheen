@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Opinions\Tables;
 
 use App\Filament\Support\ContentStatusActions;
+use App\Filament\Support\LocalizedTitleColumn;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -28,14 +29,7 @@ class OpinionsTable
                     ->circular()
                     ->imageHeight(44),
 
-                TextColumn::make('title_ar')
-                    ->label('Headline (AR)')
-                    ->description(fn ($record): ?string => $record->title_en)
-                    ->searchable(query: fn ($query, string $search) => $query->whereHas(
-                        'translations',
-                        fn ($q) => $q->where('title', 'like', "%{$search}%")
-                    ))
-                    ->limit(50),
+                LocalizedTitleColumn::make('headline', 50),
 
                 TextColumn::make('author.name')
                     ->label('Author')

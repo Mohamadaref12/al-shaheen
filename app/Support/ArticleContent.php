@@ -27,6 +27,66 @@ class ArticleContent
         return '';
     }
 
+    public static function isBlank(mixed $content): bool
+    {
+        if ($content === null || $content === '') {
+            return true;
+        }
+
+        if (is_array($content)) {
+            if (($content['type'] ?? null) === 'doc') {
+                $nodes = $content['content'] ?? [];
+
+                if ($nodes === []) {
+                    return true;
+                }
+
+                if (count($nodes) === 1) {
+                    $first = $nodes[0] ?? null;
+
+                    if (
+                        is_array($first)
+                        && ($first['type'] ?? null) === 'paragraph'
+                        && blank($first['content'] ?? [])
+                    ) {
+                        return true;
+                    }
+                }
+            }
+
+            return trim(strip_tags(self::toHtml($content))) === '';
+        }
+
+        if (is_string($content)) {
+            $decoded = json_decode($content, true);
+
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                return self::isBlank($decoded);
+            }
+
+            return trim(strip_tags($content)) === '';
+        }
+
+        return blank($content);
+    }
+
+    /**
+     * @param  array<string, mixed>  $state
+     * @return array<string, mixed>
+     */
+    public static function normalizeFormStateForAi(array $state): array
+    {
+        foreach (['ar', 'en'] as $locale) {
+            $key = "content_{$locale}";
+
+            if (array_key_exists($key, $state) && ! self::isBlank($state[$key])) {
+                $state[$key] = self::toHtml($state[$key]);
+            }
+        }
+
+        return $state;
+    }
+
     private static function tiptapToHtml(array $document): string
     {
         $html = self::renderTiptapNodes($document['content'] ?? []);

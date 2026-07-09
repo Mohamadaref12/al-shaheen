@@ -151,6 +151,23 @@ return [
         ],
     ],
 
+    'fields' => [
+        'title'    => 'العنوان',
+        'headline' => 'العنوان الرئيسي',
+    ],
+
+    'actions' => [
+        'translate_article'              => 'ترجمة',
+        'translate_article_confirm'      => 'سيتم ملء الحقول الفارغة تلقائياً من اللغة الأخرى (عربي ↔ إنجليزي) باستخدام الذكاء الاصطناعي.',
+        'translate_article_success'        => 'تمت الترجمة (:from ← :to). راجع الحقول ثم احفظ.',
+        'translate_article_no_source'      => 'أضف محتوى بالعربية أو الإنجليزية أولاً ثم اضغط ترجمة.',
+        'translate_article_failed'         => 'فشلت الترجمة. حاول مرة أخرى.',
+        'translate_article_nothing_to_fill'  => 'لا توجد حقول فارغة لملئها في اللغة المستهدفة.',
+        'translate_article_unavailable'    => 'فعّل OpenAI من الإعدادات → إعدادات الذكاء الاصطناعي.',
+        'locale_ar'                        => 'العربية',
+        'locale_en'                        => 'الإنجليزية',
+    ],
+
     'dashboard' => [
         'welcome_back'       => 'مرحباً بعودتك، :name',
         'welcome_back_short' => 'مرحباً بعودتك',

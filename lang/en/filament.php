@@ -151,6 +151,23 @@ return [
         ],
     ],
 
+    'fields' => [
+        'title'    => 'Title',
+        'headline' => 'Headline',
+    ],
+
+    'actions' => [
+        'translate_article'              => 'Translate',
+        'translate_article_confirm'      => 'Empty fields will be filled automatically from the other language (Arabic ↔ English) using AI.',
+        'translate_article_success'        => 'Translation applied (:from → :to). Review the fields, then save.',
+        'translate_article_no_source'      => 'Add content in Arabic or English first, then translate.',
+        'translate_article_failed'         => 'Translation failed. Try again.',
+        'translate_article_nothing_to_fill'  => 'No empty fields to fill in the target language.',
+        'translate_article_unavailable'    => 'Enable OpenAI in Admin → AI Settings.',
+        'locale_ar'                        => 'Arabic',
+        'locale_en'                        => 'English',
+    ],
+
     'dashboard' => [
         'welcome_back'       => 'Welcome back, :name',
         'welcome_back_short' => 'Welcome back',

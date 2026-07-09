@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Articles\Pages;
 
 use App\Filament\Actions\DownloadArticlePdfAction;
+use App\Filament\Actions\TranslateArticleAction;
 use App\Filament\Concerns\FillsTranslatableFormData;
 use App\Filament\Concerns\HasWorkflowHeaderActions;
 use App\Filament\Concerns\SavesTranslatableFormData;
@@ -30,6 +31,7 @@ class EditArticle extends EditRecord
                 fn () => $this->refreshWorkflowForm(),
             ),
             [
+                TranslateArticleAction::make(),
                 DownloadArticlePdfAction::make(),
                 Action::make('view')
                     ->label('Preview')
