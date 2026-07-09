@@ -29,77 +29,22 @@ class ArticleSeeder extends Seeder
             return;
         }
 
-        $statuses = ['published', 'published', 'published', 'draft', 'under_review', 'rejected'];
-
         foreach ($this->articles() as $index => $data) {
-            $status = fake()->randomElement($statuses);
+            $this->createArticle($data, $index, $writers, $primaries, $secondaries, $tagIds, $readers);
+        }
 
-            $article = Article::create([
-                'author_id'           => fake()->randomElement($writers),
-                'primary_category_id' => fake()->randomElement($primaries),
-                'featured_image'      => null,
-                'read_time'           => rand(4, 14),
-                'is_breaking'         => $status === 'published' && fake()->boolean(12),
-                'is_editor_pick'      => $status === 'published' && fake()->boolean(18),
-                'editor_pick_order'   => null,
-                'status'              => $status,
-                'views_count'         => $status === 'published' ? rand(120, 8500) : 0,
-                'published_at'        => $status === 'published' ? now()->subDays(rand(1, 90)) : null,
-                'submitted_at'        => in_array($status, ['submitted', 'under_review', 'rejected'], true)
-                    ? now()->subDays(rand(1, 14))
-                    : null,
-            ]);
+        $additionalCount = 35;
 
-            $slugEn = Str::slug($data['title_en']) ?: 'article-en-' . ($index + 1);
-            $slugAr = 'article-ar-' . ($index + 1);
-
-            $article->title_en            = $data['title_en'];
-            $article->subtitle_en         = $data['subtitle_en'];
-            $article->slug_en             = $slugEn;
-            $article->excerpt_en          = $data['excerpt_en'];
-            $article->content_en          = $data['content_en'];
-            $article->seo_title_en        = $data['title_en'];
-            $article->seo_description_en  = $data['excerpt_en'];
-
-            $article->title_ar            = $data['title_ar'];
-            $article->subtitle_ar         = $data['subtitle_ar'];
-            $article->slug_ar             = $slugAr;
-            $article->excerpt_ar          = $data['excerpt_ar'];
-            $article->content_ar          = $data['content_ar'];
-            $article->seo_title_ar        = $data['title_ar'];
-            $article->seo_description_ar  = $data['excerpt_ar'];
-            $article->save();
-
-            if ($secondaries !== []) {
-                $article->secondaryCategories()->attach(
-                    fake()->randomElements($secondaries, rand(0, min(2, count($secondaries))))
-                );
-            }
-
-            if ($tagIds !== []) {
-                $article->tags()->attach(
-                    fake()->randomElements($tagIds, rand(1, min(4, count($tagIds))))
-                );
-            }
-
-            if ($status === 'published' && $readers !== []) {
-                $commentCount = rand(1, 6);
-                for ($c = 0; $c < $commentCount; $c++) {
-                    Comment::create([
-                        'user_id'    => fake()->randomElement($readers),
-                        'article_id' => $article->id,
-                        'body'       => fake()->randomElement([
-                            'Great analysis, thank you for this piece.',
-                            'Very informative article.',
-                            'I would love to read a follow-up on this topic.',
-                            'مقال ممتاز وتحليل عميق.',
-                            'شكراً على هذا التقرير المهم.',
-                            'نتمنى المزيد من التغطية لهذا الموضوع.',
-                        ]),
-                        'status' => fake()->randomElement(['approved', 'approved', 'pending', 'rejected']),
-                    ]);
-                }
-            }
+        for ($i = 0; $i < $additionalCount; $i++) {
+            $this->createArticle(
+                $this->generatedArticle($i + count($this->articles())),
+                $i + count($this->articles()),
+                $writers,
+                $primaries,
+                $secondaries,
+                $tagIds,
+                $readers,
+            );
         }
 
         Article::query()
@@ -108,7 +53,133 @@ class ArticleSeeder extends Seeder
             ->get()
             ->each(fn (Article $article, int $index) => $article->update(['editor_pick_order' => $index + 1]));
 
-        $this->command?->info('ArticleSeeder: ' . count($this->articles()) . ' bilingual articles created.');
+        $this->command?->info('ArticleSeeder: ' . (count($this->articles()) + $additionalCount) . ' bilingual articles created.');
+    }
+
+    /**
+     * @param  array<string, string>  $data
+     * @param  array<int, int>  $writers
+     * @param  array<int, int>  $primaries
+     * @param  array<int, int>  $secondaries
+     * @param  array<int, int>  $tagIds
+     * @param  array<int, int>  $readers
+     */
+    private function createArticle(
+        array $data,
+        int $index,
+        array $writers,
+        array $primaries,
+        array $secondaries,
+        array $tagIds,
+        array $readers,
+    ): void {
+        $statuses = ['published', 'published', 'published', 'draft', 'under_review', 'rejected'];
+        $status = fake()->randomElement($statuses);
+
+        $article = Article::create([
+            'author_id'           => fake()->randomElement($writers),
+            'primary_category_id' => fake()->randomElement($primaries),
+            'featured_image'      => null,
+            'read_time'           => rand(4, 14),
+            'is_breaking'         => $status === 'published' && fake()->boolean(12),
+            'is_editor_pick'      => $status === 'published' && fake()->boolean(18),
+            'editor_pick_order'   => null,
+            'status'              => $status,
+            'views_count'         => $status === 'published' ? rand(120, 8500) : 0,
+            'published_at'        => $status === 'published' ? now()->subDays(rand(1, 90)) : null,
+            'submitted_at'        => in_array($status, ['submitted', 'under_review', 'rejected'], true)
+                ? now()->subDays(rand(1, 14))
+                : null,
+        ]);
+
+        $slugEn = Str::slug($data['title_en']) ?: 'article-en-' . ($index + 1);
+        $slugAr = Str::slug($data['title_ar']) ?: 'article-ar-' . ($index + 1);
+
+        $article->title_en            = $data['title_en'];
+        $article->subtitle_en         = $data['subtitle_en'];
+        $article->slug_en             = $slugEn;
+        $article->excerpt_en          = $data['excerpt_en'];
+        $article->content_en          = $data['content_en'];
+        $article->seo_title_en        = $data['title_en'];
+        $article->seo_description_en  = $data['excerpt_en'];
+
+        $article->title_ar            = $data['title_ar'];
+        $article->subtitle_ar         = $data['subtitle_ar'];
+        $article->slug_ar             = $slugAr;
+        $article->excerpt_ar          = $data['excerpt_ar'];
+        $article->content_ar          = $data['content_ar'];
+        $article->seo_title_ar        = $data['title_ar'];
+        $article->seo_description_ar  = $data['excerpt_ar'];
+        $article->save();
+
+        if ($secondaries !== []) {
+            $article->secondaryCategories()->attach(
+                fake()->randomElements($secondaries, rand(0, min(2, count($secondaries))))
+            );
+        }
+
+        if ($tagIds !== []) {
+            $article->tags()->attach(
+                fake()->randomElements($tagIds, rand(1, min(4, count($tagIds))))
+            );
+        }
+
+        if ($status === 'published' && $readers !== []) {
+            $commentCount = rand(1, 6);
+            for ($c = 0; $c < $commentCount; $c++) {
+                Comment::create([
+                    'user_id'    => fake()->randomElement($readers),
+                    'article_id' => $article->id,
+                    'body'       => fake()->randomElement([
+                        'Great analysis, thank you for this piece.',
+                        'Very informative article.',
+                        'I would love to read a follow-up on this topic.',
+                        'مقال ممتاز وتحليل عميق.',
+                        'شكراً على هذا التقرير المهم.',
+                        'نتمنى المزيد من التغطية لهذا الموضوع.',
+                    ]),
+                    'status' => fake()->randomElement(['approved', 'approved', 'pending', 'rejected']),
+                ]);
+            }
+        }
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function generatedArticle(int $number): array
+    {
+        $topics = [
+            ['en' => 'Digital Media', 'ar' => 'الإعلام الرقمي'],
+            ['en' => 'Public Policy', 'ar' => 'السياسات العامة'],
+            ['en' => 'Regional Economy', 'ar' => 'الاقتصاد الإقليمي'],
+            ['en' => 'Education Reform', 'ar' => 'إصلاح التعليم'],
+            ['en' => 'Healthcare Access', 'ar' => 'الوصول للرعاية الصحية'],
+            ['en' => 'Urban Development', 'ar' => 'التنمية الحضرية'],
+            ['en' => 'Cultural Heritage', 'ar' => 'التراث الثقافي'],
+            ['en' => 'Technology Ethics', 'ar' => 'أخلاقيات التقنية'],
+            ['en' => 'Youth Employment', 'ar' => 'توظيف الشباب'],
+            ['en' => 'Environmental Policy', 'ar' => 'السياسة البيئية'],
+        ];
+
+        $topic = fake()->randomElement($topics);
+        $titleEn = fake()->sentence(rand(5, 9));
+        $titleAr = 'تحليل في '.$topic['ar'].' — العدد '.$number;
+
+        return [
+            'title_en'    => rtrim($titleEn, '.'),
+            'subtitle_en' => fake()->sentence(rand(6, 12)),
+            'excerpt_en'  => fake()->paragraph(2),
+            'content_en'  => implode("\n\n", fake()->paragraphs(rand(5, 8))),
+            'title_ar'    => $titleAr,
+            'subtitle_ar' => 'قراءة معمقة في '.$topic['ar'].' وتأثيرها على المجتمع',
+            'excerpt_ar'  => 'ملخص عربي لقضايا '.$topic['ar'].' والتحولات التي تشهدها المنطقة في الفترة الراهنة.',
+            'content_ar'  => implode("\n\n", [
+                'يتناول هذا التقرير أهم التطورات المرتبطة بـ'.$topic['ar'].'، مع التركيز على البيانات والشهادات الميدانية.',
+                fake()->paragraph(3),
+                'ويختتم المقال بمجموعة توصيات للقراء والمهتمين بالشأن العام، ودعوة لمتابعة التغطية التحليلية في الأعداد القادمة.',
+            ]),
+        ];
     }
 
     private function purgeArticles(): void

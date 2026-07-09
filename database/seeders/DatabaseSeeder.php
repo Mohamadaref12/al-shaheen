@@ -42,6 +42,11 @@ class DatabaseSeeder extends Seeder
             'opinions',
             'media_items',
             'events',
+            'contributor_profile_categories',
+            'contributors',
+            'readers',
+            'editors',
+            'admins',
             'writer',
             'categories',
             'tags',
@@ -64,6 +69,7 @@ class DatabaseSeeder extends Seeder
             ReportSeeder::class,            // 6. Reports
             InterviewSeeder::class,         // 7. Interviews
             NewsSeeder::class,              // 8. News
+            FeaturedImageSeeder::class,     // 8b. Default banner on articles & news
             OpinionSeeder::class,           // 9. Opinions
             MediaItemSeeder::class,         // 10. Media items
             EventSeeder::class,             // 11. Events
