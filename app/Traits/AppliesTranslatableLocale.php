@@ -51,7 +51,7 @@ trait AppliesTranslatableLocale
 
         return collect($relations)
             ->mapWithKeys(fn (string $relation) => [
-                $relation => fn (Builder $query) => $query->withTranslation($locale),
+                $relation => fn ($query) => $query->withTranslation($locale),
             ])
             ->all();
     }
