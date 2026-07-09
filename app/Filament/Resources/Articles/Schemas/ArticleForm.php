@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Articles\Schemas;
 
 use App\Filament\Schemas\Concerns\HasTranslatableContentFields;
+use App\Filament\Support\CategorySelect;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -37,9 +38,11 @@ class ArticleForm
                                             ->preload()
                                             ->required(),
 
-                                        Select::make('primary_category_id')
-                                            ->label('Primary Category')
-                                            ->relationship('primaryCategory', 'name')
+                                        CategorySelect::relationship(
+                                            Select::make('primary_category_id')
+                                                ->label('Primary Category'),
+                                            'primaryCategory'
+                                        )
                                             ->searchable()
                                             ->preload()
                                             ->required(),
@@ -69,12 +72,14 @@ class ArticleForm
 
                                 Section::make('Taxonomy')
                                     ->schema([
-                                        Select::make('secondaryCategories')
-                                            ->label('Secondary Categories')
-                                            ->relationship('secondaryCategories', 'name')
-                                            ->multiple()
-                                            ->searchable()
-                                            ->preload(),
+                                        CategorySelect::relationship(
+                                            Select::make('secondaryCategories')
+                                                ->label('Secondary Categories')
+                                                ->multiple()
+                                                ->searchable()
+                                                ->preload(),
+                                            'secondaryCategories'
+                                        ),
 
                                         Select::make('tags')
                                             ->label('Tags')

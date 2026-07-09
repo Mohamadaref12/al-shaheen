@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Reports\Schemas;
 
+use App\Filament\Support\CategorySelect;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
@@ -38,9 +39,11 @@ class ReportForm
                             ->searchable()
                             ->required(),
 
-                        Select::make('category_id')
-                            ->label('Category')
-                            ->relationship('category', 'name')
+                        CategorySelect::relationship(
+                            Select::make('category_id')
+                                ->label('Category'),
+                            'category'
+                        )
                             ->searchable()
                             ->required(),
 

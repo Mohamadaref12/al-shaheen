@@ -99,17 +99,17 @@ class HomeController extends Controller
         }
     }
 
-    public function filters(): JsonResponse
+    public function filters(Request $request): JsonResponse
     {
         try {
-            $categories = Category::query()
+            $categories = $this->applyTranslationLocale(Category::query(), $request)
                 ->whereNull('parent_id')
                 ->where('is_active', true)
                 ->orderBy('sort_order')
-                ->get(['id', 'name', 'slug', 'image']);
+                ->get();
 
             return $this->success([
-                'categories' => $categories,
+                'categories' => \App\Http\Resources\Api\V1\CategoryResource::collection($categories),
                 'locales'    => [
                     ['value' => 'ar', 'label' => 'Arabic'],
                     ['value' => 'en', 'label' => 'English'],
@@ -138,7 +138,10 @@ class HomeController extends Controller
 
             $opinions = Opinion::published()
                 ->withTranslation($locale)
-                ->with(['author:id,name', 'category:id,name,slug'])
+                ->with(array_merge(
+                    ['author:id,name'],
+                    $this->localizedCategoryEagerLoads($request, 'category')
+                ))
                 ->when($request->filled('locale'), fn ($q) => $q->translatedIn($request->input('locale')))
                 ->orderByDesc('published_at')
                 ->limit($limit)

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Traits\AppliesTranslatableLocale;
 use App\Models\Tag;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -10,6 +11,8 @@ use Throwable;
 
 class TagController extends Controller
 {
+    use AppliesTranslatableLocale;
+
     public function index(): JsonResponse
     {
         try {
@@ -31,7 +34,10 @@ class TagController extends Controller
             }
 
             $paginator = $tag->articles()
-                ->with(['author:id,name', 'primaryCategory:id,name,slug'])
+                ->with(array_merge(
+                    ['author:id,name'],
+                    $this->localizedCategoryEagerLoads($request, 'primaryCategory')
+                ))
                 ->where('status', 'published')
                 ->orderByDesc('published_at')
                 ->paginate($request->input('per_page', 15));

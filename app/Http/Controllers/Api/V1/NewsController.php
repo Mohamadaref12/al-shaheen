@@ -29,7 +29,10 @@ class NewsController extends Controller
 
             $query = News::published()
                 ->withTranslation($locale)
-                ->with(['author:id,name', 'category:id,name,slug', 'tags:id,name,slug']);
+                ->with(array_merge(
+                    ['author:id,name', 'tags:id,name,slug'],
+                    $this->localizedCategoryEagerLoads($request, 'category')
+                ));
 
             if ($request->filled('category')) {
                 $query->where('category_id', $request->input('category'));
@@ -81,7 +84,10 @@ class NewsController extends Controller
 
             $news = News::published()
                 ->withTranslation($locale)
-                ->with(['author:id,name', 'category:id,name,slug', 'tags:id,name,slug', 'translations'])
+                ->with(array_merge(
+                    ['author:id,name', 'tags:id,name,slug', 'translations'],
+                    $this->localizedCategoryEagerLoads($request, 'category')
+                ))
                 ->where('id', $newsId)
                 ->first();
 
@@ -128,7 +134,10 @@ class NewsController extends Controller
 
             $related = News::published()
                 ->withTranslation($locale)
-                ->with(['author:id,name', 'category:id,name,slug', 'tags:id,name,slug'])
+                ->with(array_merge(
+                    ['author:id,name', 'tags:id,name,slug'],
+                    $this->localizedCategoryEagerLoads($request, 'category')
+                ))
                 ->where('id', '!=', $news->id)
                 ->when($hasCriteria, function ($query) use ($news, $siblingCategoryIds, $tagIds) {
                     $query->where(function ($inner) use ($news, $siblingCategoryIds, $tagIds) {

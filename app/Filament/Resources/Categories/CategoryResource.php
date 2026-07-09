@@ -29,7 +29,7 @@ class CategoryResource extends Resource
         return 'categories';
     }
 
-    protected static ?string $recordTitleAttribute = 'name';
+    protected static ?string $recordTitleAttribute = 'display_name';
 
     public static function form(Schema $schema): Schema
     {

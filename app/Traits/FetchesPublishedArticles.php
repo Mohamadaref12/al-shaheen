@@ -20,7 +20,11 @@ trait FetchesPublishedArticles
 
         $query = Article::published()
             ->withTranslation($locale)
-            ->with(['author:id,name', 'primaryCategory:id,name,slug', 'tags:id,name,slug']);
+            ->with([
+                'author:id,name',
+                'primaryCategory' => fn ($q) => $q->withTranslation($locale),
+                'tags:id,name,slug',
+            ]);
 
         if ($request->filled('locale')) {
             $query->translatedIn($request->input('locale'));

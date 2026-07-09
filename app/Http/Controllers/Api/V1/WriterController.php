@@ -95,7 +95,10 @@ class WriterController extends Controller
 
             $articlesQuery = $writer->articles()
                 ->withTranslation($locale)
-                ->with(['primaryCategory:id,name,slug', 'tags:id,name,slug'])
+                ->with(array_merge(
+                    ['tags:id,name,slug'],
+                    $this->localizedCategoryEagerLoads($request, 'primaryCategory')
+                ))
                 ->orderByDesc('articles.published_at');
 
             if ($request->filled('locale')) {

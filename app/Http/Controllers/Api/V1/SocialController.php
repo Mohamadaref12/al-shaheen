@@ -102,7 +102,10 @@ class SocialController extends Controller
             ->savedArticles()
             ->published()
             ->withTranslation($locale)
-            ->with(['author:id,name', 'primaryCategory:id,name,slug', 'tags:id,name,slug'])
+            ->with(array_merge(
+                ['author:id,name', 'tags:id,name,slug'],
+                $this->localizedCategoryEagerLoads($request, 'primaryCategory')
+            ))
             ->orderByPivot('created_at', 'desc');
 
         if ($request->filled('locale')) {

@@ -52,7 +52,7 @@ class WriterDashboardController extends Controller
             $summary = $this->buildArticlesSummary($authorId);
 
             $query = $this->writerArticlesQuery($authorId)
-                ->with(['primaryCategory:id,name,slug'])
+                ->with($this->localizedCategoryEagerLoads($request, 'primaryCategory'))
                 ->withCount([
                     'comments as comments_count' => fn ($q) => $q->where('status', 'approved'),
                     'savedByUsers',
@@ -106,7 +106,10 @@ class WriterDashboardController extends Controller
             $drafts = Article::query()
                 ->where('author_id', $authorId)
                 ->whereIn('status', self::WORKSPACE_DRAFT_STATUSES)
-                ->with(['primaryCategory:id,name,slug', 'translations'])
+                ->with(array_merge(
+                    ['translations'],
+                    $this->localizedCategoryEagerLoads($request, 'primaryCategory')
+                ))
                 ->orderByDesc('updated_at')
                 ->get();
 
@@ -260,7 +263,10 @@ class WriterDashboardController extends Controller
             $lastReturningRate = max(0, $returningRate - 2.7);
 
             $topArticles = (clone $published)
-                ->with(['primaryCategory:id,name,slug', 'translations'])
+                ->with(array_merge(
+                    ['translations'],
+                    $this->localizedCategoryEagerLoads($request, 'primaryCategory')
+                ))
                 ->withCount([
                     'comments as comments_count' => fn ($q) => $q->where('status', 'approved'),
                     'savedByUsers',
@@ -305,7 +311,7 @@ class WriterDashboardController extends Controller
                 ],
                 'weekly_reads'         => $this->buildWeeklyReads($authorId),
                 'traffic_sources'      => $this->buildTrafficSources($authorId),
-                'category_performance' => $this->buildCategoryPerformance($authorId),
+                'category_performance' => $this->buildCategoryPerformance($authorId, $request),
                 'top_articles'         => $topArticles,
             ], 'Writer analytics retrieved successfully.');
         } catch (Throwable $e) {
@@ -319,13 +325,14 @@ class WriterDashboardController extends Controller
             $user = $this->resolveWriter($request);
 
             $article = Article::query()
-                ->with([
-                    'author:id,name',
-                    'primaryCategory:id,name,slug',
-                    'secondaryCategories:id,name,slug',
-                    'tags:id,name,slug',
-                    'translations',
-                ])
+                ->with(array_merge(
+                    [
+                        'author:id,name',
+                        'tags:id,name,slug',
+                        'translations',
+                    ],
+                    $this->localizedCategoryEagerLoads($request, 'primaryCategory', 'secondaryCategories')
+                ))
                 ->where('id', $articleId)
                 ->where('author_id', $user->id)
                 ->whereNot('status', 'archived')
@@ -415,8 +422,10 @@ class WriterDashboardController extends Controller
 
             $bestCategoryData = null;
             if ($bestCategory) {
+                $locale = $this->resolveApiLocale($request);
                 $category = Category::query()
-                    ->find($bestCategory->primary_category_id, ['id', 'name', 'slug']);
+                    ->withTranslation($locale)
+                    ->find($bestCategory->primary_category_id);
 
                 if ($category) {
                     $bestCategoryData = [
@@ -795,8 +804,10 @@ class WriterDashboardController extends Controller
         return 'other';
     }
 
-    private function buildCategoryPerformance(int $authorId): array
+    private function buildCategoryPerformance(int $authorId, Request $request): array
     {
+        $locale = $this->resolveApiLocale($request);
+
         $rows = Article::query()
             ->where('author_id', $authorId)
             ->where('status', 'published')
@@ -812,8 +823,10 @@ class WriterDashboardController extends Controller
 
         $maxViews = max(1, (int) $rows->max('total_views'));
 
-        return $rows->map(function ($row) use ($maxViews) {
-            $category = Category::query()->find($row->primary_category_id, ['id', 'name', 'slug']);
+        return $rows->map(function ($row) use ($maxViews, $locale) {
+            $category = Category::query()
+                ->withTranslation($locale)
+                ->find($row->primary_category_id);
 
             return [
                 'category'    => $category,

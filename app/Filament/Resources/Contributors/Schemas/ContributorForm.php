@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Contributors\Schemas;
 
+use App\Filament\Support\CategorySelect;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -72,10 +73,12 @@ class ContributorForm
                             ->url()
                             ->maxLength(255),
 
-                        Select::make('categories')
-                            ->label('Writing Categories')
-                            ->relationship('categories', 'name')
-                            ->multiple()
+                        CategorySelect::relationship(
+                            Select::make('categories')
+                                ->label('Writing Categories')
+                                ->multiple(),
+                            'categories'
+                        )
                             ->searchable()
                             ->preload()
                             ->columnSpanFull(),

@@ -31,7 +31,7 @@ class RecentArticlesWidget extends TableWidget
                 ->heading('Recently Published')
                 ->description('Latest live articles')
                 ->query(fn (): Builder => Article::query()
-                    ->with(['primaryCategory:id,name', 'translations'])
+                    ->with(['primaryCategory' => fn ($query) => $query->with('translations'), 'translations'])
                     ->where('status', 'published')
                     ->orderByDesc('published_at')
                     ->limit(5))

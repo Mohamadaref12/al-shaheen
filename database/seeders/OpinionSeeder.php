@@ -15,7 +15,7 @@ class OpinionSeeder extends Seeder
         $authors = User::whereHas('writer')->orWhereHas('editor')->orWhereHas('admin')->pluck('id')->toArray();
 
         $categories = Category::query()
-            ->whereHas('parent', fn ($q) => $q->where('slug', 'opinion'))
+            ->whereHas('parent', fn ($q) => $q->whereTranslation('slug', 'opinion'))
             ->pluck('id')
             ->toArray();
 

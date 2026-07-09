@@ -4,85 +4,88 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Api\V1\ArticleSummaryResource;
-use App\Models\Category;
+use App\Http\Resources\Api\V1\CategoryResource;
 use App\Http\Resources\Api\V1\HighPerformingWriterResource;
+use App\Models\Category;
+use App\Traits\AppliesTranslatableLocale;
 use App\Traits\FetchesHighPerformingWriters;
 use App\Traits\FetchesPublishedArticles;
 use App\Traits\MarksSavedArticles;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Throwable;
 
 class CategoryController extends Controller
 {
+    use AppliesTranslatableLocale;
     use FetchesHighPerformingWriters;
     use FetchesPublishedArticles;
     use MarksSavedArticles;
+
     // ─── Primary Categories (parent_id IS NULL) ────────────────────────────
 
-    public function primaryIndex(): JsonResponse
+    public function primaryIndex(Request $request): JsonResponse
     {
         try {
-            $categories = Category::withCount('children')
+            $categories = $this->localizedCategoryQuery($request)
+                ->withCount('children')
                 ->whereNull('parent_id')
                 ->where('is_active', true)
                 ->orderBy('sort_order')
                 ->get();
 
-            return $this->success($categories, 'Primary categories retrieved successfully.');
+            return $this->success(
+                CategoryResource::collection($categories),
+                'Primary categories retrieved successfully.'
+            );
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to retrieve primary categories.');
         }
     }
 
-    public function primarySecondaryIndex(int $categoryId): JsonResponse
+    public function primarySecondaryIndex(Request $request, int $categoryId): JsonResponse
     {
         try {
-            $primary = Category::whereNull('parent_id')
-                ->where('id', $categoryId)
-                ->where('is_active', true)
-                ->first();
+            $primary = $this->findPrimaryCategory($request, $categoryId);
 
             if (! $primary) {
                 return $this->error(null, 'Primary category not found.', 404);
             }
 
-            $secondary = Category::where('parent_id', $categoryId)
+            $secondary = $this->localizedCategoryQuery($request)
+                ->where('parent_id', $categoryId)
                 ->where('is_active', true)
                 ->orderBy('sort_order')
                 ->get();
 
             return $this->success([
-                'primary'   => $primary,
-                'secondary' => $secondary,
+                'primary'   => CategoryResource::make($primary),
+                'secondary' => CategoryResource::collection($secondary),
             ], 'Secondary categories retrieved successfully.');
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to retrieve secondary categories.');
         }
     }
 
-    public function primaryFilters(int $categoryId): JsonResponse
+    public function primaryFilters(Request $request, int $categoryId): JsonResponse
     {
         try {
-            $category = Category::query()
-                ->whereNull('parent_id')
-                ->where('id', $categoryId)
-                ->where('is_active', true)
-                ->first(['id', 'name', 'slug', 'description', 'image']);
+            $category = $this->findPrimaryCategory($request, $categoryId);
 
             if (! $category) {
                 return $this->error(null, 'Primary category not found.', 404);
             }
 
-            $secondaryCategories = Category::query()
+            $secondaryCategories = $this->localizedCategoryQuery($request)
                 ->where('parent_id', $categoryId)
                 ->where('is_active', true)
                 ->orderBy('sort_order')
-                ->get(['id', 'parent_id', 'name', 'slug', 'image']);
+                ->get();
 
             return $this->success([
-                'category'              => $category,
-                'secondary_categories'  => $secondaryCategories,
+                'category'             => CategoryResource::make($category),
+                'secondary_categories' => CategoryResource::collection($secondaryCategories),
                 ...$this->categoryFilterOptions(),
             ], 'Primary category filters retrieved successfully.');
         } catch (Throwable $e) {
@@ -95,11 +98,7 @@ class CategoryController extends Controller
         try {
             $request->validate($this->categoryListingValidationRules());
 
-            $category = Category::query()
-                ->whereNull('parent_id')
-                ->where('id', $categoryId)
-                ->where('is_active', true)
-                ->first(['id', 'name', 'slug', 'image']);
+            $category = $this->findPrimaryCategory($request, $categoryId);
 
             if (! $category) {
                 return $this->error(null, 'Primary category not found.', 404);
@@ -151,11 +150,7 @@ class CategoryController extends Controller
                 'limit'     => 'nullable|integer|min:1|max:20',
             ]);
 
-            $category = Category::query()
-                ->whereNull('parent_id')
-                ->where('id', $categoryId)
-                ->where('is_active', true)
-                ->first(['id', 'name', 'slug', 'image']);
+            $category = $this->findPrimaryCategory($request, $categoryId);
 
             if (! $category) {
                 return $this->error(null, 'Primary category not found.', 404);
@@ -164,11 +159,11 @@ class CategoryController extends Controller
             $secondary = null;
 
             if ($request->filled('secondary')) {
-                $secondary = Category::query()
+                $secondary = $this->localizedCategoryQuery($request)
                     ->where('id', $request->input('secondary'))
                     ->where('parent_id', $categoryId)
                     ->where('is_active', true)
-                    ->first(['id', 'parent_id', 'name', 'slug', 'image']);
+                    ->first();
 
                 if (! $secondary) {
                     return $this->error(null, 'Secondary category not found under this primary category.', 404);
@@ -181,8 +176,8 @@ class CategoryController extends Controller
             );
 
             return $this->success([
-                'category'  => $category,
-                'secondary' => $secondary,
+                'category'  => CategoryResource::make($category),
+                'secondary' => $secondary ? CategoryResource::make($secondary) : null,
                 'articles'  => $articles->values(),
             ], 'Primary category trending articles retrieved successfully.');
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -201,11 +196,7 @@ class CategoryController extends Controller
                 'limit'     => 'nullable|integer|min:1|max:20',
             ]);
 
-            $category = Category::query()
-                ->whereNull('parent_id')
-                ->where('id', $categoryId)
-                ->where('is_active', true)
-                ->first(['id', 'name', 'slug', 'image']);
+            $category = $this->findPrimaryCategory($request, $categoryId);
 
             if (! $category) {
                 return $this->error(null, 'Primary category not found.', 404);
@@ -214,11 +205,11 @@ class CategoryController extends Controller
             $secondary = null;
 
             if ($request->filled('secondary')) {
-                $secondary = Category::query()
+                $secondary = $this->localizedCategoryQuery($request)
                     ->where('id', $request->input('secondary'))
                     ->where('parent_id', $categoryId)
                     ->where('is_active', true)
-                    ->first(['id', 'parent_id', 'name', 'slug', 'image']);
+                    ->first();
 
                 if (! $secondary) {
                     return $this->error(null, 'Secondary category not found under this primary category.', 404);
@@ -231,8 +222,8 @@ class CategoryController extends Controller
             );
 
             return $this->success([
-                'category'  => $category,
-                'secondary' => $secondary,
+                'category'  => CategoryResource::make($category),
+                'secondary' => $secondary ? CategoryResource::make($secondary) : null,
                 'articles'  => $articles->values(),
             ], 'Primary category editor picks retrieved successfully.');
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -250,11 +241,7 @@ class CategoryController extends Controller
                 'limit'     => 'nullable|integer|min:1|max:20',
             ]);
 
-            $category = Category::query()
-                ->whereNull('parent_id')
-                ->where('id', $categoryId)
-                ->where('is_active', true)
-                ->first(['id', 'name', 'slug', 'image']);
+            $category = $this->findPrimaryCategory($request, $categoryId);
 
             if (! $category) {
                 return $this->error(null, 'Primary category not found.', 404);
@@ -264,11 +251,11 @@ class CategoryController extends Controller
             $secondaryId = null;
 
             if ($request->filled('secondary')) {
-                $secondary = Category::query()
+                $secondary = $this->localizedCategoryQuery($request)
                     ->where('id', $request->input('secondary'))
                     ->where('parent_id', $categoryId)
                     ->where('is_active', true)
-                    ->first(['id', 'parent_id', 'name', 'slug', 'image']);
+                    ->first();
 
                 if (! $secondary) {
                     return $this->error(null, 'Secondary category not found under this primary category.', 404);
@@ -280,8 +267,8 @@ class CategoryController extends Controller
             $writers = $this->fetchHighPerformingWriters($request, $categoryId, $secondaryId);
 
             return $this->success([
-                'category'  => $category,
-                'secondary' => $secondary,
+                'category'  => CategoryResource::make($category),
+                'secondary' => $secondary ? CategoryResource::make($secondary) : null,
                 'writers'   => HighPerformingWriterResource::collection($writers)->resolve(),
             ], 'Primary category high-performing writers retrieved successfully.');
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -294,14 +281,21 @@ class CategoryController extends Controller
     public function primaryShow(Request $request, int $categoryId): JsonResponse
     {
         try {
+            $locale = $this->resolveApiLocale($request);
+
             $category = Category::with([
-                'children' => fn ($q) => $q->where('is_active', true)->orderBy('sort_order'),
+                'children' => fn ($q) => $q
+                    ->where('is_active', true)
+                    ->orderBy('sort_order')
+                    ->withTranslation($locale),
                 'articles' => fn ($q) => $q
                     ->with('author:id,name')
+                    ->withTranslation($locale)
                     ->where('status', 'published')
                     ->orderByDesc('published_at')
                     ->limit(20),
             ])
+                ->withTranslation($locale)
                 ->whereNull('parent_id')
                 ->where('id', $categoryId)
                 ->where('is_active', true)
@@ -313,7 +307,10 @@ class CategoryController extends Controller
 
             $this->withIsSavedOnCollection($category->articles, $request);
 
-            return $this->success($category, 'Primary category retrieved successfully.');
+            return $this->success(
+                CategoryResource::make($category),
+                'Primary category retrieved successfully.'
+            );
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to retrieve primary category.');
         }
@@ -321,37 +318,45 @@ class CategoryController extends Controller
 
     // ─── Secondary Categories / Subcategories (parent_id IS NOT NULL) ──────
 
-    public function secondaryIndex(): JsonResponse
+    public function secondaryIndex(Request $request): JsonResponse
     {
         try {
-            $categories = Category::with('parent:id,name,slug')
+            $locale = $this->resolveApiLocale($request);
+
+            $categories = $this->localizedCategoryQuery($request)
+                ->with(['parent' => fn ($q) => $q->withTranslation($locale)])
                 ->whereNotNull('parent_id')
                 ->where('is_active', true)
                 ->orderBy('sort_order')
                 ->get();
 
-            return $this->success($categories, 'Secondary categories retrieved successfully.');
+            return $this->success(
+                CategoryResource::collection($categories),
+                'Secondary categories retrieved successfully.'
+            );
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to retrieve secondary categories.');
         }
     }
 
-    public function secondaryFilters(int $categoryId): JsonResponse
+    public function secondaryFilters(Request $request, int $categoryId): JsonResponse
     {
         try {
-            $category = Category::query()
-                ->with('parent:id,name,slug')
+            $locale = $this->resolveApiLocale($request);
+
+            $category = $this->localizedCategoryQuery($request)
+                ->with(['parent' => fn ($q) => $q->withTranslation($locale)])
                 ->whereNotNull('parent_id')
                 ->where('id', $categoryId)
                 ->where('is_active', true)
-                ->first(['id', 'parent_id', 'name', 'slug', 'description', 'image']);
+                ->first();
 
             if (! $category) {
                 return $this->error(null, 'Secondary category not found.', 404);
             }
 
             return $this->success([
-                'category' => $category,
+                'category' => CategoryResource::make($category),
                 ...$this->categoryFilterOptions(),
             ], 'Secondary category filters retrieved successfully.');
         } catch (Throwable $e) {
@@ -366,11 +371,7 @@ class CategoryController extends Controller
                 ->except(['secondary'])
                 ->all());
 
-            $category = Category::query()
-                ->whereNotNull('parent_id')
-                ->where('id', $categoryId)
-                ->where('is_active', true)
-                ->first(['id', 'name', 'slug', 'image']);
+            $category = $this->findSecondaryCategory($request, $categoryId);
 
             if (! $category) {
                 return $this->error(null, 'Secondary category not found.', 404);
@@ -405,14 +406,18 @@ class CategoryController extends Controller
     public function secondaryShow(Request $request, int $categoryId): JsonResponse
     {
         try {
+            $locale = $this->resolveApiLocale($request);
+
             $category = Category::with([
-                'parent:id,name,slug',
+                'parent' => fn ($q) => $q->withTranslation($locale),
                 'secondaryArticles' => fn ($q) => $q
                     ->with('author:id,name')
+                    ->withTranslation($locale)
                     ->where('status', 'published')
                     ->orderByDesc('published_at')
                     ->limit(20),
             ])
+                ->withTranslation($locale)
                 ->whereNotNull('parent_id')
                 ->where('id', $categoryId)
                 ->where('is_active', true)
@@ -424,9 +429,35 @@ class CategoryController extends Controller
 
             $this->withIsSavedOnCollection($category->secondaryArticles, $request);
 
-            return $this->success($category, 'Secondary category retrieved successfully.');
+            return $this->success(
+                CategoryResource::make($category),
+                'Secondary category retrieved successfully.'
+            );
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to retrieve secondary category.');
         }
+    }
+
+    protected function localizedCategoryQuery(Request $request): Builder
+    {
+        return $this->applyTranslationLocale(Category::query(), $request);
+    }
+
+    protected function findPrimaryCategory(Request $request, int $categoryId): ?Category
+    {
+        return $this->localizedCategoryQuery($request)
+            ->whereNull('parent_id')
+            ->where('id', $categoryId)
+            ->where('is_active', true)
+            ->first();
+    }
+
+    protected function findSecondaryCategory(Request $request, int $categoryId): ?Category
+    {
+        return $this->localizedCategoryQuery($request)
+            ->whereNotNull('parent_id')
+            ->where('id', $categoryId)
+            ->where('is_active', true)
+            ->first();
     }
 }

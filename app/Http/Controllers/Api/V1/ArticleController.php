@@ -27,7 +27,10 @@ class ArticleController extends Controller
             $locale = $this->resolveApiLocale($request);
 
             $query = Article::withTranslation($locale)
-                ->with(['author:id,name', 'primaryCategory:id,name,slug', 'tags:id,name,slug'])
+                ->with(array_merge(
+                    ['author:id,name', 'tags:id,name,slug'],
+                    $this->localizedCategoryEagerLoads($request, 'primaryCategory')
+                ))
                 ->where('status', 'published');
 
             if ($request->filled('category')) {
@@ -82,13 +85,14 @@ class ArticleController extends Controller
             $locale = $this->resolveApiLocale($request);
 
             $article = Article::withTranslation($locale)
-                ->with([
-                'author:id,name',
-                'primaryCategory:id,name,slug',
-                'secondaryCategories:id,name,slug',
-                'tags:id,name,slug',
-                'translations',
-            ])
+                ->with(array_merge(
+                    [
+                        'author:id,name',
+                        'tags:id,name,slug',
+                        'translations',
+                    ],
+                    $this->localizedCategoryEagerLoads($request, 'primaryCategory', 'secondaryCategories')
+                ))
                 ->where('id', $articleId)
                 ->where('status', 'published')
                 ->first();
@@ -353,7 +357,10 @@ class ArticleController extends Controller
 
             $related = Article::published()
                 ->withTranslation($locale)
-                ->with(['author:id,name', 'primaryCategory:id,name,slug', 'tags:id,name,slug'])
+                ->with(array_merge(
+                    ['author:id,name', 'tags:id,name,slug'],
+                    $this->localizedCategoryEagerLoads($request, 'primaryCategory')
+                ))
                 ->where('id', '!=', $article->id)
                 ->where(function ($query) use ($article, $tagIds, $secondaryIds) {
                     $query->where('primary_category_id', $article->primary_category_id);
@@ -420,7 +427,10 @@ class ArticleController extends Controller
 
             $next = Article::published()
                 ->withTranslation($locale)
-                ->with(['author:id,name', 'primaryCategory:id,name,slug'])
+                ->with(array_merge(
+                    ['author:id,name'],
+                    $this->localizedCategoryEagerLoads($request, 'primaryCategory')
+                ))
                 ->where('primary_category_id', $article->primary_category_id)
                 ->where('id', '!=', $article->id)
                 ->where(function ($query) use ($article) {
@@ -437,7 +447,10 @@ class ArticleController extends Controller
             if (! $next) {
                 $next = Article::published()
                     ->withTranslation($locale)
-                    ->with(['author:id,name', 'primaryCategory:id,name,slug'])
+                    ->with(array_merge(
+                        ['author:id,name'],
+                        $this->localizedCategoryEagerLoads($request, 'primaryCategory')
+                    ))
                     ->where('primary_category_id', $article->primary_category_id)
                     ->where('id', '!=', $article->id)
                     ->orderByDesc('published_at')

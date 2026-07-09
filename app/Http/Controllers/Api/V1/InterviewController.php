@@ -4,16 +4,22 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\Interview;
+use App\Traits\AppliesTranslatableLocale;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Throwable;
 
 class InterviewController extends Controller
 {
+    use AppliesTranslatableLocale;
+
     public function index(Request $request): JsonResponse
     {
         try {
-            $query = Interview::with(['author:id,name', 'category:id,name,slug'])
+            $query = Interview::with(array_merge(
+                ['author:id,name'],
+                $this->localizedCategoryEagerLoads($request, 'category')
+            ))
                 ->where('status', 'published');
 
             if ($request->filled('category')) {
@@ -40,10 +46,13 @@ class InterviewController extends Controller
         }
     }
 
-    public function show(int $interviewId): JsonResponse
+    public function show(Request $request, int $interviewId): JsonResponse
     {
         try {
-            $interview = Interview::with(['author:id,name', 'category:id,name,slug'])
+            $interview = Interview::with(array_merge(
+                ['author:id,name'],
+                $this->localizedCategoryEagerLoads($request, 'category')
+            ))
                 ->where('id', $interviewId)
                 ->where('status', 'published')
                 ->first();

@@ -39,7 +39,7 @@ class NewsWorkspaceService
     {
         $query = News::query()
             ->whereIn('status', self::WORKSPACE_DRAFT_STATUSES)
-            ->with(['category:id,name,slug', 'translations'])
+            ->with(['category' => fn ($query) => $query->withTranslation(app()->getLocale()), 'translations'])
             ->orderByDesc('updated_at');
 
         if (! $allowAllForEditors || ! $this->userIsNewsEditor($user) || ! $request->boolean('all')) {
@@ -82,7 +82,7 @@ class NewsWorkspaceService
 
         $query = News::query()
             ->where('author_id', $authorId)
-            ->with(['category:id,name,slug', 'translations']);
+            ->with(['category' => fn ($query) => $query->withTranslation(app()->getLocale()), 'translations']);
 
         if ($request->filled('status')) {
             $query->where('status', $request->input('status'));
@@ -162,7 +162,7 @@ class NewsWorkspaceService
     public function previewResponse(User $user, int $newsId): JsonResponse
     {
         $news = News::query()
-            ->with(['author:id,name', 'category:id,name,slug', 'translations'])
+            ->with(['author:id,name', 'category' => fn ($query) => $query->withTranslation(app()->getLocale()), 'translations'])
             ->where('id', $newsId)
             ->whereNot('status', 'archived')
             ->first();

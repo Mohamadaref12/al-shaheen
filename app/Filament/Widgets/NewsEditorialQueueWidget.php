@@ -26,7 +26,7 @@ class NewsEditorialQueueWidget extends TableWidget
                 ->heading('News in Review')
                 ->description('Submitted news awaiting editorial action')
                 ->query(fn (): Builder => News::query()
-                    ->with(['author:id,name', 'category:id,name', 'translations'])
+                    ->with(['author:id,name', 'category' => fn ($query) => $query->with('translations'), 'translations'])
                     ->where('status', 'under_review')
                     ->orderBy('updated_at')
                     ->limit(5))

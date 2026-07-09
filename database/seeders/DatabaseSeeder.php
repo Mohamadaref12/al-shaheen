@@ -35,6 +35,7 @@ class DatabaseSeeder extends Seeder
             'training_courses',
             'course_category_translations',
             'course_categories',
+            'category_translations',
             'articles',
             'reports',
             'interviews',

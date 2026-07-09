@@ -40,10 +40,14 @@ class OpinionForm
                                         Select::make('category_id')
                                             ->label('Category')
                                             ->options(fn () => Category::query()
-                                                ->whereHas('parent', fn ($q) => $q->where('slug', 'opinion'))
-                                                ->orWhere('slug', 'opinion')
-                                                ->orderBy('name')
-                                                ->pluck('name', 'id'))
+                                                ->with('translations')
+                                                ->where(function ($query) {
+                                                    $query->whereTranslation('slug', 'opinion')
+                                                        ->orWhereHas('parent', fn ($parent) => $parent->whereTranslation('slug', 'opinion'));
+                                                })
+                                                ->get()
+                                                ->sortBy(fn (Category $category) => $category->display_name)
+                                                ->pluck('display_name', 'id'))
                                             ->searchable(),
 
                                         TextInput::make('read_time')

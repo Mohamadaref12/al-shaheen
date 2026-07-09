@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\News\Schemas;
 
 use App\Filament\Schemas\Concerns\HasTranslatableContentFields;
+use App\Filament\Support\CategorySelect;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -36,9 +37,11 @@ class NewsForm
                                             ->searchable()
                                             ->required(),
 
-                                        Select::make('category_id')
-                                            ->label('Category')
-                                            ->relationship('category', 'name')
+                                        CategorySelect::relationship(
+                                            Select::make('category_id')
+                                                ->label('Category'),
+                                            'category'
+                                        )
                                             ->searchable(),
 
                                         TextInput::make('read_time')

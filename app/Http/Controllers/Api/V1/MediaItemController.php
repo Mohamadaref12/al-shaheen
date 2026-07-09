@@ -4,16 +4,22 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\MediaItem;
+use App\Traits\AppliesTranslatableLocale;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Throwable;
 
 class MediaItemController extends Controller
 {
+    use AppliesTranslatableLocale;
+
     public function index(Request $request): JsonResponse
     {
         try {
-            $query = MediaItem::with(['author:id,name', 'category:id,name,slug'])
+            $query = MediaItem::with(array_merge(
+                ['author:id,name'],
+                $this->localizedCategoryEagerLoads($request, 'category')
+            ))
                 ->where('status', 'published');
 
             if ($request->filled('type')) {
@@ -43,10 +49,13 @@ class MediaItemController extends Controller
         }
     }
 
-    public function show(int $mediaId): JsonResponse
+    public function show(Request $request, int $mediaId): JsonResponse
     {
         try {
-            $item = MediaItem::with(['author:id,name', 'category:id,name,slug'])
+            $item = MediaItem::with(array_merge(
+                ['author:id,name'],
+                $this->localizedCategoryEagerLoads($request, 'category')
+            ))
                 ->where('id', $mediaId)
                 ->where('status', 'published')
                 ->first();

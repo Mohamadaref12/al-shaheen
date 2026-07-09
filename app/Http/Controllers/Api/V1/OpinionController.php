@@ -29,7 +29,10 @@ class OpinionController extends Controller
 
             $query = Opinion::published()
                 ->withTranslation($locale)
-                ->with(['author:id,name', 'category:id,name,slug']);
+                ->with(array_merge(
+                    ['author:id,name'],
+                    $this->localizedCategoryEagerLoads($request, 'category')
+                ));
 
             if ($request->filled('category')) {
                 $query->where('category_id', $request->input('category'));
@@ -75,7 +78,10 @@ class OpinionController extends Controller
 
             $opinion = Opinion::published()
                 ->withTranslation($locale)
-                ->with(['author:id,name', 'category:id,name,slug', 'translations'])
+                ->with(array_merge(
+                    ['author:id,name', 'translations'],
+                    $this->localizedCategoryEagerLoads($request, 'category')
+                ))
                 ->where('id', $opinionId)
                 ->first();
 

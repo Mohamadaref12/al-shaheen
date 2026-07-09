@@ -41,4 +41,18 @@ trait AppliesTranslatableLocale
             }
         });
     }
+
+    /**
+     * @return array<string, \Closure>
+     */
+    protected function localizedCategoryEagerLoads(Request $request, string ...$relations): array
+    {
+        $locale = $this->resolveApiLocale($request);
+
+        return collect($relations)
+            ->mapWithKeys(fn (string $relation) => [
+                $relation => fn (Builder $query) => $query->withTranslation($locale),
+            ])
+            ->all();
+    }
 }
