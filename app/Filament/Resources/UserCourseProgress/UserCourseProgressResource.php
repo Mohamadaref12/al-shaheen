@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\UserCourseProgress;
 
+use App\Filament\Concerns\HasTranslatedLabels;
 use App\Filament\Resources\UserCourseProgress\Pages\CreateUserCourseProgress;
 use App\Filament\Resources\UserCourseProgress\Pages\EditUserCourseProgress;
 use App\Filament\Resources\UserCourseProgress\Pages\ListUserCourseProgress;
@@ -16,17 +17,17 @@ use Filament\Tables\Table;
 
 class UserCourseProgressResource extends Resource
 {
+    use HasTranslatedLabels;
     protected static ?string $model = UserCourseProgress::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChartBar;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Training';
 
-    protected static ?string $navigationLabel = 'Progress';
-
-    protected static ?string $modelLabel = 'Progress';
-
-    protected static ?string $pluralModelLabel = 'Progress';
+    protected static function translationKey(): string
+    {
+        return 'progress';
+    }
 
     protected static ?int $navigationSort = 4;
 

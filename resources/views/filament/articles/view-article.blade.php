@@ -1,17 +1,18 @@
 @php
     use App\Support\ImageStorage;
 
+    $locale = $preview['locale'] ?? 'en';
+    $dir = $preview['dir'] ?? 'ltr';
+    $title = $preview['title'] ?? '';
+    $subtitle = $preview['subtitle'] ?? null;
+    $excerpt = $preview['excerpt'] ?? null;
+    $content = $preview['content'] ?? null;
+    $statusLabel = $preview['status_label'] ?? '';
+    $labels = $preview['labels'] ?? [];
+
     $featuredImageUrl = ImageStorage::url($article->featured_image);
 
     $publishedAt = $article->published_at ?? $article->created_at;
-
-    $statusLabel = match ($article->status) {
-        'published' => 'Published',
-        'review'    => 'Under Review',
-        'draft'     => 'Draft',
-        'archived'  => 'Archived',
-        default     => $article->status,
-    };
 
     $statusClass = match ($article->status) {
         'published' => 'as-badge--published',
@@ -40,11 +41,16 @@
         font-family: 'Inter', system-ui, sans-serif;
         color: var(--as-ink);
         line-height: 1.6;
+    }
+
+    .as-article-wrap[dir="ltr"] {
         direction: ltr;
         text-align: left;
     }
 
     .as-article-wrap[dir="rtl"] {
+        direction: rtl;
+        text-align: right;
         font-family: 'Amiri', 'Inter', system-ui, serif;
     }
 
@@ -257,17 +263,19 @@
         line-height: 1.65;
         color: var(--as-muted);
         margin: 0 0 1.5rem;
-        padding: 0.85rem 0 0.85rem 1rem;
+        padding-block: 0.85rem;
+        padding-inline: 1rem 0;
         border-inline-start: 4px solid var(--as-accent);
-        background: linear-gradient(to right, rgba(40, 65, 78, 0.06), transparent);
+        background: linear-gradient(to inline-end, rgba(40, 65, 78, 0.06), transparent);
         font-style: italic;
     }
 
     .as-article-wrap[dir="rtl"] .as-lead {
         font-family: 'Amiri', Georgia, serif;
         font-style: normal;
-        padding: 1.25rem 1.5rem 1.25rem 0;
-        background: linear-gradient(to left, rgba(40, 65, 78, 0.06), transparent);
+        padding-block: 1.25rem;
+        padding-inline-start: 1.25rem;
+        padding-inline-end: 0;
     }
 
     /* Article content */
@@ -275,11 +283,16 @@
         font-size: 1.125rem;
         line-height: 1.9;
         color: #3d4f58;
+    }
+
+    .as-article-wrap[dir="ltr"] .as-content {
         direction: ltr;
         text-align: left;
     }
 
     .as-article-wrap[dir="rtl"] .as-content {
+        direction: rtl;
+        text-align: right;
         font-size: 1.25rem;
         line-height: 2;
     }
@@ -340,13 +353,15 @@
         padding: 1.25rem 1.5rem;
         border-inline-start: 4px solid var(--as-accent);
         background: var(--as-cream);
-        border-radius: 0 12px 12px 0;
+        border-start-start-radius: 0;
+        border-start-end-radius: 12px;
+        border-end-end-radius: 12px;
+        border-end-start-radius: 0;
         font-style: italic;
         color: var(--as-muted);
     }
 
     .as-article-wrap[dir="rtl"] .as-content blockquote {
-        border-radius: 12px 0 0 12px;
         font-style: normal;
     }
 
@@ -719,12 +734,12 @@
     }
 </style>
 
-<div class="as-article-wrap" dir="ltr" lang="en">
+<div class="as-article-wrap" dir="{{ $dir }}" lang="{{ $locale }}" wire:key="article-preview-{{ $locale }}-{{ $article->id }}">
     <div class="as-article">
 
         @if ($featuredImageUrl)
             <div class="as-hero as-hero--has-image">
-                <img class="as-hero__img" src="{{ $featuredImageUrl }}" alt="{{ $article->title }}">
+                <img class="as-hero__img" src="{{ $featuredImageUrl }}" alt="{{ $title }}">
                 <div class="as-hero__overlay"></div>
                 <div class="as-hero__content">
                     <div class="as-badges">
@@ -732,13 +747,13 @@
                             <span class="as-badge as-badge--category">{{ $article->primaryCategory->name }}</span>
                         @endif
                         @if ($article->is_breaking)
-                            <span class="as-badge as-badge--breaking">Breaking</span>
+                            <span class="as-badge as-badge--breaking">{{ $labels['breaking'] ?? 'Breaking' }}</span>
                         @endif
                         <span class="as-badge {{ $statusClass }}">{{ $statusLabel }}</span>
                     </div>
-                    <h1 class="as-hero__title">{{ $article->title }}</h1>
-                    @if (filled($article->subtitle))
-                        <p class="as-hero__subtitle">{{ $article->subtitle }}</p>
+                    <h1 class="as-hero__title">{{ $title }}</h1>
+                    @if (filled($subtitle))
+                        <p class="as-hero__subtitle">{{ $subtitle }}</p>
                     @endif
                 </div>
             </div>
@@ -749,13 +764,13 @@
                         <span class="as-badge as-badge--category">{{ $article->primaryCategory->name }}</span>
                     @endif
                     @if ($article->is_breaking)
-                        <span class="as-badge as-badge--breaking">Breaking</span>
+                        <span class="as-badge as-badge--breaking">{{ $labels['breaking'] ?? 'Breaking' }}</span>
                     @endif
                     <span class="as-badge {{ $statusClass }}">{{ $statusLabel }}</span>
                 </div>
-                <h1 class="as-hero__title">{{ $article->title }}</h1>
-                @if (filled($article->subtitle))
-                    <p class="as-hero__subtitle">{{ $article->subtitle }}</p>
+                <h1 class="as-hero__title">{{ $title }}</h1>
+                @if (filled($subtitle))
+                    <p class="as-hero__subtitle">{{ $subtitle }}</p>
                 @endif
             </div>
         @endif
@@ -769,54 +784,56 @@
                     </div>
                     <div>
                         <p class="as-meta__name">{{ $article->author?->name ?? '—' }}</p>
-                        <p class="as-meta__role">Author</p>
+                        <p class="as-meta__role">{{ $labels['author'] ?? 'Author' }}</p>
                     </div>
                 </div>
 
                 <div class="as-meta__items">
                     @if ($publishedAt)
                         <div>
-                            <p class="as-meta__item-label">Published</p>
+                            <p class="as-meta__item-label">{{ $labels['published'] ?? 'Published' }}</p>
                             <p class="as-meta__item-value">
-                                {{ $publishedAt->format('F j, Y') }}
+                                {{ $locale === 'ar'
+                                    ? $publishedAt->locale('ar')->translatedFormat('j F Y')
+                                    : $publishedAt->format('F j, Y') }}
                             </p>
                         </div>
                     @endif
 
                     @if ($article->read_time)
                         <div>
-                            <p class="as-meta__item-label">Read time</p>
+                            <p class="as-meta__item-label">{{ $labels['read_time'] ?? 'Read time' }}</p>
                             <p class="as-meta__item-value">
-                                {{ $article->read_time }} min
+                                {{ $article->read_time }} {{ $labels['minutes'] ?? 'min' }}
                             </p>
                         </div>
                     @endif
 
                     <div>
-                        <p class="as-meta__item-label">Language</p>
-                        <p class="as-meta__item-value">{{ strtoupper($article->locale) }}</p>
+                        <p class="as-meta__item-label">{{ $labels['language'] ?? 'Language' }}</p>
+                        <p class="as-meta__item-value">{{ strtoupper($locale) }}</p>
                     </div>
                 </div>
             </div>
 
-            @if (filled($article->excerpt))
-                <p class="as-lead">{{ $article->excerpt }}</p>
+            @if (filled($excerpt))
+                <p class="as-lead">{{ $excerpt }}</p>
             @endif
 
-            @if (filled($article->content))
-                <div class="as-content">
-                    {!! $article->content !!}
+            @if (filled($content))
+                <div class="as-content" dir="{{ $dir }}" lang="{{ $locale }}">
+                    {!! $content !!}
                 </div>
             @else
                 <div class="as-empty">
-                    This article has no content yet.
+                    {{ $labels['empty'] ?? 'This article has no content yet.' }}
                 </div>
             @endif
 
             @if ($article->tags->isNotEmpty() || $article->secondaryCategories->isNotEmpty())
                 <div class="as-footer">
                     @if ($article->tags->isNotEmpty())
-                        <p class="as-footer__label">Tags</p>
+                        <p class="as-footer__label">{{ $labels['tags'] ?? 'Tags' }}</p>
                         <div class="as-tags">
                             @foreach ($article->tags as $tag)
                                 <span class="as-tag">#{{ $tag->name }}</span>
@@ -825,7 +842,7 @@
                     @endif
 
                     @if ($article->secondaryCategories->isNotEmpty())
-                        <p class="as-footer__label">Categories</p>
+                        <p class="as-footer__label">{{ $labels['categories'] ?? 'Categories' }}</p>
                         <div class="as-tags">
                             @foreach ($article->secondaryCategories as $category)
                                 <span class="as-cat-tag">{{ $category->name }}</span>

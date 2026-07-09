@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ContentSubmissions\Tables;
 
+use App\Filament\Support\ContentStatusActions;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -63,6 +64,7 @@ class ContentSubmissionsTable
                     ]),
             ])
             ->recordActions([
+                ...ContentStatusActions::contentSubmissionTableActions(),
                 EditAction::make(),
             ])
             ->toolbarActions([

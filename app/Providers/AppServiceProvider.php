@@ -14,7 +14,26 @@ use App\Services\Ai\OpenAiArticleImprovementService;
 use App\Services\Ai\OpenAiArticleTranslationService;
 use App\Services\Ai\OpenAiNewsImprovementService;
 use App\Services\Ai\OpenAiNewsTranslationService;
+use App\Models\Article;
+use App\Models\Comment;
+use App\Models\ContactMessage;
+use App\Models\ContentSubmission;
+use App\Models\News;
+use App\Models\Opinion;
+use App\Models\Writer;
+use App\Observers\ArticleObserver;
+use App\Observers\CommentObserver;
+use App\Observers\ContactMessageObserver;
+use App\Observers\ContentSubmissionObserver;
+use App\Observers\NewsObserver;
+use App\Observers\OpinionObserver;
+use App\Observers\WriterObserver;
 use App\Support\AiSettings;
+use BezhanSalleh\LanguageSwitch\Enums\ItemStyle;
+use BezhanSalleh\LanguageSwitch\Enums\TriggerStyle;
+use BezhanSalleh\LanguageSwitch\Events\LocaleChanged;
+use BezhanSalleh\LanguageSwitch\LanguageSwitch;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -62,6 +81,33 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        LanguageSwitch::configureUsing(function (LanguageSwitch $switch): void {
+            $switch
+                ->locales(['en', 'ar'])
+                ->flags([
+                    'en' => url('images/flags/us.svg'),
+                    'ar' => url('images/flags/ae.svg'),
+                ])
+                ->labels([
+                    'en' => 'English',
+                    'ar' => 'العربية',
+                ])
+                ->itemStyle(ItemStyle::FlagWithLabel)
+                ->trigger(style: TriggerStyle::Flag)
+                ->circular(false)
+                ->userPreferredLocale(fn () => auth()->user()?->locale);
+        });
+
+        Event::listen(LocaleChanged::class, function (LocaleChanged $event): void {
+            auth()->user()?->update(['locale' => $event->locale]);
+        });
+
+        Comment::observe(CommentObserver::class);
+        ContactMessage::observe(ContactMessageObserver::class);
+        Article::observe(ArticleObserver::class);
+        News::observe(NewsObserver::class);
+        Opinion::observe(OpinionObserver::class);
+        Writer::observe(WriterObserver::class);
+        ContentSubmission::observe(ContentSubmissionObserver::class);
     }
 }

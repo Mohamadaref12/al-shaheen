@@ -30,7 +30,7 @@ class DashboardHeaderWidget extends Widget
 
         return [
             'userName'       => $user?->name,
-            'dateLabel'      => now()->translatedFormat('l, F j, Y'),
+            'dateLabel'      => now()->locale(app()->getLocale())->translatedFormat('l, F j, Y'),
             'attentionCount' => $attentionCount,
         ];
     }

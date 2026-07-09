@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Articles;
 
+use App\Filament\Concerns\HasTranslatedLabels;
 use App\Filament\Concerns\SearchesTranslatableTitles;
 use App\Filament\Resources\Articles\Pages\CreateArticle;
 use App\Filament\Resources\Articles\Pages\EditArticle;
@@ -19,6 +20,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ArticleResource extends Resource
 {
+    use HasTranslatedLabels;
     use SearchesTranslatableTitles;
 
     protected static ?string $model = Article::class;
@@ -27,15 +29,33 @@ class ArticleResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'Content';
 
+    protected static function translationKey(): string
+    {
+        return 'articles';
+    }
+
     protected static ?int $navigationSort = 1;
 
-    protected static ?string $navigationLabel = 'Articles';
-
-    protected static ?string $modelLabel = 'Article';
-
-    protected static ?string $pluralModelLabel = 'Articles';
-
     protected static ?string $recordTitleAttribute = 'display_title';
+
+    /**
+     * @var list<string>
+     */
+    public const AWAITING_APPROVAL_STATUSES = ['submitted', 'under_review', 'review', 'ready'];
+
+    public static function getNavigationBadge(): ?string
+    {
+        $count = Article::query()
+            ->whereIn('status', self::AWAITING_APPROVAL_STATUSES)
+            ->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
 
     public static function getRecordTitle(?Model $record): string | \Illuminate\Contracts\Support\Htmlable | null
     {

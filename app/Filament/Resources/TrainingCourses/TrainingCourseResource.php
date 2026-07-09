@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\TrainingCourses;
 
+use App\Filament\Concerns\HasTranslatedLabels;
 use App\Filament\Resources\TrainingCourses\Pages\CreateTrainingCourse;
 use App\Filament\Resources\TrainingCourses\Pages\EditTrainingCourse;
 use App\Filament\Resources\TrainingCourses\Pages\ListTrainingCourses;
@@ -17,17 +18,17 @@ use Illuminate\Database\Eloquent\Builder;
 
 class TrainingCourseResource extends Resource
 {
+    use HasTranslatedLabels;
     protected static ?string $model = TrainingCourse::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAcademicCap;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Training';
 
-    protected static ?string $navigationLabel = 'Courses';
-
-    protected static ?string $modelLabel = 'Course';
-
-    protected static ?string $pluralModelLabel = 'Courses';
+    protected static function translationKey(): string
+    {
+        return 'courses';
+    }
 
     protected static ?string $recordTitleAttribute = 'title';
 

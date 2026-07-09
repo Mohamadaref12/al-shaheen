@@ -4,8 +4,10 @@ namespace App\Filament\Resources\ContactMessages\Pages;
 
 use App\Filament\Resources\ContactMessages\ContactMessageResource;
 use App\Models\ContactMessage;
+use App\Support\TransactionalMailer;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
+use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 
@@ -31,8 +33,27 @@ class ViewContactMessage extends ViewRecord
                 ->icon('heroicon-o-check-circle')
                 ->color('success')
                 ->visible(fn (ContactMessage $record): bool => $record->status !== 'replied')
-                ->action(function (ContactMessage $record): void {
+                ->schema([
+                    Textarea::make('reply_message')
+                        ->label('Reply message')
+                        ->rows(5)
+                        ->required()
+                        ->maxLength(5000),
+                ])
+                ->action(function (ContactMessage $record, array $data): void {
                     $record->update(['status' => 'replied']);
+
+                    TransactionalMailer::send(
+                        email: $record->email,
+                        name: $record->name,
+                        locale: 'ar',
+                        key: 'reader.contact_replied',
+                        replace: [
+                            'name'    => $record->name,
+                            'subject' => $record->subject,
+                            'reply'   => $data['reply_message'],
+                        ],
+                    );
 
                     Notification::make()
                         ->title('Message marked as replied')

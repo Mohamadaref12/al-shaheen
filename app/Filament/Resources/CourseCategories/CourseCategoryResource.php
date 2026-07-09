@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\CourseCategories;
 
+use App\Filament\Concerns\HasTranslatedLabels;
+
 use App\Filament\Concerns\SearchesTranslatableTitles;
 use App\Filament\Resources\CourseCategories\Pages\CreateCourseCategory;
 use App\Filament\Resources\CourseCategories\Pages\EditCourseCategory;
@@ -19,6 +21,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class CourseCategoryResource extends Resource
 {
+    use HasTranslatedLabels;
     use SearchesTranslatableTitles;
 
     protected static ?string $model = CourseCategory::class;
@@ -27,11 +30,10 @@ class CourseCategoryResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'Training';
 
-    protected static ?string $navigationLabel = 'Categories';
-
-    protected static ?string $modelLabel = 'Course Category';
-
-    protected static ?string $pluralModelLabel = 'Categories';
+    protected static function translationKey(): string
+    {
+        return 'course_categories';
+    }
 
     protected static ?string $recordTitleAttribute = 'display_name';
 

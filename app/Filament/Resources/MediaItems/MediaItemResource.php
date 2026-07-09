@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\MediaItems;
 
+use App\Filament\Concerns\HasTranslatedLabels;
+
 use App\Filament\Resources\MediaItems\Pages\CreateMediaItem;
 use App\Filament\Resources\MediaItems\Pages\EditMediaItem;
 use App\Filament\Resources\MediaItems\Pages\ListMediaItems;
@@ -16,17 +18,17 @@ use Filament\Tables\Table;
 
 class MediaItemResource extends Resource
 {
+    use HasTranslatedLabels;
     protected static ?string $model = MediaItem::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedFilm;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Content';
 
-    protected static ?string $navigationLabel = 'Multimedia';
-
-    protected static ?string $modelLabel = 'Media Item';
-
-    protected static ?string $pluralModelLabel = 'Media Items';
+    protected static function translationKey(): string
+    {
+        return 'media_items';
+    }
 
     protected static ?string $recordTitleAttribute = 'title';
 

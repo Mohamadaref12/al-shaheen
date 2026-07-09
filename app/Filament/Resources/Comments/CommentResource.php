@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Comments;
 
+use App\Filament\Concerns\HasTranslatedLabels;
 use App\Filament\Resources\Comments\Pages\CreateComment;
 use App\Filament\Resources\Comments\Pages\EditComment;
 use App\Filament\Resources\Comments\Pages\ListComments;
@@ -16,19 +17,19 @@ use Filament\Tables\Table;
 
 class CommentResource extends Resource
 {
+    use HasTranslatedLabels;
     protected static ?string $model = Comment::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChatBubbleLeftRight;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Content';
 
+    protected static function translationKey(): string
+    {
+        return 'comments';
+    }
+
     protected static ?int $navigationSort = 5;
-
-    protected static ?string $navigationLabel = 'Comments';
-
-    protected static ?string $modelLabel = 'Comment';
-
-    protected static ?string $pluralModelLabel = 'Comments';
 
     public static function getNavigationBadge(): ?string
     {

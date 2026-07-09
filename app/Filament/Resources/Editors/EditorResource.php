@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Editors;
 
+use App\Filament\Concerns\HasTranslatedLabels;
+
 use App\Filament\Resources\Editors\Pages\CreateEditor;
 use App\Filament\Resources\Editors\Pages\EditEditor;
 use App\Filament\Resources\Editors\Pages\ListEditors;
@@ -17,17 +19,17 @@ use Illuminate\Database\Eloquent\Builder;
 
 class EditorResource extends Resource
 {
+    use HasTranslatedLabels;
     protected static ?string $model = User::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedClipboardDocumentCheck;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Users';
 
-    protected static ?string $navigationLabel = 'Editors';
-
-    protected static ?string $modelLabel = 'Editor';
-
-    protected static ?string $pluralModelLabel = 'Editors';
+    protected static function translationKey(): string
+    {
+        return 'editors';
+    }
 
     protected static ?string $recordTitleAttribute = 'name';
 

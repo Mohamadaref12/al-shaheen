@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Tags;
 
+use App\Filament\Concerns\HasTranslatedLabels;
 use App\Filament\Resources\Tags\Pages\CreateTag;
 use App\Filament\Resources\Tags\Pages\EditTag;
 use App\Filament\Resources\Tags\Pages\ListTags;
@@ -16,17 +17,17 @@ use Filament\Tables\Table;
 
 class TagResource extends Resource
 {
+    use HasTranslatedLabels;
     protected static ?string $model = Tag::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedHashtag;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Catalog';
 
-    protected static ?string $navigationLabel = 'Tags';
-
-    protected static ?string $modelLabel = 'Tag';
-
-    protected static ?string $pluralModelLabel = 'Tags';
+    protected static function translationKey(): string
+    {
+        return 'tags';
+    }
 
     protected static ?string $recordTitleAttribute = 'name';
 

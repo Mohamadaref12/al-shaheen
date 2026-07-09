@@ -125,6 +125,22 @@ trait Translatable
         return $this->translate($locale)?->{$attribute};
     }
 
+    public function localizedDisplayValue(string $attribute, string $fallback): string
+    {
+        $locale = in_array(app()->getLocale(), ['ar', 'en'], true)
+            ? app()->getLocale()
+            : (string) config('app.fallback_locale', 'en');
+
+        $value = $this->getTranslatedAttribute($attribute, $locale);
+
+        if (! filled($value)) {
+            $alternate = $locale === 'ar' ? 'en' : 'ar';
+            $value = $this->getTranslatedAttribute($attribute, $alternate);
+        }
+
+        return filled($value) ? (string) $value : $fallback;
+    }
+
     public function setTranslatedAttribute(string $attribute, mixed $value, string $locale): void
     {
         $this->translateOrNew($locale)->{$attribute} = $value;

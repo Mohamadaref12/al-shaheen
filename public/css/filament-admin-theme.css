@@ -400,3 +400,33 @@
 .fi-dashboard-widgets .fi-wi-table {
     min-height: 100%;
 }
+
+/* Language switcher — show full flags (no crop) */
+.fi-ls-flag,
+.fi-ls-trigger.fi-avatar,
+.fi-ls-trigger img.fi-avatar,
+.fi-ls-item img.fi-ls-flag,
+.fi-ls-item .fi-ls-flag {
+    object-fit: contain !important;
+    object-position: center !important;
+    border-radius: 3px !important;
+    aspect-ratio: 3 / 2 !important;
+    width: 1.625rem !important;
+    height: auto !important;
+    max-height: 1.125rem !important;
+    flex-shrink: 0 !important;
+}
+
+.fi-ls-trigger .fi-avatar.fi-size-sm,
+.fi-ls-trigger img.fi-avatar.fi-size-sm {
+    width: 1.625rem !important;
+    height: 1.083rem !important;
+    max-height: none !important;
+    border-radius: 3px !important;
+}
+
+.fi-ls-item.fi-dropdown-list-item .fi-ls-flag {
+    width: 1.75rem !important;
+    height: 1.167rem !important;
+    max-height: none !important;
+}

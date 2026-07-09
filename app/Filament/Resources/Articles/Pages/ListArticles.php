@@ -27,7 +27,7 @@ class ListArticles extends ListRecords
 
     public function getTabs(): array
     {
-        $pendingStatuses = ['submitted', 'under_review', 'review', 'ready'];
+        $pendingStatuses = ArticleResource::AWAITING_APPROVAL_STATUSES;
 
         return [
             'published' => Tab::make('Published')

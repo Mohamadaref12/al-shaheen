@@ -48,16 +48,7 @@ class CourseCategory extends Model
 
     public function getDisplayNameAttribute(): string
     {
-        if ($this->relationLoaded('translations')) {
-            $arabic = $this->translations->firstWhere('locale', 'ar')?->name;
-            $english = $this->translations->firstWhere('locale', 'en')?->name;
-
-            return $arabic ?: $english ?: 'Category #' . $this->getKey();
-        }
-
-        return $this->translate('ar', false)?->name
-            ?? $this->translate('en', false)?->name
-            ?? 'Category #' . $this->getKey();
+        return $this->localizedDisplayValue('name', 'Category #'.$this->getKey());
     }
 
     public function courses(): HasMany

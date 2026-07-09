@@ -7,7 +7,6 @@ use App\Filament\Resources\Articles\ArticleResource;
 use App\Filament\Resources\Comments\CommentResource;
 use App\Filament\Resources\ContactMessages\ContactMessageResource;
 use App\Filament\Resources\News\NewsResource;
-use App\Filament\Resources\Writers\WriterResource;
 use Filament\Widgets\Widget;
 
 class QuickActionsWidget extends Widget
@@ -25,38 +24,38 @@ class QuickActionsWidget extends Widget
         return [
             'actions' => [
                 [
-                    'label'       => 'New Article',
-                    'description' => 'Create a bilingual story',
+                    'label'       => __('filament.dashboard.actions.new_article.label'),
+                    'description' => __('filament.dashboard.actions.new_article.description'),
                     'url'         => ArticleResource::getUrl('create'),
                     'icon'        => 'article',
                 ],
                 [
-                    'label'       => 'New News Item',
-                    'description' => 'Publish breaking coverage',
+                    'label'       => __('filament.dashboard.actions.new_news.label'),
+                    'description' => __('filament.dashboard.actions.new_news.description'),
                     'url'         => NewsResource::getUrl('create'),
                     'icon'        => 'news',
                 ],
                 [
-                    'label'       => 'Review Articles',
-                    'description' => 'Editorial queue',
+                    'label'       => __('filament.dashboard.actions.review_articles.label'),
+                    'description' => __('filament.dashboard.actions.review_articles.description'),
                     'url'         => ArticleResource::getUrl('index'),
                     'icon'        => 'queue',
                 ],
                 [
-                    'label'       => 'Moderate Comments',
-                    'description' => 'Pending approvals',
+                    'label'       => __('filament.dashboard.actions.moderate_comments.label'),
+                    'description' => __('filament.dashboard.actions.moderate_comments.description'),
                     'url'         => CommentResource::getUrl('index'),
                     'icon'        => 'comments',
                 ],
                 [
-                    'label'       => 'Contact Inbox',
-                    'description' => 'Reader messages',
+                    'label'       => __('filament.dashboard.actions.contact_inbox.label'),
+                    'description' => __('filament.dashboard.actions.contact_inbox.description'),
                     'url'         => ContactMessageResource::getUrl('index'),
                     'icon'        => 'inbox',
                 ],
                 [
-                    'label'       => 'AI Settings',
-                    'description' => 'Translation & GPT',
+                    'label'       => __('filament.dashboard.actions.ai_settings.label'),
+                    'description' => __('filament.dashboard.actions.ai_settings.description'),
                     'url'         => ManageAiSettings::getUrl(),
                     'icon'        => 'ai',
                 ],

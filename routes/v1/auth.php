@@ -1,11 +1,14 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\PasswordResetController;
 use Illuminate\Support\Facades\Route;
 
 
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login',    [AuthController::class, 'login']);
+Route::post('forgot-password', [PasswordResetController::class, 'forgot']);
+Route::post('reset-password', [PasswordResetController::class, 'reset']);
 
 
 // Protected auth routes

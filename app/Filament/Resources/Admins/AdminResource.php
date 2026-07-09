@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Admins;
 
+use App\Filament\Concerns\HasTranslatedLabels;
+
 use App\Filament\Resources\Admins\Pages\CreateAdmin;
 use App\Filament\Resources\Admins\Pages\EditAdmin;
 use App\Filament\Resources\Admins\Pages\ListAdmins;
@@ -17,17 +19,17 @@ use Illuminate\Database\Eloquent\Builder;
 
 class AdminResource extends Resource
 {
+    use HasTranslatedLabels;
     protected static ?string $model = User::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShieldCheck;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Users';
 
-    protected static ?string $navigationLabel = 'Admins';
-
-    protected static ?string $modelLabel = 'Admin';
-
-    protected static ?string $pluralModelLabel = 'Admins';
+    protected static function translationKey(): string
+    {
+        return 'admins';
+    }
 
     protected static ?string $recordTitleAttribute = 'name';
 

@@ -23,11 +23,17 @@ class ContentStatsOverview extends StatsOverviewWidget
 
     protected ?string $pollingInterval = null;
 
-    protected ?string $heading = 'At a glance';
-
-    protected ?string $description = 'Key metrics across articles, news, and community';
-
     protected int|string|array $columnSpan = 'full';
+
+    public function getHeading(): ?string
+    {
+        return __('filament.dashboard.at_a_glance');
+    }
+
+    public function getDescription(): ?string
+    {
+        return __('filament.dashboard.at_a_glance_desc');
+    }
 
     protected function getColumns(): int|array
     {
@@ -60,30 +66,39 @@ class ContentStatsOverview extends StatsOverviewWidget
         $publishedTrend = $this->dailyPublishedCounts(7);
 
         return [
-            Stat::make('Published', Number::format($publishedArticles + $publishedNews))
-                ->description($publishedArticles.' articles · '.$publishedNews.' news')
+            Stat::make(__('filament.dashboard.published'), Number::format($publishedArticles + $publishedNews))
+                ->description(__('filament.dashboard.published_desc', [
+                    'articles' => $publishedArticles,
+                    'news'     => $publishedNews,
+                ]))
                 ->descriptionIcon(Heroicon::OutlinedCheckCircle)
                 ->icon(Heroicon::OutlinedNewspaper)
                 ->color('success')
                 ->chart($publishedTrend)
                 ->url(ArticleResource::getUrl('index')),
 
-            Stat::make('Editorial Queue', Number::format($articleQueueCount + $newsQueueCount))
-                ->description($articleQueueCount.' articles · '.$newsQueueCount.' news')
+            Stat::make(__('filament.dashboard.editorial_queue'), Number::format($articleQueueCount + $newsQueueCount))
+                ->description(__('filament.dashboard.editorial_queue_desc', [
+                    'articles' => $articleQueueCount,
+                    'news'     => $newsQueueCount,
+                ]))
                 ->descriptionIcon(Heroicon::OutlinedClock)
                 ->icon(Heroicon::OutlinedInboxStack)
                 ->color(($articleQueueCount + $newsQueueCount) > 0 ? 'warning' : 'gray')
                 ->url(ArticleResource::getUrl('index')),
 
-            Stat::make('Needs Attention', Number::format($needsAttention))
-                ->description($pendingCommentsCount.' comments · '.$unreadContactCount.' messages')
+            Stat::make(__('filament.dashboard.needs_attention'), Number::format($needsAttention))
+                ->description(__('filament.dashboard.needs_attention_desc', [
+                    'comments' => $pendingCommentsCount,
+                    'messages' => $unreadContactCount,
+                ]))
                 ->descriptionIcon(Heroicon::OutlinedBellAlert)
                 ->icon(Heroicon::OutlinedChatBubbleLeftRight)
                 ->color($needsAttention > 0 ? 'danger' : 'gray')
                 ->url(CommentResource::getUrl('index')),
 
-            Stat::make('Total Views', Number::abbreviate($totalViews))
-                ->description('Across published content')
+            Stat::make(__('filament.dashboard.total_views'), Number::abbreviate($totalViews))
+                ->description(__('filament.dashboard.total_views_desc'))
                 ->descriptionIcon(Heroicon::OutlinedEye)
                 ->icon(Heroicon::OutlinedChartBar)
                 ->color('primary')

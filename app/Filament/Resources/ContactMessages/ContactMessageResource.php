@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\ContactMessages;
 
+use App\Filament\Concerns\HasTranslatedLabels;
+
 use App\Filament\Resources\ContactMessages\Pages\ListContactMessages;
 use App\Filament\Resources\ContactMessages\Pages\ViewContactMessage;
 use App\Filament\Resources\ContactMessages\Schemas\ContactMessageForm;
@@ -16,17 +18,17 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ContactMessageResource extends Resource
 {
+    use HasTranslatedLabels;
     protected static ?string $model = ContactMessage::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedChatBubbleBottomCenterText;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Marketing';
 
-    protected static ?string $navigationLabel = 'Contact Messages';
-
-    protected static ?string $modelLabel = 'Contact Message';
-
-    protected static ?string $pluralModelLabel = 'Contact Messages';
+    protected static function translationKey(): string
+    {
+        return 'contact_messages';
+    }
 
     protected static ?string $recordTitleAttribute = 'subject';
 

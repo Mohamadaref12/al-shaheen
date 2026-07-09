@@ -13,6 +13,7 @@ use App\Models\Contributor;
 use App\Models\Reader;
 use App\Models\User;
 use App\Models\Writer;
+use App\Support\TransactionalMailer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -64,6 +65,8 @@ class AuthController extends Controller
             };
 
             $token = $user->createToken('api-client');
+
+            TransactionalMailer::sendToUser($user, 'reader.welcome');
 
             return $this->success([
                 'token'      => $token->plainTextToken,

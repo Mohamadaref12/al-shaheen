@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Payments;
 
+use App\Filament\Concerns\HasTranslatedLabels;
+
 use App\Filament\Resources\Payments\Pages\CreatePayment;
 use App\Filament\Resources\Payments\Pages\EditPayment;
 use App\Filament\Resources\Payments\Pages\ListPayments;
@@ -16,17 +18,17 @@ use Filament\Tables\Table;
 
 class PaymentResource extends Resource
 {
+    use HasTranslatedLabels;
     protected static ?string $model = Payment::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCreditCard;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Monetization';
 
-    protected static ?string $navigationLabel = 'Payments';
-
-    protected static ?string $modelLabel = 'Payment';
-
-    protected static ?string $pluralModelLabel = 'Payments';
+    protected static function translationKey(): string
+    {
+        return 'payments';
+    }
 
     protected static ?string $recordTitleAttribute = 'provider_reference';
 

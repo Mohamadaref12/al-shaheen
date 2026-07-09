@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\TrainingLessons;
 
+use App\Filament\Concerns\HasTranslatedLabels;
 use App\Filament\Resources\TrainingLessons\Pages\CreateTrainingLesson;
 use App\Filament\Resources\TrainingLessons\Pages\EditTrainingLesson;
 use App\Filament\Resources\TrainingLessons\Pages\ListTrainingLessons;
@@ -16,17 +17,17 @@ use Filament\Tables\Table;
 
 class TrainingLessonResource extends Resource
 {
+    use HasTranslatedLabels;
     protected static ?string $model = TrainingLesson::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPlayCircle;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Training';
 
-    protected static ?string $navigationLabel = 'Lessons';
-
-    protected static ?string $modelLabel = 'Lesson';
-
-    protected static ?string $pluralModelLabel = 'Lessons';
+    protected static function translationKey(): string
+    {
+        return 'lessons';
+    }
 
     protected static ?string $recordTitleAttribute = 'title';
 

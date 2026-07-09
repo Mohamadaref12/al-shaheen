@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Reports;
 
+use App\Filament\Concerns\HasTranslatedLabels;
 use App\Filament\Resources\Reports\Pages\CreateReport;
 use App\Filament\Resources\Reports\Pages\EditReport;
 use App\Filament\Resources\Reports\Pages\ListReports;
@@ -16,17 +17,17 @@ use Filament\Tables\Table;
 
 class ReportResource extends Resource
 {
+    use HasTranslatedLabels;
     protected static ?string $model = Report::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Content';
 
-    protected static ?string $navigationLabel = 'Reports';
-
-    protected static ?string $modelLabel = 'Report';
-
-    protected static ?string $pluralModelLabel = 'Reports';
+    protected static function translationKey(): string
+    {
+        return 'reports';
+    }
 
     protected static ?string $recordTitleAttribute = 'title';
 

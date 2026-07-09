@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\News;
 
+use App\Filament\Concerns\HasTranslatedLabels;
 use App\Filament\Concerns\SearchesTranslatableTitles;
 use App\Filament\Resources\News\Pages\CreateNews;
 use App\Filament\Resources\News\Pages\EditNews;
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class NewsResource extends Resource
 {
+    use HasTranslatedLabels;
     use SearchesTranslatableTitles;
 
     protected static ?string $model = News::class;
@@ -26,15 +28,26 @@ class NewsResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'Content';
 
+    protected static function translationKey(): string
+    {
+        return 'news';
+    }
+
     protected static ?int $navigationSort = 2;
 
-    protected static ?string $navigationLabel = 'News';
-
-    protected static ?string $modelLabel = 'News Item';
-
-    protected static ?string $pluralModelLabel = 'News';
-
     protected static ?string $recordTitleAttribute = 'display_title';
+
+    public static function getNavigationBadge(): ?string
+    {
+        $count = News::query()->where('status', 'under_review')->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
 
     public static function getRecordTitle(?Model $record): string | \Illuminate\Contracts\Support\Htmlable | null
     {

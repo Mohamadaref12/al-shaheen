@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\NewsletterSubscribers;
 
+use App\Filament\Concerns\HasTranslatedLabels;
 use App\Filament\Resources\NewsletterSubscribers\Pages\CreateNewsletterSubscriber;
 use App\Filament\Resources\NewsletterSubscribers\Pages\EditNewsletterSubscriber;
 use App\Filament\Resources\NewsletterSubscribers\Pages\ListNewsletterSubscribers;
@@ -16,17 +17,17 @@ use Filament\Tables\Table;
 
 class NewsletterSubscriberResource extends Resource
 {
+    use HasTranslatedLabels;
     protected static ?string $model = NewsletterSubscriber::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedEnvelope;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Marketing';
 
-    protected static ?string $navigationLabel = 'Newsletter';
-
-    protected static ?string $modelLabel = 'Subscriber';
-
-    protected static ?string $pluralModelLabel = 'Subscribers';
+    protected static function translationKey(): string
+    {
+        return 'newsletter';
+    }
 
     protected static ?string $recordTitleAttribute = 'email';
 

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Categories;
 
+use App\Filament\Concerns\HasTranslatedLabels;
 use App\Filament\Resources\Categories\Pages\CreateCategory;
 use App\Filament\Resources\Categories\Pages\EditCategory;
 use App\Filament\Resources\Categories\Pages\ListCategories;
@@ -16,17 +17,17 @@ use Filament\Tables\Table;
 
 class CategoryResource extends Resource
 {
+    use HasTranslatedLabels;
     protected static ?string $model = Category::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedTag;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Catalog';
 
-    protected static ?string $navigationLabel = 'Categories';
-
-    protected static ?string $modelLabel = 'Category';
-
-    protected static ?string $pluralModelLabel = 'Categories';
+    protected static function translationKey(): string
+    {
+        return 'categories';
+    }
 
     protected static ?string $recordTitleAttribute = 'name';
 

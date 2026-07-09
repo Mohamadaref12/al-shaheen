@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Opinions\Tables;
 
+use App\Filament\Support\ContentStatusActions;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -98,6 +99,7 @@ class OpinionsTable
                     ->label('Premium'),
             ])
             ->recordActions([
+                ...ContentStatusActions::opinionTableActions(),
                 EditAction::make(),
             ])
             ->toolbarActions([

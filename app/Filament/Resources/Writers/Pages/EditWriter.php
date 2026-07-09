@@ -2,7 +2,9 @@
 
 namespace App\Filament\Resources\Writers\Pages;
 
+use App\Filament\Resources\Writers\Support\WriterApplicationStatusActions;
 use App\Filament\Resources\Writers\WriterResource;
+use App\Models\Writer;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
 
@@ -13,8 +15,18 @@ class EditWriter extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            ...WriterApplicationStatusActions::make(
+                fn (): Writer => $this->getRecord(),
+                after: fn () => $this->refreshWriterForm(),
+            ),
             DeleteAction::make(),
         ];
+    }
+
+    protected function refreshWriterForm(): void
+    {
+        $this->record->refresh();
+        $this->fillForm();
     }
 
     protected function mutateFormDataBeforeFill(array $data): array

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users;
 
+use App\Filament\Concerns\HasTranslatedLabels;
 use App\Filament\Resources\Users\Pages\CreateUser;
 use App\Filament\Resources\Users\Pages\EditUser;
 use App\Filament\Resources\Users\Pages\ListUsers;
@@ -16,17 +17,17 @@ use Filament\Tables\Table;
 
 class UserResource extends Resource
 {
+    use HasTranslatedLabels;
     protected static ?string $model = User::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Users';
 
-    protected static ?string $navigationLabel = 'Users';
-
-    protected static ?string $modelLabel = 'User';
-
-    protected static ?string $pluralModelLabel = 'Users';
+    protected static function translationKey(): string
+    {
+        return 'users';
+    }
 
     protected static ?string $recordTitleAttribute = 'name';
 

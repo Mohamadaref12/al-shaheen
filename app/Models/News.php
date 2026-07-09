@@ -99,16 +99,7 @@ class News extends Model
 
     public function getDisplayTitleAttribute(): string
     {
-        if ($this->relationLoaded('translations')) {
-            $arabic = $this->translations->firstWhere('locale', 'ar')?->title;
-            $english = $this->translations->firstWhere('locale', 'en')?->title;
-
-            return $arabic ?: $english ?: 'News #' . $this->getKey();
-        }
-
-        return $this->translate('ar', false)?->title
-            ?? $this->translate('en', false)?->title
-            ?? 'News #' . $this->getKey();
+        return $this->localizedDisplayValue('title', 'News #'.$this->getKey());
     }
 
     public function scopePublished(Builder $query): Builder

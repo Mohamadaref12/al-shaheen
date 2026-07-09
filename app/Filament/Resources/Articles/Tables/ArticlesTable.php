@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Articles\Tables;
 
 use App\Filament\Actions\DownloadArticlePdfAction;
 use App\Filament\Resources\Articles\ArticleResource;
+use App\Filament\Support\ContentStatusActions;
 use App\Models\Article;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -169,6 +170,7 @@ class ArticlesTable
                     ),
             ])
             ->recordActions([
+                ...ContentStatusActions::articleTableActions(),
                 Action::make('view')
                     ->label('Preview')
                     ->icon(Heroicon::OutlinedEye)

@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Interviews;
 
+use App\Filament\Concerns\HasTranslatedLabels;
+
 use App\Filament\Resources\Interviews\Pages\CreateInterview;
 use App\Filament\Resources\Interviews\Pages\EditInterview;
 use App\Filament\Resources\Interviews\Pages\ListInterviews;
@@ -16,17 +18,17 @@ use Filament\Tables\Table;
 
 class InterviewResource extends Resource
 {
+    use HasTranslatedLabels;
     protected static ?string $model = Interview::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMicrophone;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Content';
 
-    protected static ?string $navigationLabel = 'Interviews';
-
-    protected static ?string $modelLabel = 'Interview';
-
-    protected static ?string $pluralModelLabel = 'Interviews';
+    protected static function translationKey(): string
+    {
+        return 'interviews';
+    }
 
     protected static ?string $recordTitleAttribute = 'title';
 

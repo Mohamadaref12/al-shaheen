@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Ads;
 
+use App\Filament\Concerns\HasTranslatedLabels;
 use App\Filament\Resources\Ads\Pages\CreateAd;
 use App\Filament\Resources\Ads\Pages\EditAd;
 use App\Filament\Resources\Ads\Pages\ListAds;
@@ -16,17 +17,17 @@ use Filament\Tables\Table;
 
 class AdResource extends Resource
 {
+    use HasTranslatedLabels;
     protected static ?string $model = Ad::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedMegaphone;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Marketing';
 
-    protected static ?string $navigationLabel = 'Ads';
-
-    protected static ?string $modelLabel = 'Ad';
-
-    protected static ?string $pluralModelLabel = 'Ads';
+    protected static function translationKey(): string
+    {
+        return 'ads';
+    }
 
     protected static ?string $recordTitleAttribute = 'title';
 

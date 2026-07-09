@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Comments\Tables;
 
+use App\Filament\Support\ContentStatusActions;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -52,6 +53,7 @@ class CommentsTable
                     ]),
             ])
             ->recordActions([
+                ...ContentStatusActions::commentTableActions(),
                 EditAction::make(),
             ])
             ->toolbarActions([

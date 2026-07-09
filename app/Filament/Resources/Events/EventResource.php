@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Events;
 
+use App\Filament\Concerns\HasTranslatedLabels;
 use App\Filament\Resources\Events\Pages\CreateEvent;
 use App\Filament\Resources\Events\Pages\EditEvent;
 use App\Filament\Resources\Events\Pages\ListEvents;
@@ -16,17 +17,17 @@ use Filament\Tables\Table;
 
 class EventResource extends Resource
 {
+    use HasTranslatedLabels;
     protected static ?string $model = Event::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendarDays;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Events';
 
-    protected static ?string $navigationLabel = 'Events';
-
-    protected static ?string $modelLabel = 'Event';
-
-    protected static ?string $pluralModelLabel = 'Events';
+    protected static function translationKey(): string
+    {
+        return 'events';
+    }
 
     protected static ?string $recordTitleAttribute = 'title';
 

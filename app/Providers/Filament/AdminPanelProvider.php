@@ -15,6 +15,7 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationGroup;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -42,6 +43,7 @@ class AdminPanelProvider extends PanelProvider
             ->sidebarWidth('17.5rem')
             ->collapsedSidebarWidth('5rem')
             ->defaultThemeMode(ThemeMode::Light)
+            ->databaseNotifications()
             ->colors([
                 'primary' => Color::hex('#28414e'),
                 'gray'    => Color::Stone,
@@ -52,7 +54,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
-                fn (): string => '<link rel="stylesheet" href="'.asset('css/filament-admin-theme.css').'?v=11">',
+                fn (): string => '<link rel="stylesheet" href="'.asset('css/filament-admin-theme.css').'?v=13">',
             )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->resources([
@@ -72,14 +74,22 @@ class AdminPanelProvider extends PanelProvider
                 NewsEditorialQueueWidget::class,
             ])
             ->navigationGroups([
-                'Content',
-                'Users',
-                'Catalog',
-                'Training',
-                'Marketing',
-                'Events',
-                'Monetization',
-                'Settings',
+                NavigationGroup::make('Content')
+                    ->label(fn (): string => __('filament.navigation.groups.Content')),
+                NavigationGroup::make('Users')
+                    ->label(fn (): string => __('filament.navigation.groups.Users')),
+                NavigationGroup::make('Catalog')
+                    ->label(fn (): string => __('filament.navigation.groups.Catalog')),
+                NavigationGroup::make('Training')
+                    ->label(fn (): string => __('filament.navigation.groups.Training')),
+                NavigationGroup::make('Marketing')
+                    ->label(fn (): string => __('filament.navigation.groups.Marketing')),
+                NavigationGroup::make('Events')
+                    ->label(fn (): string => __('filament.navigation.groups.Events')),
+                NavigationGroup::make('Monetization')
+                    ->label(fn (): string => __('filament.navigation.groups.Monetization')),
+                NavigationGroup::make('Settings')
+                    ->label(fn (): string => __('filament.navigation.groups.Settings')),
             ])
             ->middleware([
                 EncryptCookies::class,

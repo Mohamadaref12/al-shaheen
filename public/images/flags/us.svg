@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1235 650">
+  <rect width="1235" height="650" fill="#b22234"/>
+  <g fill="#fff">
+    <rect y="50" width="1235" height="50"/>
+    <rect y="150" width="1235" height="50"/>
+    <rect y="250" width="1235" height="50"/>
+    <rect y="350" width="1235" height="50"/>
+    <rect y="450" width="1235" height="50"/>
+    <rect y="550" width="1235" height="50"/>
+  </g>
+  <rect width="494" height="350" fill="#3c3b6e"/>
+  <symbol id="s">
+    <polygon points="25,5 29,17 42,17 32,24 36,37 25,30 14,37 18,24 8,17 21,17"/>
+  </symbol>
+  <g fill="#fff">
+    <use href="#s" x="0" y="0"/>
+    <use href="#s" x="82" y="0"/>
+    <use href="#s" x="164" y="0"/>
+    <use href="#s" x="246" y="0"/>
+    <use href="#s" x="328" y="0"/>
+    <use href="#s" x="410" y="0"/>
+    <use href="#s" x="41" y="35"/>
+    <use href="#s" x="123" y="35"/>
+    <use href="#s" x="205" y="35"/>
+    <use href="#s" x="287" y="35"/>
+    <use href="#s" x="369" y="35"/>
+    <use href="#s" x="0" y="70"/>
+    <use href="#s" x="82" y="70"/>
+    <use href="#s" x="164" y="70"/>
+    <use href="#s" x="246" y="70"/>
+    <use href="#s" x="328" y="70"/>
+    <use href="#s" x="410" y="70"/>
+    <use href="#s" x="41" y="105"/>
+    <use href="#s" x="123" y="105"/>
+    <use href="#s" x="205" y="105"/>
+    <use href="#s" x="287" y="105"/>
+    <use href="#s" x="369" y="105"/>
+    <use href="#s" x="0" y="140"/>
+    <use href="#s" x="82" y="140"/>
+    <use href="#s" x="164" y="140"/>
+    <use href="#s" x="246" y="140"/>
+    <use href="#s" x="328" y="140"/>
+    <use href="#s" x="410" y="140"/>
+    <use href="#s" x="41" y="175"/>
+    <use href="#s" x="123" y="175"/>
+    <use href="#s" x="205" y="175"/>
+    <use href="#s" x="287" y="175"/>
+    <use href="#s" x="369" y="175"/>
+    <use href="#s" x="0" y="210"/>
+    <use href="#s" x="82" y="210"/>
+    <use href="#s" x="164" y="210"/>
+    <use href="#s" x="246" y="210"/>
+    <use href="#s" x="328" y="210"/>
+    <use href="#s" x="410" y="210"/>
+    <use href="#s" x="41" y="245"/>
+    <use href="#s" x="123" y="245"/>
+    <use href="#s" x="205" y="245"/>
+    <use href="#s" x="287" y="245"/>
+    <use href="#s" x="369" y="245"/>
+    <use href="#s" x="0" y="280"/>
+    <use href="#s" x="82" y="280"/>
+    <use href="#s" x="164" y="280"/>
+    <use href="#s" x="246" y="280"/>
+    <use href="#s" x="328" y="280"/>
+    <use href="#s" x="410" y="280"/>
+  </g>
+</svg>

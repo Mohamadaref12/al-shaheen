@@ -119,16 +119,7 @@ class Article extends Model
 
     public function getDisplayTitleAttribute(): string
     {
-        if ($this->relationLoaded('translations')) {
-            $arabic = $this->translations->firstWhere('locale', 'ar')?->title;
-            $english = $this->translations->firstWhere('locale', 'en')?->title;
-
-            return $arabic ?: $english ?: 'Article #' . $this->getKey();
-        }
-
-        return $this->translate('ar', false)?->title
-            ?? $this->translate('en', false)?->title
-            ?? 'Article #' . $this->getKey();
+        return $this->localizedDisplayValue('title', 'Article #'.$this->getKey());
     }
 
     public function scopePublished(Builder $query): Builder

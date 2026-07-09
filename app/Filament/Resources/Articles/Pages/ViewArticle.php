@@ -4,18 +4,35 @@ namespace App\Filament\Resources\Articles\Pages;
 
 use App\Filament\Actions\DownloadArticlePdfAction;
 use App\Filament\Resources\Articles\ArticleResource;
+use App\Filament\Support\ContentStatusActions;
+use App\Models\Article;
 use App\Models\Comment;
+use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Collection;
+use Livewire\Attributes\Url;
 
 class ViewArticle extends ViewRecord
 {
     protected static string $resource = ArticleResource::class;
+
+    #[Url(as: 'lang')]
+    public string $previewLocale = 'en';
+
+    public function mount(int | string $record): void
+    {
+        parent::mount($record);
+
+        if (! in_array($this->previewLocale, ['ar', 'en'], true)) {
+            $this->previewLocale = 'en';
+        }
+    }
 
     public function getHeading(): string | Htmlable | null
     {
@@ -30,6 +47,17 @@ class ViewArticle extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('togglePreviewLocale')
+                ->label(fn (): string => $this->previewLocale === 'ar' ? 'English' : 'العربية')
+                ->icon(Heroicon::OutlinedLanguage)
+                ->color('gray')
+                ->action(function (): void {
+                    $this->previewLocale = $this->previewLocale === 'ar' ? 'en' : 'ar';
+                }),
+            ...ContentStatusActions::forArticle(
+                fn (): Article => $this->getRecord(),
+                fn () => $this->record->refresh(),
+            ),
             DownloadArticlePdfAction::make(),
             EditAction::make(),
         ];
@@ -105,9 +133,84 @@ class ViewArticle extends ViewRecord
                     ->viewData(fn (): array => [
                         'article'       => $this->getRecord()
                             ->load(['author', 'primaryCategory', 'tags', 'secondaryCategories', 'approvedBy', 'translations']),
+                        'preview'       => $this->buildPreviewContext(),
                         'comments'      => $this->getArticleComments(),
                         'commentCounts' => $this->getCommentCounts(),
                     ]),
             ]);
+    }
+
+    /**
+     * @return array{
+     *     locale: string,
+     *     dir: string,
+     *     title: string,
+     *     subtitle: ?string,
+     *     excerpt: ?string,
+     *     content: ?string,
+     *     status_label: string,
+     *     labels: array<string, string>
+     * }
+     */
+    protected function buildPreviewContext(): array
+    {
+        $article = $this->getRecord()->loadMissing('translations');
+        $locale = in_array($this->previewLocale, ['ar', 'en'], true) ? $this->previewLocale : 'en';
+        $fallback = $locale === 'ar' ? 'en' : 'ar';
+
+        $pick = function (string $field) use ($article, $locale, $fallback): ?string {
+            $value = $article->translations->firstWhere('locale', $locale)?->{$field};
+
+            if (filled($value)) {
+                return $value;
+            }
+
+            return $article->translations->firstWhere('locale', $fallback)?->{$field};
+        };
+
+        $labels = $locale === 'ar'
+            ? [
+                'author'    => 'الكاتب',
+                'published' => 'تاريخ النشر',
+                'read_time' => 'وقت القراءة',
+                'language'  => 'اللغة',
+                'minutes'   => 'دقيقة',
+                'tags'      => 'الوسوم',
+                'categories'=> 'التصنيفات',
+                'breaking'  => 'عاجل',
+                'empty'     => 'لا يوجد محتوى لهذا المقال بعد.',
+            ]
+            : [
+                'author'    => 'Author',
+                'published' => 'Published',
+                'read_time' => 'Read time',
+                'language'  => 'Language',
+                'minutes'   => 'min',
+                'tags'      => 'Tags',
+                'categories'=> 'Categories',
+                'breaking'  => 'Breaking',
+                'empty'     => 'This article has no content yet.',
+            ];
+
+        $statusLabel = match ($article->status) {
+            'published' => $locale === 'ar' ? 'منشور' : 'Published',
+            'review', 'under_review' => $locale === 'ar' ? 'قيد المراجعة' : 'Under Review',
+            'draft'     => $locale === 'ar' ? 'مسودة' : 'Draft',
+            'archived'  => $locale === 'ar' ? 'مؤرشف' : 'Archived',
+            'rejected'  => $locale === 'ar' ? 'مرفوض' : 'Rejected',
+            'ready'     => $locale === 'ar' ? 'جاهز للنشر' : 'Ready',
+            default     => $article->status,
+        };
+
+        return [
+            'locale'       => $locale,
+            'dir'          => $locale === 'ar' ? 'rtl' : 'ltr',
+            'title'        => $pick('title') ?? '',
+            'subtitle'     => $pick('subtitle'),
+            'excerpt'      => $pick('excerpt'),
+            'content'      => $pick('content'),
+            'status_label' => $statusLabel,
+            'labels'       => $labels,
+        ];
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Readers;
 
+use App\Filament\Concerns\HasTranslatedLabels;
+
 use App\Filament\Resources\Readers\Pages\CreateReader;
 use App\Filament\Resources\Readers\Pages\EditReader;
 use App\Filament\Resources\Readers\Pages\ListReaders;
@@ -17,17 +19,17 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ReaderResource extends Resource
 {
+    use HasTranslatedLabels;
     protected static ?string $model = User::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedEye;
 
     protected static string|\UnitEnum|null $navigationGroup = 'Users';
 
-    protected static ?string $navigationLabel = 'Readers';
-
-    protected static ?string $modelLabel = 'Reader';
-
-    protected static ?string $pluralModelLabel = 'Readers';
+    protected static function translationKey(): string
+    {
+        return 'readers';
+    }
 
     protected static ?string $recordTitleAttribute = 'name';
 

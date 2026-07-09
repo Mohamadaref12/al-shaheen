@@ -24,9 +24,15 @@ class ManageAiSettings extends Page
 
     protected static string|UnitEnum|null $navigationGroup = 'Settings';
 
-    protected static ?string $navigationLabel = 'AI Settings';
+    public static function getNavigationLabel(): string
+    {
+        return __('filament.pages.ai_settings');
+    }
 
-    protected static ?string $title = 'AI Settings';
+    public function getTitle(): string
+    {
+        return __('filament.pages.ai_settings');
+    }
 
     protected static ?string $slug = 'ai-settings';
 

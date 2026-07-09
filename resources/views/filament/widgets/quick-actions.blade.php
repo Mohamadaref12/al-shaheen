@@ -1,6 +1,6 @@
 <x-filament-widgets::widget>
     <div class="as-quick-actions">
-        <p class="as-quick-actions__title">Quick actions</p>
+        <p class="as-quick-actions__title">{{ __('filament.dashboard.quick_actions') }}</p>
         <div class="as-quick-actions__grid">
             @foreach ($actions as $action)
                 <a href="{{ $action['url'] }}" class="as-quick-action as-quick-action--{{ $action['icon'] }}">

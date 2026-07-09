@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Opinions;
 
+use App\Filament\Concerns\HasTranslatedLabels;
 use App\Filament\Concerns\SearchesTranslatableTitles;
 use App\Filament\Resources\Opinions\Pages\CreateOpinion;
 use App\Filament\Resources\Opinions\Pages\EditOpinion;
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class OpinionResource extends Resource
 {
+    use HasTranslatedLabels;
     use SearchesTranslatableTitles;
 
     protected static ?string $model = Opinion::class;
@@ -26,15 +28,26 @@ class OpinionResource extends Resource
 
     protected static string|\UnitEnum|null $navigationGroup = 'Content';
 
+    protected static function translationKey(): string
+    {
+        return 'opinions';
+    }
+
     protected static ?int $navigationSort = 3;
 
-    protected static ?string $navigationLabel = 'Opinions';
-
-    protected static ?string $modelLabel = 'Opinion';
-
-    protected static ?string $pluralModelLabel = 'Opinions';
-
     protected static ?string $recordTitleAttribute = 'display_title';
+
+    public static function getNavigationBadge(): ?string
+    {
+        $count = Opinion::query()->where('status', 'under_review')->count();
+
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
 
     public static function getRecordTitle(?Model $record): string | \Illuminate\Contracts\Support\Htmlable | null
     {

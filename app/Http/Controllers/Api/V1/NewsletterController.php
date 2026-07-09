@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\NewsletterSubscriber;
+use App\Support\TransactionalMailer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Throwable;
@@ -30,6 +31,14 @@ class NewsletterController extends Controller
                     ]);
                 }
 
+                TransactionalMailer::send(
+                    email: $subscriber->email,
+                    name: $subscriber->name ?? $subscriber->email,
+                    locale: 'ar',
+                    key: 'reader.newsletter_subscribed',
+                    replace: ['name' => $subscriber->name ?? $subscriber->email],
+                );
+
                 return $this->success($subscriber, 'Subscribed to newsletter successfully.');
             }
 
@@ -40,6 +49,14 @@ class NewsletterController extends Controller
                 'status'        => 'active',
                 'subscribed_at' => now(),
             ]);
+
+            TransactionalMailer::send(
+                email: $subscriber->email,
+                name: $subscriber->name ?? $subscriber->email,
+                locale: 'ar',
+                key: 'reader.newsletter_subscribed',
+                replace: ['name' => $subscriber->name ?? $subscriber->email],
+            );
 
             return $this->success($subscriber, 'Subscribed to newsletter successfully.', 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -66,6 +83,14 @@ class NewsletterController extends Controller
                 'status'          => 'unsubscribed',
                 'unsubscribed_at' => now(),
             ]);
+
+            TransactionalMailer::send(
+                email: $subscriber->email,
+                name: $subscriber->name ?? $subscriber->email,
+                locale: 'ar',
+                key: 'reader.newsletter_unsubscribed',
+                replace: ['name' => $subscriber->name ?? $subscriber->email],
+            );
 
             return $this->success(null, 'Unsubscribed from newsletter successfully.');
         } catch (\Illuminate\Validation\ValidationException $e) {

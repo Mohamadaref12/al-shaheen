@@ -13,9 +13,12 @@ use Illuminate\Contracts\Support\Htmlable;
 
 class Dashboard extends BaseDashboard
 {
-    protected static ?string $navigationLabel = 'Dashboard';
-
     protected static ?int $navigationSort = -2;
+
+    public static function getNavigationLabel(): string
+    {
+        return __('filament.navigation.dashboard');
+    }
 
     public function getTitle(): string|Htmlable
     {

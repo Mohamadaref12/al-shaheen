@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Writers\Tables;
 
+use App\Filament\Resources\Writers\Support\WriterApplicationStatusActions;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -52,6 +53,7 @@ class WritersTable
 
             ])
             ->recordActions([
+                ...WriterApplicationStatusActions::tableQuickActions(),
                 EditAction::make(),
             ])
             ->toolbarActions([
