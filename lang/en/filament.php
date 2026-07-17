@@ -13,7 +13,6 @@ return [
             'Catalog'     => 'Catalog',
             'Training'    => 'Training',
             'Marketing'   => 'Marketing',
-            'Events'      => 'Events',
             'Monetization'=> 'Monetization',
             'Settings'    => 'Settings',
         ],
@@ -94,10 +93,15 @@ return [
             'label'      => 'User',
             'plural'     => 'Users',
         ],
-        'categories' => [
-            'navigation' => 'Categories',
-            'label'      => 'Category',
-            'plural'     => 'Categories',
+        'primary_categories' => [
+            'navigation' => 'Primary Category',
+            'label'      => 'Primary Category',
+            'plural'     => 'Primary Categories',
+        ],
+        'secondary_categories' => [
+            'navigation' => 'Secondary Category',
+            'label'      => 'Secondary Category',
+            'plural'     => 'Secondary Categories',
         ],
         'tags' => [
             'navigation' => 'Tags',
@@ -138,11 +142,6 @@ return [
             'navigation' => 'Ads',
             'label'      => 'Ad',
             'plural'     => 'Ads',
-        ],
-        'events' => [
-            'navigation' => 'Events',
-            'label'      => 'Event',
-            'plural'     => 'Events',
         ],
         'payments' => [
             'navigation' => 'Payments',

@@ -4,8 +4,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $subject ?? __('emails.brand') }}</title>
+    <link rel="stylesheet" href="{{ asset('css/al-shaheen-fonts.css') }}">
 </head>
-<body style="margin:0;padding:0;background:#f9f4ef;font-family:Arial,Helvetica,sans-serif;color:#28414e;">
+<body style="margin:0;padding:0;background:#f9f4ef;font-family:{{ $locale === 'ar' ? "'Alexandria', 'Century Gothic', ui-sans-serif, sans-serif" : "'Alexandria', ui-sans-serif, system-ui, sans-serif" }};color:#28414e;">
     <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9f4ef;padding:32px 16px;">
         <tr>
             <td align="center">

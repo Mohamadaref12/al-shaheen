@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Filament\Resources\Opinions\OpinionResource;
 use App\Models\Opinion;
 use App\Support\AdminNotifier;
+use App\Support\AppNotifier;
 use App\Support\TransactionalMailer;
 use Illuminate\Support\Str;
 
@@ -46,21 +47,52 @@ class OpinionObserver
 
     private function notifyAuthorOfStatusChange(Opinion $opinion): void
     {
-        if ($opinion->status !== 'published') {
-            return;
-        }
-
         $opinion->loadMissing('author', 'translations');
-
         $author = $opinion->author;
 
         if (! $author) {
             return;
         }
 
-        TransactionalMailer::sendToUser($author, 'writer.opinion_published', [
-            'title' => $opinion->localizedDisplayValue('title', 'Opinion #'.$opinion->id),
+        $title = $opinion->localizedDisplayValue('title', 'Opinion #'.$opinion->id);
+        $replace = [
+            'title' => $title,
             'name'  => $author->name,
-        ]);
+        ];
+
+        if ($opinion->status === 'published') {
+            TransactionalMailer::sendToUser($author, 'writer.opinion_published', $replace);
+
+            AppNotifier::notifyOne(
+                $author,
+                'opinion_published',
+                'Opinion published',
+                Str::limit($title, 100),
+                null,
+                ['opinion_id' => (string) $opinion->id],
+            );
+
+            AppNotifier::broadcast(
+                'opinions',
+                'opinion_published',
+                'New opinion on Al Shaheen 360',
+                Str::limit($title, 100),
+                url('/'),
+                ['opinion_id' => (string) $opinion->id],
+            );
+
+            return;
+        }
+
+        if ($opinion->status === 'rejected') {
+            AppNotifier::notifyOne(
+                $author,
+                'opinion_rejected',
+                'Opinion rejected',
+                Str::limit($title, 100),
+                null,
+                ['opinion_id' => (string) $opinion->id],
+            );
+        }
     }
 }

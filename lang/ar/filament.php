@@ -13,7 +13,6 @@ return [
             'Catalog'      => 'الفهرس',
             'Training'     => 'التدريب',
             'Marketing'    => 'التسويق',
-            'Events'       => 'الفعاليات',
             'Monetization' => 'التحقيق',
             'Settings'     => 'الإعدادات',
         ],
@@ -94,10 +93,15 @@ return [
             'label'      => 'مستخدم',
             'plural'     => 'المستخدمون',
         ],
-        'categories' => [
-            'navigation' => 'التصنيفات',
-            'label'      => 'تصنيف',
-            'plural'     => 'التصنيفات',
+        'primary_categories' => [
+            'navigation' => 'التصنيف الرئيسي',
+            'label'      => 'تصنيف رئيسي',
+            'plural'     => 'التصنيفات الرئيسية',
+        ],
+        'secondary_categories' => [
+            'navigation' => 'التصنيف الثانوي',
+            'label'      => 'تصنيف ثانوي',
+            'plural'     => 'التصنيفات الثانوية',
         ],
         'tags' => [
             'navigation' => 'الوسوم',
@@ -138,11 +142,6 @@ return [
             'navigation' => 'الإعلانات',
             'label'      => 'إعلان',
             'plural'     => 'الإعلانات',
-        ],
-        'events' => [
-            'navigation' => 'الفعاليات',
-            'label'      => 'فعالية',
-            'plural'     => 'الفعاليات',
         ],
         'payments' => [
             'navigation' => 'المدفوعات',

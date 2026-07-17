@@ -14,4 +14,7 @@ Route::middleware(['web', 'auth'])->group(function () {
 
     Route::get('/admin/news/{news}/pdf', DownloadNewsPdfController::class)
         ->name('admin.news.pdf');
+
+    Route::post('/admin/fcm/register', [\App\Http\Controllers\Admin\FcmDeviceController::class, 'store'])
+        ->name('admin.fcm.register');
 });

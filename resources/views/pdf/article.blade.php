@@ -5,18 +5,10 @@
     <title>{{ $translation->title }}</title>
     <style>
         body {
-            font-family: dejavusans, sans-serif;
+            font-family: {{ \App\Support\PlatformFonts::mpdfFont($locale) }}, sans-serif;
             color: #28414e;
             font-size: 11pt;
             line-height: 1.7;
-        }
-
-        .brand {
-            font-size: 9pt;
-            color: #5a6a72;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 18px;
         }
 
         .category {
@@ -90,19 +82,9 @@
             max-width: 100%;
             height: auto;
         }
-
-        .footer {
-            margin-top: 28px;
-            padding-top: 12px;
-            border-top: 1px solid #e8e0d8;
-            font-size: 8pt;
-            color: #7a8790;
-        }
     </style>
 </head>
 <body>
-    <div class="brand">Al Shaheen Media</div>
-
     @if ($article->primaryCategory)
         <div class="category">{{ $article->primaryCategory->name }}</div>
     @endif
@@ -137,11 +119,6 @@
 
     <div class="content">
         {!! \App\Support\ArticleContent::toHtml($translation->content) !!}
-    </div>
-
-    <div class="footer">
-        {{ $locale === 'ar' ? 'تم التصدير من منصة الشاهين الإعلامية' : 'Exported from Al Shaheen Media' }}
-        — {{ now()->format('Y-m-d H:i') }}
     </div>
 </body>
 </html>

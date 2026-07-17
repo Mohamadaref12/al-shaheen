@@ -10,6 +10,7 @@ use App\Http\Requests\Api\V1\RegisterRequest;
 use App\Http\Requests\Api\V1\UpdateProfileRequest;
 use App\Http\Resources\Api\V1\UserResource;
 use App\Models\Contributor;
+use App\Models\FcmDevice;
 use App\Models\Reader;
 use App\Models\User;
 use App\Models\Writer;
@@ -96,6 +97,16 @@ class AuthController extends Controller
 
             $token = $user->createToken((string) ($data['device_name'] ?? 'api-client'));
 
+            if (! empty($data['fcm_token'])) {
+                $this->registerFcmDevice(
+                    $user,
+                    (string) $data['fcm_token'],
+                    (string) ($data['platform'] ?? 'android'),
+                    $data['locale'] ?? $user->locale,
+                    $request->userAgent(),
+                );
+            }
+
             return $this->success([
                 'token'      => $token->plainTextToken,
                 'token_type' => 'Bearer',
@@ -109,6 +120,15 @@ class AuthController extends Controller
     public function logout(Request $request): JsonResponse
     {
         try {
+            $fcmToken = $request->input('fcm_token');
+
+            if (is_string($fcmToken) && $fcmToken !== '') {
+                FcmDevice::query()
+                    ->where('token', $fcmToken)
+                    ->where('user_id', $request->user()?->id)
+                    ->delete();
+            }
+
             $token = $request->user()?->currentAccessToken();
 
             if ($token instanceof \Laravel\Sanctum\PersonalAccessToken) {
@@ -172,5 +192,24 @@ class AuthController extends Controller
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to change password.');
         }
+    }
+
+    private function registerFcmDevice(
+        User $user,
+        string $fcmToken,
+        string $platform,
+        ?string $locale,
+        ?string $userAgent,
+    ): void {
+        FcmDevice::query()->updateOrCreate(
+            ['token' => $fcmToken],
+            [
+                'user_id'      => $user->id,
+                'platform'     => $platform,
+                'locale'       => $locale ?? $user->locale ?? app()->getLocale(),
+                'user_agent'   => substr((string) $userAgent, 0, 255),
+                'last_used_at' => now(),
+            ]
+        );
     }
 }

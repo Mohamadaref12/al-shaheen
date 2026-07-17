@@ -54,7 +54,12 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
-                fn (): string => '<link rel="stylesheet" href="'.asset('css/filament-admin-theme.css').'?v=13">',
+                fn (): string => '<link rel="stylesheet" href="'.asset('css/al-shaheen-fonts.css').'?v=2">'
+                    .'<link rel="stylesheet" href="'.asset('css/filament-admin-theme.css').'?v=14">',
+            )
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn (): string => view('filament.hooks.firebase-push')->render(),
             )
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->resources([
@@ -84,8 +89,6 @@ class AdminPanelProvider extends PanelProvider
                     ->label(fn (): string => __('filament.navigation.groups.Training')),
                 'Marketing' => NavigationGroup::make()
                     ->label(fn (): string => __('filament.navigation.groups.Marketing')),
-                'Events' => NavigationGroup::make()
-                    ->label(fn (): string => __('filament.navigation.groups.Events')),
                 'Monetization' => NavigationGroup::make()
                     ->label(fn (): string => __('filament.navigation.groups.Monetization')),
                 'Settings' => NavigationGroup::make()

@@ -38,15 +38,6 @@ class ArticleForm
                                             ->preload()
                                             ->required(),
 
-                                        CategorySelect::relationship(
-                                            Select::make('primary_category_id')
-                                                ->label('Primary Category'),
-                                            'primaryCategory'
-                                        )
-                                            ->searchable()
-                                            ->preload()
-                                            ->required(),
-
                                         Select::make('status')
                                             ->options([
                                                 'draft'     => 'Draft',
@@ -70,17 +61,28 @@ class ArticleForm
                                             ->label('Published At'),
                                     ]),
 
-                                Section::make('Taxonomy')
+                                Section::make('Categories')
+                                    ->description('Pick the main section first, then optional sub-topics.')
                                     ->schema([
-                                        CategorySelect::relationship(
+                                        CategorySelect::primary(
+                                            Select::make('primary_category_id')
+                                                ->label('Primary Category')
+                                                ->searchable()
+                                                ->preload()
+                                                ->required()
+                                        ),
+
+                                        CategorySelect::secondary(
                                             Select::make('secondaryCategories')
                                                 ->label('Secondary Categories')
                                                 ->multiple()
                                                 ->searchable()
-                                                ->preload(),
-                                            'secondaryCategories'
+                                                ->preload()
                                         ),
+                                    ]),
 
+                                Section::make('Tags')
+                                    ->schema([
                                         Select::make('tags')
                                             ->label('Tags')
                                             ->relationship('tags', 'name')
@@ -96,6 +98,7 @@ class ArticleForm
                                             ->image()
                                             ->disk('images')
                                             ->directory('articles')
+                                            ->required()
                                             ->columnSpanFull(),
 
                                         TextInput::make('video_embed')

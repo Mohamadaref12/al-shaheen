@@ -42,7 +42,6 @@ class DatabaseSeeder extends Seeder
             'news',
             'opinions',
             'media_items',
-            'events',
             'contributor_profile_categories',
             'contributors',
             'readers',
@@ -73,12 +72,11 @@ class DatabaseSeeder extends Seeder
             FeaturedImageSeeder::class,     // 8b. Default banner on articles & news
             OpinionSeeder::class,           // 9. Opinions
             MediaItemSeeder::class,         // 10. Media items
-            EventSeeder::class,             // 11. Events
-            MonetizationSeeder::class,      // 12. Ads + packages + subscriptions + newsletter
-            PaymentSeeder::class,           // 13. Payments
-            ContentSubmissionSeeder::class, // 14. Content submissions
-            CourseCategorySeeder::class,    // 15. Course categories
-            TrainingSeeder::class,          // 16. Courses + lessons + user progress
+            MonetizationSeeder::class,      // 11. Ads + packages + subscriptions + newsletter
+            PaymentSeeder::class,           // 12. Payments
+            ContentSubmissionSeeder::class, // 13. Content submissions
+            CourseCategorySeeder::class,    // 14. Course categories
+            TrainingSeeder::class,          // 15. Courses + lessons + user progress
         ]);
     }
 }

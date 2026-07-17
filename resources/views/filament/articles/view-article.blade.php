@@ -23,9 +23,7 @@
     };
 @endphp
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ asset('css/al-shaheen-fonts.css') }}">
 
 <style>
     .as-article-wrap {
@@ -38,7 +36,7 @@
         --as-surface: #ffffff;
         --as-cream: #faf5f0;
         --as-radius: 16px;
-        font-family: 'Inter', system-ui, sans-serif;
+        font-family: var(--as-font-en);
         color: var(--as-ink);
         line-height: 1.6;
     }
@@ -51,7 +49,7 @@
     .as-article-wrap[dir="rtl"] {
         direction: rtl;
         text-align: right;
-        font-family: 'Amiri', 'Inter', system-ui, serif;
+        font-family: var(--as-font-ar);
     }
 
     .as-article {
@@ -152,7 +150,7 @@
     .as-badge--archived  { background: #f5e8e8; color: #7a3a3a; }
 
     .as-hero__title {
-        font-family: 'Playfair Display', 'Amiri', Georgia, serif;
+        font-family: var(--as-font-en);
         font-size: clamp(1.75rem, 4vw, 3rem);
         font-weight: 800;
         line-height: 1.15;
@@ -163,7 +161,7 @@
     }
 
     .as-article-wrap[dir="rtl"] .as-hero__title {
-        font-family: 'Amiri', Georgia, serif;
+        font-family: var(--as-font-ar);
         font-weight: 700;
         letter-spacing: 0;
     }
@@ -258,7 +256,7 @@
 
     /* Excerpt */
     .as-lead {
-        font-family: 'Playfair Display', 'Amiri', Georgia, serif;
+        font-family: var(--as-font-en);
         font-size: clamp(1.15rem, 2.5vw, 1.45rem);
         line-height: 1.65;
         color: var(--as-muted);
@@ -271,7 +269,7 @@
     }
 
     .as-article-wrap[dir="rtl"] .as-lead {
-        font-family: 'Amiri', Georgia, serif;
+        font-family: var(--as-font-ar);
         font-style: normal;
         padding-block: 1.25rem;
         padding-inline-start: 1.25rem;
@@ -313,7 +311,7 @@
     .as-content h2,
     .as-content h3,
     .as-content h4 {
-        font-family: 'Playfair Display', 'Amiri', Georgia, serif;
+        font-family: var(--as-font-en);
         font-weight: 700;
         color: var(--as-ink);
         margin: 2.5rem 0 1rem;
@@ -324,7 +322,7 @@
     .as-article-wrap[dir="rtl"] .as-content h2,
     .as-article-wrap[dir="rtl"] .as-content h3,
     .as-article-wrap[dir="rtl"] .as-content h4 {
-        font-family: 'Amiri', Georgia, serif;
+        font-family: var(--as-font-ar);
     }
 
     .as-content h2 { font-size: 1.65rem; }
@@ -504,7 +502,7 @@
     }
 
     .as-comments__title {
-        font-family: 'Playfair Display', Georgia, serif;
+        font-family: var(--as-font-en);
         font-size: 1.5rem;
         font-weight: 700;
         color: var(--as-accent);

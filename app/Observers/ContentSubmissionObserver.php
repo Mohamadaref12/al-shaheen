@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Filament\Resources\ContentSubmissions\ContentSubmissionResource;
 use App\Models\ContentSubmission;
 use App\Support\AdminNotifier;
+use App\Support\AppNotifier;
 use App\Support\TransactionalMailer;
 use Illuminate\Support\Str;
 
@@ -65,16 +66,38 @@ class ContentSubmissionObserver
             return;
         }
 
+        $title = $submission->title ?: 'Submission #'.$submission->id;
         $replace = [
-            'title' => $submission->title ?: 'Submission #'.$submission->id,
+            'title' => $title,
             'name'  => $user->name,
             'notes' => (string) ($submission->reviewer_notes ?? ''),
         ];
+        $data = ['submission_id' => (string) $submission->id];
 
-        match ($submission->status) {
-            'approved' => TransactionalMailer::sendToUser($user, 'writer.submission_approved', $replace),
-            'rejected' => TransactionalMailer::sendToUser($user, 'writer.submission_rejected', $replace),
-            default => null,
-        };
+        if ($submission->status === 'approved') {
+            TransactionalMailer::sendToUser($user, 'writer.submission_approved', $replace);
+            AppNotifier::notifyOne(
+                $user,
+                'submission_approved',
+                'Submission approved',
+                Str::limit($title, 100),
+                null,
+                $data,
+            );
+
+            return;
+        }
+
+        if ($submission->status === 'rejected') {
+            TransactionalMailer::sendToUser($user, 'writer.submission_rejected', $replace);
+            AppNotifier::notifyOne(
+                $user,
+                'submission_rejected',
+                'Submission rejected',
+                Str::limit($title, 100),
+                null,
+                $data,
+            );
+        }
     }
 }

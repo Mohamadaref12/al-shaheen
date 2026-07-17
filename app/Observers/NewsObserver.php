@@ -5,6 +5,7 @@ namespace App\Observers;
 use App\Filament\Resources\News\NewsResource;
 use App\Models\News;
 use App\Support\AdminNotifier;
+use App\Support\AppNotifier;
 use App\Support\TransactionalMailer;
 use Illuminate\Support\Str;
 
@@ -46,21 +47,52 @@ class NewsObserver
 
     private function notifyAuthorOfStatusChange(News $news): void
     {
-        if ($news->status !== 'published') {
-            return;
-        }
-
         $news->loadMissing('author', 'translations');
-
         $author = $news->author;
 
         if (! $author) {
             return;
         }
 
-        TransactionalMailer::sendToUser($author, 'writer.news_published', [
-            'title' => $news->localizedDisplayValue('title', 'News #'.$news->id),
+        $title = $news->localizedDisplayValue('title', 'News #'.$news->id);
+        $replace = [
+            'title' => $title,
             'name'  => $author->name,
-        ]);
+        ];
+
+        if ($news->status === 'published') {
+            TransactionalMailer::sendToUser($author, 'writer.news_published', $replace);
+
+            AppNotifier::notifyOne(
+                $author,
+                'news_published',
+                'News published',
+                Str::limit($title, 100),
+                null,
+                ['news_id' => (string) $news->id],
+            );
+
+            AppNotifier::broadcast(
+                'news',
+                'news_published',
+                'Breaking on Al Shaheen 360',
+                Str::limit($title, 100),
+                url('/'),
+                ['news_id' => (string) $news->id],
+            );
+
+            return;
+        }
+
+        if ($news->status === 'rejected') {
+            AppNotifier::notifyOne(
+                $author,
+                'news_rejected',
+                'News rejected',
+                Str::limit($title, 100),
+                null,
+                ['news_id' => (string) $news->id],
+            );
+        }
     }
 }

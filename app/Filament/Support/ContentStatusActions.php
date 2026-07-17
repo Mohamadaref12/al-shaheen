@@ -137,7 +137,16 @@ class ContentStatusActions
      */
     public static function forNews(Closure $getRecord, ?Closure $after = null): array
     {
-        return self::publishableContentActions($getRecord, $after, usesUnderReview: true);
+        return [
+            ...self::publishableContentActions($getRecord, $after, usesUnderReview: true),
+            self::rejectAction(
+                $getRecord,
+                $after,
+                'rejected',
+                null,
+                fn (Model $record): bool => ! in_array($record->status, ['rejected', 'archived', 'published'], true),
+            ),
+        ];
     }
 
     /**
@@ -244,12 +253,12 @@ class ContentStatusActions
         ];
 
         if ($usesUnderReview) {
-            $actions[] = self::action($getRecord, $after, 'sendToReview', 'Send to Review', 'under_review', Heroicon::OutlinedClock, 'warning', fn (Model $record): bool => in_array($record->status, ['draft', 'archived'], true));
+            $actions[] = self::action($getRecord, $after, 'sendToReview', 'Send to Review', 'under_review', Heroicon::OutlinedClock, 'warning', fn (Model $record): bool => in_array($record->status, ['draft', 'archived', 'rejected'], true));
         }
 
         $actions[] = ActionGroup::make([
             self::action($getRecord, $after, 'archive', 'Archive', 'archived', Heroicon::OutlinedArchiveBox, 'gray', fn (Model $record): bool => $record->status !== 'archived'),
-            self::action($getRecord, $after, 'restoreDraft', 'Restore to Draft', 'draft', Heroicon::OutlinedDocument, 'gray', fn (Model $record): bool => in_array($record->status, ['archived', 'published'], true)),
+            self::action($getRecord, $after, 'restoreDraft', 'Restore to Draft', 'draft', Heroicon::OutlinedDocument, 'gray', fn (Model $record): bool => in_array($record->status, ['archived', 'published', 'rejected'], true)),
         ])
             ->label('Change Status')
             ->icon(Heroicon::OutlinedAdjustmentsHorizontal)

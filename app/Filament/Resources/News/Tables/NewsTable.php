@@ -5,6 +5,8 @@ namespace App\Filament\Resources\News\Tables;
 use App\Filament\Actions\DownloadNewsPdfAction;
 use App\Filament\Support\ContentStatusActions;
 use App\Filament\Support\LocalizedTitleColumn;
+use App\Models\News;
+use App\Support\ContentEditability;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -48,6 +50,7 @@ class NewsTable
                     ->color(fn (string $state): string => match ($state) {
                         'published' => 'success',
                         'under_review' => 'warning',
+                        'rejected' => 'danger',
                         'draft' => 'gray',
                         'archived' => 'danger',
                         default => 'gray',
@@ -78,6 +81,7 @@ class NewsTable
                     ->options([
                         'draft' => 'Draft',
                         'under_review' => 'Under Review',
+                        'rejected' => 'Rejected',
                         'published' => 'Published',
                         'archived' => 'Archived',
                     ]),
@@ -105,7 +109,8 @@ class NewsTable
             ->recordActions([
                 ...ContentStatusActions::newsTableActions(),
                 DownloadNewsPdfAction::make(),
-                EditAction::make(),
+                EditAction::make()
+                    ->visible(fn (News $record): bool => ContentEditability::userCanEditNews(auth()->user(), $record)),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

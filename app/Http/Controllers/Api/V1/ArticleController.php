@@ -11,6 +11,8 @@ use App\Services\Articles\ArticlePdfService;
 use App\Traits\AppliesTranslatableLocale;
 use App\Traits\NormalizesTranslatableApiInput;
 use App\Traits\MarksSavedArticles;
+use App\Traits\ValidatesFeaturedImage;
+use App\Support\ContentEditability;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Throwable;
@@ -20,6 +22,7 @@ class ArticleController extends Controller
     use AppliesTranslatableLocale;
     use NormalizesTranslatableApiInput;
     use MarksSavedArticles;
+    use ValidatesFeaturedImage;
     public function index(Request $request): JsonResponse
     {
         
@@ -94,6 +97,9 @@ class ArticleController extends Controller
                     ],
                     $this->localizedCategoryEagerLoads($request, 'primaryCategory', 'secondaryCategories')
                 ))
+                ->withCount([
+                    'comments as comments_count' => fn ($query) => $query->where('status', 'approved'),
+                ])
                 ->where('id', $articleId)
                 ->where('status', 'published')
                 ->first();
@@ -210,7 +216,7 @@ class ArticleController extends Controller
                 'content'                => $this->translatableRichTextRules(),
                 'excerpt'                => $this->translatableRichTextRules(),
                 'writer_notes'           => 'nullable|string|max:500',
-                'featured_image'         => 'nullable|string',
+                'featured_image'         => $this->featuredImageRules(required: true),
                 'video_embed'            => 'nullable|string',
                 'locale'                 => 'nullable|in:ar,en',
                 'read_time'              => 'nullable|integer|min:1',
@@ -282,6 +288,10 @@ class ArticleController extends Controller
                 return $this->error(null, 'You are not authorized to edit this article.', 403);
             }
 
+            if (! ContentEditability::userCanEditArticle($user, $article)) {
+                return $this->error(null, ContentEditability::lockedArticleMessage(), 403);
+            }
+
             $this->prepareTranslatableRequest($request);
 
             $data = $request->validate([
@@ -302,7 +312,7 @@ class ArticleController extends Controller
                 'content'                => $this->translatableRichTextRules(),
                 'excerpt'                => $this->translatableRichTextRules(),
                 'writer_notes'           => 'nullable|string|max:500',
-                'featured_image'         => 'nullable|string',
+                'featured_image'         => $this->featuredImageRules(),
                 'video_embed'            => 'nullable|string',
                 'locale'                 => 'nullable|in:ar,en',
                 'read_time'              => 'nullable|integer|min:1',
@@ -322,6 +332,8 @@ class ArticleController extends Controller
             ]);
 
             $this->mapLegacyTranslationInput($data);
+
+            $this->assertFeaturedImagePresent($data['featured_image'] ?? $article->featured_image);
 
             $this->applyStatusFields($data, $article);
 
@@ -552,6 +564,7 @@ class ArticleController extends Controller
             'seo_description'  => $translation?->seo_description,
             'video_embed'      => $article->video_embed,
             'writer_notes'     => $article->writer_notes,
+            'comments_count'   => (int) ($article->comments_count ?? 0),
             'secondary_categories' => $article->relationLoaded('secondaryCategories')
                 ? $article->secondaryCategories->map(fn ($category) => [
                     'id' => $category->id,

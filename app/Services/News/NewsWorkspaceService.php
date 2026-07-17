@@ -4,6 +4,7 @@ namespace App\Services\News;
 
 use App\Models\News;
 use App\Models\User;
+use App\Support\ContentEditability;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,6 +16,7 @@ class NewsWorkspaceService
     public const STATUS_LABELS = [
         'draft'        => 'Draft',
         'under_review' => 'In Review',
+        'rejected'     => 'Rejected',
         'published'    => 'Published',
         'archived'     => 'Archived',
     ];
@@ -22,6 +24,7 @@ class NewsWorkspaceService
     public const API_STATUS_LABELS = [
         'draft'     => 'Draft',
         'pending'   => 'In Review',
+        'rejected'  => 'Rejected',
         'published' => 'Published',
         'archived'  => 'Archived',
     ];
@@ -138,6 +141,8 @@ class NewsWorkspaceService
             'published_label'    => $this->formatPublishedLabel($news),
             'views_count'        => $news->views_count,
             'views_formatted'    => $this->formatCompactNumber((int) $news->views_count),
+            'allows_comments'    => false,
+            'is_editable'        => ContentEditability::userCanEditNews(auth()->user(), $news),
         ];
     }
 
@@ -196,6 +201,8 @@ class NewsWorkspaceService
                 'published_at'       => $news->published_at?->toIso8601String(),
                 'published_label'    => $this->formatPublishedLabel($news),
                 'is_preview'         => $news->status !== 'published',
+                'allows_comments'    => false,
+                'is_editable'        => ContentEditability::userCanEditNews($user, $news),
                 'created_at'         => $news->created_at?->toIso8601String(),
                 'updated_at'         => $news->updated_at?->toIso8601String(),
                 'author'             => $news->author,
@@ -229,6 +236,7 @@ class NewsWorkspaceService
             'last_edited_label' => $this->formatLastEditedLabel($news->updated_at),
             'readiness'         => $this->calculateReadiness($news),
             'word_count'        => $this->newsWordCount($news),
+            'is_editable'       => ContentEditability::userCanEditNews(auth()->user(), $news),
         ];
     }
 

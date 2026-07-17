@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Api\V1;
 
 use App\Http\Resources\Api\V1\Concerns\ResolvesImageUrls;
+use App\Support\ContentComments;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -41,6 +42,7 @@ class ArticleSummaryResource extends JsonResource
             'is_breaking'        => (bool) $this->is_breaking,
             'is_premium'         => (bool) $this->is_premium,
             'views_count'        => $this->views_count,
+            'allows_comments'    => ContentComments::ARTICLE_ALLOWS_COMMENTS,
             'published_at'       => $this->published_at?->toIso8601String(),
             'is_saved'           => (bool) ($this->is_saved ?? false),
             'author'             => $this->whenLoaded('author', fn () => [

@@ -37,12 +37,13 @@ class NewsForm
                                             ->searchable()
                                             ->required(),
 
-                                        CategorySelect::relationship(
+                                        CategorySelect::topLevel(
                                             Select::make('category_id')
                                                 ->label('Category'),
                                             'category'
                                         )
-                                            ->searchable(),
+                                            ->searchable()
+                                            ->preload(),
 
                                         TextInput::make('read_time')
                                             ->label('Read Time (minutes)')
@@ -54,6 +55,7 @@ class NewsForm
                                             ->options([
                                                 'draft'        => 'Draft',
                                                 'under_review' => 'Under Review',
+                                                'rejected'     => 'Rejected',
                                                 'published'    => 'Published',
                                                 'archived'     => 'Archived',
                                             ])
@@ -77,6 +79,7 @@ class NewsForm
                                             ->image()
                                             ->disk('images')
                                             ->directory('news')
+                                            ->required()
                                             ->columnSpanFull(),
 
                                         TextInput::make('video_embed')

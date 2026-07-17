@@ -4,6 +4,7 @@ namespace App\Http\Resources\Api\V1;
 
 use App\Http\Resources\Api\V1\Concerns\ResolvesImageUrls;
 use App\Services\News\NewsWorkspaceService;
+use App\Support\ContentComments;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -33,6 +34,7 @@ class NewsSummaryResource extends JsonResource
             'is_breaking'        => (bool) $this->is_breaking,
             'is_premium'         => (bool) $this->is_premium,
             'views_count'        => $this->views_count,
+            'allows_comments'    => ContentComments::NEWS_ALLOWS_COMMENTS,
             'published_at'       => $this->published_at?->toIso8601String(),
             'author'             => $this->whenLoaded('author', fn () => [
                 'id'   => $this->author?->id,

@@ -4,9 +4,9 @@ namespace App\Services\Articles;
 
 use App\Models\Article;
 use App\Support\ImageStorage;
+use App\Support\PdfBranding;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Mpdf\Mpdf;
 use Symfony\Component\HttpFoundation\Response;
 
 class ArticlePdfService
@@ -30,20 +30,12 @@ class ArticlePdfService
             'featuredImagePath' => $this->resolveFeaturedImagePath($article),
         ])->render();
 
-        $mpdf = new Mpdf([
-            'mode'          => 'utf-8',
-            'format'        => 'A4',
-            'margin_left'   => 14,
-            'margin_right'  => 14,
-            'margin_top'    => 16,
-            'margin_bottom' => 16,
-            'default_font'  => 'dejavusans',
-            'tempDir'       => storage_path('app/mpdf'),
-        ]);
-
-        if ($locale === 'ar') {
-            $mpdf->SetDirectionality('rtl');
-        }
+        $mpdf = PdfBranding::makeMpdf($locale);
+        PdfBranding::apply(
+            $mpdf,
+            $locale,
+            $locale === 'ar' ? 'مقال' : 'Article'
+        );
 
         $mpdf->WriteHTML($html);
 

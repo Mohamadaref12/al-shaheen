@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\User;
+use App\Services\Firebase\FcmService;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Collection;
@@ -67,6 +68,19 @@ class AdminNotifier
         }
 
         $notification->sendToDatabase($recipients, isEventDispatched: true);
+
+        app(FcmService::class)->sendToUsers(
+            $recipients,
+            $title,
+            $body,
+            $url,
+            [
+                'status' => $status,
+                'source' => 'dashboard',
+                'type'   => 'staff_alert',
+            ],
+            platforms: ['dashboard', 'web', 'android', 'ios'],
+        );
 
         if ($mailKey) {
             TransactionalMailer::sendToUsers($recipients, $mailKey, $mailReplace, $url);

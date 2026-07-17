@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\CommentController;
 use Illuminate\Support\Facades\Route;
 
+// Reader comments are supported for articles only — not news.
 Route::get('articles/{articleId}/comments',  [CommentController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {

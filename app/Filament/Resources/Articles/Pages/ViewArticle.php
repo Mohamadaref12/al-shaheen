@@ -7,6 +7,7 @@ use App\Filament\Resources\Articles\ArticleResource;
 use App\Filament\Support\ContentStatusActions;
 use App\Models\Article;
 use App\Models\Comment;
+use App\Support\ContentEditability;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Notifications\Notification;
@@ -59,7 +60,8 @@ class ViewArticle extends ViewRecord
                 fn () => $this->record->refresh(),
             ),
             DownloadArticlePdfAction::make(),
-            EditAction::make(),
+            EditAction::make()
+                ->visible(fn (): bool => ContentEditability::userCanEditArticle(auth()->user(), $this->getRecord())),
         ];
     }
 

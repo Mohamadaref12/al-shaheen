@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Article;
 use App\Models\Category;
 use App\Services\News\NewsWorkspaceService;
+use App\Support\ContentEditability;
 use App\Traits\AppliesTranslatableLocale;
 use Carbon\Carbon;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -347,6 +348,8 @@ class WriterDashboardController extends Controller
                 'status_label'    => self::STATUS_LABELS[$article->status] ?? $article->status,
                 'published_label' => $this->formatPublishedLabel($article),
                 'is_preview'      => $article->status !== 'published',
+                'allows_comments' => true,
+                'is_editable'     => ContentEditability::userCanEditArticle($user, $article),
             ], 'Article preview retrieved successfully.');
         } catch (Throwable $e) {
             return $this->handleException($e, 'Failed to retrieve article preview.');
@@ -562,6 +565,8 @@ class WriterDashboardController extends Controller
             'views_count'       => $article->views_count,
             'views_formatted'   => $this->formatCompactNumber($article->views_count),
             'comments_count'    => $article->comments_count ?? 0,
+            'allows_comments'   => true,
+            'is_editable'       => ContentEditability::userCanEditArticle(auth()->user(), $article),
             'saves_count'       => $article->saved_by_users_count ?? 0,
         ];
     }
@@ -583,6 +588,7 @@ class WriterDashboardController extends Controller
             'readiness'         => $readiness,
             'word_count'        => $wordCount,
             'notes'             => $article->writer_notes,
+            'is_editable'       => ContentEditability::userCanEditArticle(auth()->user(), $article),
         ];
     }
 

@@ -11,9 +11,10 @@ use App\Services\News\NewsPdfService;
 use App\Services\News\NewsWorkspaceService;
 use App\Traits\AppliesTranslatableLocale;
 use App\Traits\NormalizesTranslatableApiInput;
+use App\Traits\ValidatesFeaturedImage;
+use App\Support\ContentEditability;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Throwable;
 
@@ -21,6 +22,7 @@ class NewsController extends Controller
 {
     use AppliesTranslatableLocale;
     use NormalizesTranslatableApiInput;
+    use ValidatesFeaturedImage;
 
     public function index(Request $request): JsonResponse
     {
@@ -286,7 +288,7 @@ class NewsController extends Controller
             }
 
             $request->validate([
-                'status'   => 'nullable|in:draft,under_review,published,archived',
+                'status'   => 'nullable|in:draft,under_review,rejected,published,archived',
                 'category' => 'nullable|integer|exists:categories,id',
                 'search'   => 'nullable|string|max:200',
                 'sort'     => 'nullable|in:latest,oldest,views',
@@ -364,7 +366,7 @@ class NewsController extends Controller
                 'slug'               => 'nullable|string|max:500',
                 'content'            => $this->translatableRichTextRules(),
                 'excerpt'            => $this->translatableRichTextRules(),
-                'featured_image'     => $this->featuredImageRules(),
+                'featured_image'     => $this->featuredImageRules(required: true),
                 'video_embed'        => 'nullable|string',
                 'locale'             => 'nullable|in:ar,en',
                 'read_time'          => 'nullable|integer|min:1',
@@ -430,6 +432,10 @@ class NewsController extends Controller
                 return $this->error(null, 'You are not authorized to edit this news item.', 403);
             }
 
+            if (! ContentEditability::userCanEditNews($user, $news)) {
+                return $this->error(null, ContentEditability::lockedNewsMessage(), 403);
+            }
+
             $this->prepareTranslatableRequest($request);
 
             $data = $request->validate([
@@ -468,6 +474,8 @@ class NewsController extends Controller
             ]);
 
             $this->mapLegacyTranslationInput($data);
+
+            $this->assertFeaturedImagePresent($data['featured_image'] ?? $news->featured_image);
 
             if (array_key_exists('status', $data)) {
                 $data['status'] = $this->normalizeNewsStatusInput($data['status']);
@@ -551,31 +559,6 @@ class NewsController extends Controller
         if ($hasChanges) {
             $this->persistModelTranslations($news);
         }
-    }
-
-    private function featuredImageRules(): array
-    {
-        return [
-            'nullable',
-            'string',
-            'max:500',
-            'not_regex:/\.\./',
-            function (string $attribute, mixed $value, \Closure $fail): void {
-                if (blank($value)) {
-                    return;
-                }
-
-                if (! is_string($value) || ! str_starts_with($value, 'uploads/')) {
-                    $fail('The featured image path must start with uploads/ (upload the image first).');
-
-                    return;
-                }
-
-                if (! Storage::disk('images')->exists($value)) {
-                    $fail('The featured image was not found. Upload it first via POST /uploads/images.');
-                }
-            },
-        ];
     }
 
     private function siblingCategoryIds(?int $categoryId): \Illuminate\Support\Collection

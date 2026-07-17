@@ -7,6 +7,7 @@ use App\Filament\Resources\Articles\ArticleResource;
 use App\Filament\Support\ContentStatusActions;
 use App\Filament\Support\LocalizedTitleColumn;
 use App\Models\Article;
+use App\Support\ContentEditability;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -171,7 +172,8 @@ class ArticlesTable
                     ->color('gray')
                     ->url(fn (Article $record): string => ArticleResource::getUrl('view', ['record' => $record])),
                 DownloadArticlePdfAction::make(),
-                EditAction::make(),
+                EditAction::make()
+                    ->visible(fn (Article $record): bool => ContentEditability::userCanEditArticle(auth()->user(), $record)),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

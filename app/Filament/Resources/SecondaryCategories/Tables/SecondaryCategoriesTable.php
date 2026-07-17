@@ -1,0 +1,70 @@
+<?php
+
+namespace App\Filament\Resources\SecondaryCategories\Tables;
+
+use App\Models\Category;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+
+class SecondaryCategoriesTable
+{
+    public static function configure(Table $table): Table
+    {
+        return $table
+            ->modifyQueryUsing(fn (Builder $query) => $query->with(['translations', 'parent.translations']))
+            ->columns([
+                TextColumn::make('display_name')
+                    ->label('Name')
+                    ->searchable(query: function (Builder $query, string $search): void {
+                        $query->whereHas('translations', fn (Builder $q) => $q
+                            ->where('name', 'like', "%{$search}%"));
+                    }),
+
+                TextColumn::make('parent.display_name')
+                    ->label('Primary Category'),
+
+                TextColumn::make('slug_en')
+                    ->label('Slug (EN)')
+                    ->toggleable(),
+
+                TextColumn::make('slug_ar')
+                    ->label('Slug (AR)')
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+                TextColumn::make('sort_order')
+                    ->label('Order')
+                    ->sortable(),
+
+                IconColumn::make('is_active')
+                    ->label('Active')
+                    ->boolean(),
+            ])
+            ->filters([
+                SelectFilter::make('parent_id')
+                    ->label('Primary Category')
+                    ->options(fn (): array => Category::query()
+                        ->whereNull('parent_id')
+                        ->with('translations')
+                        ->orderBy('sort_order')
+                        ->get()
+                        ->mapWithKeys(fn (Category $category): array => [$category->id => $category->display_name])
+                        ->all()),
+                TernaryFilter::make('is_active')->label('Active'),
+            ])
+            ->recordActions([
+                EditAction::make(),
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
+            ]);
+    }
+}

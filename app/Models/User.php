@@ -20,7 +20,6 @@ use App\Models\Editor;
 use App\Models\Admin;
 use App\Models\Article;
 use App\Models\Report;
-use App\Models\Event;
 use App\Models\Interview;
 use App\Models\MediaItem;
 use App\Models\Subscription;
@@ -28,6 +27,7 @@ use App\Models\Payment;
 use App\Models\ContentSubmission;
 use App\Models\Comment;
 use App\Models\UserCourseProgress;
+use App\Models\FcmDevice;
 
 #[Fillable(['name', 'email', 'password', 'country', 'language', 'locale', 'is_verified', 'is_active'])]
 #[Hidden(['password', 'remember_token'])]
@@ -79,11 +79,6 @@ class User extends Authenticatable
     public function reports(): HasMany
     {
         return $this->hasMany(Report::class, 'author_id');
-    }
-
-    public function events(): HasMany
-    {
-        return $this->hasMany(Event::class, 'author_id');
     }
 
     public function interviews(): HasMany
@@ -140,5 +135,10 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Writer::class, 'follows', 'follower_id', 'writer_id')
             ->withPivot('created_at');
+    }
+
+    public function fcmDevices(): HasMany
+    {
+        return $this->hasMany(FcmDevice::class);
     }
 }

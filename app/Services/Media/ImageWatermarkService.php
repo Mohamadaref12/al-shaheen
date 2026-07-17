@@ -80,7 +80,7 @@ class ImageWatermarkService
 
         $this->removeLightBackground($watermark);
 
-        $targetWidth = max(120, (int) round($image->getImageWidth() * (float) config('brand.width_ratio', 0.22)));
+        $targetWidth = $this->resolveTargetWidth($image->getImageWidth(), $watermark->getImageWidth());
         $watermark->resizeImage($targetWidth, 0, \Imagick::FILTER_LANCZOS, 1);
 
         $opacity = max(0.25, min(1.0, (float) config('brand.opacity', 0.55)));
@@ -106,9 +106,12 @@ class ImageWatermarkService
         }
 
         $output = $this->tempPath('watermarked', $format === 'jpg' ? 'jpeg' : $format);
+        $quality = $this->outputQuality();
 
         if (in_array($format, ['jpeg', 'jpg'], true)) {
-            $image->setImageCompressionQuality(90);
+            $image->setImageCompressionQuality($quality);
+        } elseif ($format === 'webp') {
+            $image->setImageCompressionQuality($quality);
         }
 
         $image->writeImage($output);
@@ -140,12 +143,13 @@ class ImageWatermarkService
 
         $extension = strtolower(pathinfo($sourcePath, PATHINFO_EXTENSION) ?: 'jpg');
         $output = $this->tempPath('watermarked', $extension);
+        $quality = $this->outputQuality();
 
         match ($extension) {
-            'png'  => imagepng($source, $output, 6),
-            'webp' => imagewebp($source, $output, 90),
+            'png'  => imagepng($source, $output, 3),
+            'webp' => imagewebp($source, $output, $quality),
             'gif'  => imagegif($source, $output),
-            default => imagejpeg($source, $output, 90),
+            default => imagejpeg($source, $output, $quality),
         };
 
         imagedestroy($source);
@@ -162,34 +166,45 @@ class ImageWatermarkService
 
         $this->removeLightBackgroundGd($original);
 
-        $targetWidth = max(120, (int) round($sourceWidth * (float) config('brand.width_ratio', 0.22)));
         $originalWidth = imagesx($original);
         $originalHeight = imagesy($original);
-        $targetHeight = (int) round($originalHeight * ($targetWidth / $originalWidth));
+        $targetWidth = $this->resolveTargetWidth($sourceWidth, $originalWidth);
 
-        $scaled = imagecreatetruecolor($targetWidth, $targetHeight);
-        imagealphablending($scaled, false);
-        imagesavealpha($scaled, true);
+        if ($targetWidth === $originalWidth) {
+            return $original;
+        }
 
-        $transparent = imagecolorallocatealpha($scaled, 0, 0, 0, 127);
-        imagefilledrectangle($scaled, 0, 0, $targetWidth, $targetHeight, $transparent);
+        $targetHeight = max(1, (int) round($originalHeight * ($targetWidth / $originalWidth)));
 
-        imagecopyresampled(
-            $scaled,
-            $original,
-            0,
-            0,
-            0,
-            0,
-            $targetWidth,
-            $targetHeight,
-            $originalWidth,
-            $originalHeight
-        );
+        $mode = defined('IMG_BICUBIC') ? IMG_BICUBIC : IMG_BILINEAR_FIXED;
+        $scaled = imagescale($original, $targetWidth, $targetHeight, $mode);
 
         imagedestroy($original);
 
+        if (! $scaled instanceof \GdImage) {
+            throw new RuntimeException('Failed to scale watermark image.');
+        }
+
+        imagealphablending($scaled, false);
+        imagesavealpha($scaled, true);
+
         return $scaled;
+    }
+
+    private function resolveTargetWidth(int $sourceWidth, int $watermarkWidth): int
+    {
+        $desired = max(120, (int) round($sourceWidth * (float) config('brand.width_ratio', 0.22)));
+
+        if (config('brand.prevent_upscale', true)) {
+            return min($desired, max(1, $watermarkWidth));
+        }
+
+        return $desired;
+    }
+
+    private function outputQuality(): int
+    {
+        return max(1, min(100, (int) config('brand.output_quality', 95)));
     }
 
     private function overlayGdImage(\GdImage $destination, \GdImage $overlay, int $offsetX, int $offsetY, float $opacity): void

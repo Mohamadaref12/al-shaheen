@@ -7,6 +7,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
+use Illuminate\Support\Carbon;
 
 class ContactMessageForm
 {
@@ -72,12 +73,16 @@ class ContactMessageForm
                         TextInput::make('created_at')
                             ->label('Received at')
                             ->disabled()
-                            ->formatStateUsing(fn ($state) => $state?->format('Y-m-d H:i') ?? '—'),
+                            ->formatStateUsing(fn ($state) => filled($state)
+                                ? Carbon::parse($state)->format('Y-m-d H:i')
+                                : '—'),
 
                         TextInput::make('updated_at')
                             ->label('Last updated')
                             ->disabled()
-                            ->formatStateUsing(fn ($state) => $state?->format('Y-m-d H:i') ?? '—'),
+                            ->formatStateUsing(fn ($state) => filled($state)
+                                ? Carbon::parse($state)->format('Y-m-d H:i')
+                                : '—'),
                     ]),
             ])
             ->columns(1);
