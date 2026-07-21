@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Models\Category;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class ArticleSeeder extends Seeder
@@ -184,7 +185,7 @@ class ArticleSeeder extends Seeder
 
     private function purgeArticles(): void
     {
-        DB::statement('SET FOREIGN_KEY_CHECKS=0');
+        Schema::disableForeignKeyConstraints();
 
         DB::table('article_ai_suggestions')->truncate();
         DB::table('article_views')->truncate();
@@ -196,7 +197,7 @@ class ArticleSeeder extends Seeder
         DB::table('article_translations')->truncate();
         DB::table('articles')->truncate();
 
-        DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        Schema::enableForeignKeyConstraints();
     }
 
     /**
