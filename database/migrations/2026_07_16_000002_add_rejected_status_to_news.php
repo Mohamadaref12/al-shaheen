@@ -1,18 +1,29 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
     public function up(): void
     {
-        DB::statement("ALTER TABLE news MODIFY COLUMN status ENUM('draft', 'under_review', 'rejected', 'published', 'archived') NOT NULL DEFAULT 'draft'");
+        Schema::table('news', function (Blueprint $table) {
+            $table->enum('status', ['draft', 'under_review', 'rejected', 'published', 'archived'])
+                ->default('draft')
+                ->change();
+        });
     }
 
     public function down(): void
     {
-        DB::statement("UPDATE news SET status = 'draft' WHERE status = 'rejected'");
-        DB::statement("ALTER TABLE news MODIFY COLUMN status ENUM('draft', 'under_review', 'published', 'archived') NOT NULL DEFAULT 'draft'");
+        DB::table('news')->where('status', 'rejected')->update(['status' => 'draft']);
+
+        Schema::table('news', function (Blueprint $table) {
+            $table->enum('status', ['draft', 'under_review', 'published', 'archived'])
+                ->default('draft')
+                ->change();
+        });
     }
 };
