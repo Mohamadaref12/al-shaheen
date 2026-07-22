@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\ComingSoonGate;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -12,7 +13,13 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // After EncryptCookies/session so the unlock cookie is readable.
+        $middleware->appendToGroup('web', ComingSoonGate::class);
+        $middleware->appendToGroup('api', ComingSoonGate::class);
+
+        $middleware->encryptCookies(except: [
+            'coming_soon_access',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
