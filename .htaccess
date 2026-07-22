@@ -1,0 +1,30 @@
+<IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
+    RewriteEngine On
+
+    # Homepage → Filament admin
+    RewriteCond %{HTTP_HOST} ^portal\.alshaheen360\.com$ [NC]
+    RewriteRule ^$ /admin [L,R=302]
+
+    # Avoid rewrite loops
+    RewriteRule ^public/ - [L]
+
+    # Serve real files from public/ (css, js, images, storage, vendor assets)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{DOCUMENT_ROOT}/public/$1 -f
+    RewriteRule ^(.*)$ public/$1 [L]
+
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{DOCUMENT_ROOT}/public/$1 -d
+    RewriteRule ^(.*)$ public/$1 [L]
+
+    # Everything else → Laravel front controller inside public/
+    RewriteRule ^ public/index.php [L]
+</IfModule>
+
+# php -- BEGIN cPanel-generated handler, do not edit
+# Handlers stay whatever cPanel generated on the server.
+# php -- END cPanel-generated handler, do not edit
