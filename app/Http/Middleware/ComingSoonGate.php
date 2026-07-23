@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Support\ComingSoonSettings;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -11,7 +12,7 @@ class ComingSoonGate
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (! config('coming_soon.enabled')) {
+        if (! ComingSoonSettings::isEnabled()) {
             return $next($request);
         }
 
@@ -23,19 +24,15 @@ class ComingSoonGate
             return $next($request);
         }
 
-        if ($request->expectsJson() || $request->is('api/*')) {
-            return response()->json([
-                'success' => false,
-                'status'  => 'error',
-                'message' => 'Coming soon. Provide a valid access key.',
-                'data'    => [
-                    'coming_soon' => true,
-                    'unlock_url'  => url('/api/v1/coming-soon/unlock'),
-                ],
-            ], 503);
-        }
-
-        return redirect()->route('coming-soon');
+        return response()->json([
+            'success' => false,
+            'status'  => 'error',
+            'message' => 'Coming soon. Provide a valid access key.',
+            'data'    => [
+                'coming_soon' => true,
+                'unlock_url'  => url('/api/v1/coming-soon/unlock'),
+            ],
+        ], 503);
     }
 
     protected function shouldBypass(Request $request): bool
@@ -53,20 +50,20 @@ class ComingSoonGate
 
     protected function isUnlocked(Request $request): bool
     {
-        $expectedKey = (string) config('coming_soon.access_key');
+        $expectedKey = ComingSoonSettings::accessKey();
 
         if ($expectedKey === '') {
             return false;
         }
 
-        $headerName = (string) config('coming_soon.header', 'X-Coming-Soon-Key');
+        $headerName = ComingSoonSettings::header();
         $headerKey = (string) $request->header($headerName, '');
 
         if ($headerKey !== '' && hash_equals($expectedKey, $headerKey)) {
             return true;
         }
 
-        $cookieName = (string) config('coming_soon.cookie', 'coming_soon_access');
+        $cookieName = ComingSoonSettings::cookieName();
         $cookieValue = (string) $request->cookie($cookieName, '');
 
         return $cookieValue !== '' && hash_equals(self::unlockToken(), $cookieValue);
@@ -76,7 +73,7 @@ class ComingSoonGate
     {
         return hash_hmac(
             'sha256',
-            (string) config('coming_soon.access_key'),
+            ComingSoonSettings::accessKey(),
             (string) config('app.key')
         );
     }

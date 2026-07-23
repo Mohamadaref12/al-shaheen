@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Filament\Pages\ManageAiSettings;
+use App\Filament\Pages\ManageComingSoonSettings;
 use App\Filament\Resources\Articles\ArticleResource;
 use App\Filament\Resources\Comments\CommentResource;
 use App\Filament\Resources\ContactMessages\ContactMessageResource;
@@ -58,6 +59,12 @@ class QuickActionsWidget extends Widget
                     'description' => __('filament.dashboard.actions.ai_settings.description'),
                     'url'         => ManageAiSettings::getUrl(),
                     'icon'        => 'ai',
+                ],
+                [
+                    'label'       => __('filament.dashboard.actions.coming_soon_settings.label'),
+                    'description' => __('filament.dashboard.actions.coming_soon_settings.description'),
+                    'url'         => ManageComingSoonSettings::getUrl(),
+                    'icon'        => 'queue',
                 ],
             ],
         ];

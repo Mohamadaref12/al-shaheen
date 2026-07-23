@@ -4,11 +4,12 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Coming Soon Gate
+    | Coming Soon Gate (API only)
     |--------------------------------------------------------------------------
     |
-    | When enabled, visitors must enter the access key before browsing the
-    | site or calling the public API. Admin (/admin) stays available.
+    | When enabled, public API calls require the access key header/cookie.
+    | The Coming Soon UI is handled by the React frontend — not this app.
+    | Admin (/admin) and coming-soon API endpoints stay available.
     |
     */
 
@@ -31,14 +32,10 @@ return [
 
     /*
     | Paths that bypass the gate (supports * wildcards).
+    | Matched against the request path (e.g. api/v1/...).
     */
     'except' => [
         'up',
-        'admin',
-        'admin/*',
-        'coming-soon',
-        'unlock',
-        'livewire/*',
         'api/v1/coming-soon',
         'api/v1/coming-soon/*',
     ],

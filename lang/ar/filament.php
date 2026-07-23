@@ -20,6 +20,17 @@ return [
 
     'pages' => [
         'ai_settings' => 'إعدادات الذكاء الاصطناعي',
+        'coming_soon_settings' => 'قريباً (Coming Soon)',
+        'coming_soon_settings_description' => 'التحكم ببوابة المعاينة على الـ API. واجهة Coming Soon على الفرونت — هنا فقط التفعيل ومفتاح الوصول.',
+        'coming_soon_enabled' => 'تفعيل Coming Soon',
+        'coming_soon_enabled_help' => 'عند التفعيل تحتاج طلبات الـ API العامة لمفتاح الوصول. لوحة التحكم تبقى مفتوحة.',
+        'coming_soon_access_key' => 'مفتاح الوصول',
+        'coming_soon_access_key_placeholder' => 'أدخل مفتاح المعاينة',
+        'coming_soon_access_key_saved' => '•••••••• (محفوظ — اتركه فارغاً للإبقاء على المفتاح الحالي)',
+        'coming_soon_access_key_help' => 'يُخزَّن مشفّراً. إن لم يُحفظ من هنا يُستخدم COMING_SOON_ACCESS_KEY من ملف .env.',
+        'coming_soon_save' => 'حفظ الإعدادات',
+        'coming_soon_saved' => 'تم حفظ إعدادات Coming Soon',
+        'coming_soon_key_required' => 'يجب تعيين مفتاح وصول قبل تفعيل Coming Soon.',
     ],
 
     'resources' => [
@@ -207,6 +218,10 @@ return [
             'ai_settings' => [
                 'label'       => 'إعدادات الذكاء الاصطناعي',
                 'description' => 'الترجمة و GPT',
+            ],
+            'coming_soon_settings' => [
+                'label'       => 'Coming Soon',
+                'description' => 'بوابة المعاينة والمفتاح',
             ],
         ],
     ],

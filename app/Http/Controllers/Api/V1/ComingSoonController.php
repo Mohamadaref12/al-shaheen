@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Middleware\ComingSoonGate;
+use App\Support\ComingSoonSettings;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -11,19 +12,19 @@ class ComingSoonController extends Controller
 {
     public function status(Request $request): JsonResponse
     {
-        $enabled = (bool) config('coming_soon.enabled');
+        $enabled = ComingSoonSettings::isEnabled();
         $unlocked = ! $enabled || $this->requestHasValidKey($request);
 
         return $this->success([
             'enabled'  => $enabled,
             'unlocked' => $unlocked,
-            'header'   => config('coming_soon.header'),
+            'header'   => ComingSoonSettings::header(),
         ]);
     }
 
     public function unlock(Request $request): JsonResponse
     {
-        if (! config('coming_soon.enabled')) {
+        if (! ComingSoonSettings::isEnabled()) {
             return $this->success([
                 'enabled'  => false,
                 'unlocked' => true,
@@ -34,16 +35,16 @@ class ComingSoonController extends Controller
             'key' => ['required', 'string'],
         ]);
 
-        $expected = (string) config('coming_soon.access_key');
+        $expected = ComingSoonSettings::accessKey();
 
         if ($expected === '' || ! hash_equals($expected, (string) $request->input('key'))) {
             return $this->error(null, 'Invalid access key.', 403);
         }
 
         $cookie = cookie(
-            (string) config('coming_soon.cookie', 'coming_soon_access'),
+            ComingSoonSettings::cookieName(),
             ComingSoonGate::unlockToken(),
-            (int) config('coming_soon.cookie_minutes', 60 * 24 * 30),
+            ComingSoonSettings::cookieMinutes(),
             '/',
             null,
             $request->isSecure(),
@@ -55,27 +56,27 @@ class ComingSoonController extends Controller
         return $this->success([
             'enabled'  => true,
             'unlocked' => true,
-            'header'   => config('coming_soon.header'),
+            'header'   => ComingSoonSettings::header(),
             'key'      => $expected,
         ], 'Access granted.')->withCookie($cookie);
     }
 
     protected function requestHasValidKey(Request $request): bool
     {
-        $expected = (string) config('coming_soon.access_key');
+        $expected = ComingSoonSettings::accessKey();
 
         if ($expected === '') {
             return false;
         }
 
-        $headerName = (string) config('coming_soon.header', 'X-Coming-Soon-Key');
+        $headerName = ComingSoonSettings::header();
         $headerKey = (string) $request->header($headerName, '');
 
         if ($headerKey !== '' && hash_equals($expected, $headerKey)) {
             return true;
         }
 
-        $cookieName = (string) config('coming_soon.cookie', 'coming_soon_access');
+        $cookieName = ComingSoonSettings::cookieName();
         $cookieValue = (string) $request->cookie($cookieName, '');
 
         return $cookieValue !== '' && hash_equals(ComingSoonGate::unlockToken(), $cookieValue);

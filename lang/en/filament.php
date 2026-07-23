@@ -20,6 +20,17 @@ return [
 
     'pages' => [
         'ai_settings' => 'AI Settings',
+        'coming_soon_settings' => 'Coming Soon',
+        'coming_soon_settings_description' => 'Control the API preview gate. The Coming Soon UI is on the frontend — this only enables/disables the gate and sets the access key.',
+        'coming_soon_enabled' => 'Enable Coming Soon',
+        'coming_soon_enabled_help' => 'When enabled, public API calls require the access key. Admin panel stays open.',
+        'coming_soon_access_key' => 'Access key',
+        'coming_soon_access_key_placeholder' => 'Enter a preview key',
+        'coming_soon_access_key_saved' => '•••••••• (saved — leave blank to keep current key)',
+        'coming_soon_access_key_help' => 'Stored encrypted. Falls back to COMING_SOON_ACCESS_KEY in .env if never saved here.',
+        'coming_soon_save' => 'Save settings',
+        'coming_soon_saved' => 'Coming Soon settings saved',
+        'coming_soon_key_required' => 'Set an access key before enabling Coming Soon.',
     ],
 
     'resources' => [
@@ -207,6 +218,10 @@ return [
             'ai_settings' => [
                 'label'       => 'AI Settings',
                 'description' => 'Translation & GPT',
+            ],
+            'coming_soon_settings' => [
+                'label'       => 'Coming Soon',
+                'description' => 'Preview gate & access key',
             ],
         ],
     ],

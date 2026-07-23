@@ -13,8 +13,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // After EncryptCookies/session so the unlock cookie is readable.
-        $middleware->appendToGroup('web', ComingSoonGate::class);
+        // API only — Coming Soon UI lives on the React frontend.
         $middleware->appendToGroup('api', ComingSoonGate::class);
 
         $middleware->encryptCookies(except: [
